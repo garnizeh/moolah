@@ -31,6 +31,14 @@ services:
       timeout: 3s
       retries: 5
 
+  mailhog:
+    image: mailhog/mailhog:v1.0.1
+    container_name: moolah-mailhog
+    restart: always
+    ports:
+      - "1025:1025" # SMTP port
+      - "8025:8025" # HTTP UI port
+
 volumes:
   postgres_data:
   redis_data:
