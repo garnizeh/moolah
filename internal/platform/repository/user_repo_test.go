@@ -8,6 +8,7 @@ import (
 
 	"github.com/garnizeh/moolah/internal/domain"
 	"github.com/garnizeh/moolah/internal/platform/db/sqlc"
+	"github.com/garnizeh/moolah/internal/testutil/mocks"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -29,7 +30,7 @@ func TestUserRepo_Create(t *testing.T) {
 
 	t.Run("success", func(t *testing.T) {
 		t.Parallel()
-		mockQuerier := new(sqlc.MockQuerier)
+		mockQuerier := new(mocks.Querier)
 		repo := NewUserRepository(mockQuerier)
 
 		mockQuerier.On("CreateUser", ctx, mock.MatchedBy(func(arg sqlc.CreateUserParams) bool {
@@ -54,7 +55,7 @@ func TestUserRepo_Create(t *testing.T) {
 
 	t.Run("duplicate email", func(t *testing.T) {
 		t.Parallel()
-		mockQuerier := new(sqlc.MockQuerier)
+		mockQuerier := new(mocks.Querier)
 		repo := NewUserRepository(mockQuerier)
 
 		mockQuerier.On("CreateUser", ctx, mock.Anything).Return(sqlc.User{}, &pgconn.PgError{Code: "23505"})
@@ -68,7 +69,7 @@ func TestUserRepo_Create(t *testing.T) {
 
 	t.Run("generic db error", func(t *testing.T) {
 		t.Parallel()
-		mockQuerier := new(sqlc.MockQuerier)
+		mockQuerier := new(mocks.Querier)
 		repo := NewUserRepository(mockQuerier)
 
 		mockQuerier.On("CreateUser", ctx, mock.Anything).Return(sqlc.User{}, errors.New("db error"))
@@ -90,7 +91,7 @@ func TestUserRepo_GetByID(t *testing.T) {
 
 	t.Run("success", func(t *testing.T) {
 		t.Parallel()
-		mockQuerier := new(sqlc.MockQuerier)
+		mockQuerier := new(mocks.Querier)
 		repo := NewUserRepository(mockQuerier)
 
 		mockQuerier.On("GetUserByID", ctx, sqlc.GetUserByIDParams{ID: id, TenantID: tenantID}).Return(sqlc.User{
@@ -107,7 +108,7 @@ func TestUserRepo_GetByID(t *testing.T) {
 
 	t.Run("not found", func(t *testing.T) {
 		t.Parallel()
-		mockQuerier := new(sqlc.MockQuerier)
+		mockQuerier := new(mocks.Querier)
 		repo := NewUserRepository(mockQuerier)
 
 		mockQuerier.On("GetUserByID", ctx, mock.Anything).Return(sqlc.User{}, pgx.ErrNoRows)
@@ -121,7 +122,7 @@ func TestUserRepo_GetByID(t *testing.T) {
 
 	t.Run("db error", func(t *testing.T) {
 		t.Parallel()
-		mockQuerier := new(sqlc.MockQuerier)
+		mockQuerier := new(mocks.Querier)
 		repo := NewUserRepository(mockQuerier)
 
 		mockQuerier.On("GetUserByID", ctx, mock.Anything).Return(sqlc.User{}, errors.New("db error"))
@@ -142,7 +143,7 @@ func TestUserRepo_GetByEmail(t *testing.T) {
 
 	t.Run("success", func(t *testing.T) {
 		t.Parallel()
-		mockQuerier := new(sqlc.MockQuerier)
+		mockQuerier := new(mocks.Querier)
 		repo := NewUserRepository(mockQuerier)
 
 		mockQuerier.On("GetUserByEmail", ctx, sqlc.GetUserByEmailParams{Email: email}).Return(sqlc.User{
@@ -158,7 +159,7 @@ func TestUserRepo_GetByEmail(t *testing.T) {
 
 	t.Run("not found", func(t *testing.T) {
 		t.Parallel()
-		mockQuerier := new(sqlc.MockQuerier)
+		mockQuerier := new(mocks.Querier)
 		repo := NewUserRepository(mockQuerier)
 
 		mockQuerier.On("GetUserByEmail", ctx, mock.Anything).Return(sqlc.User{}, pgx.ErrNoRows)
@@ -172,7 +173,7 @@ func TestUserRepo_GetByEmail(t *testing.T) {
 
 	t.Run("db error", func(t *testing.T) {
 		t.Parallel()
-		mockQuerier := new(sqlc.MockQuerier)
+		mockQuerier := new(mocks.Querier)
 		repo := NewUserRepository(mockQuerier)
 
 		mockQuerier.On("GetUserByEmail", ctx, mock.Anything).Return(sqlc.User{}, errors.New("db error"))
@@ -193,7 +194,7 @@ func TestUserRepo_ListByTenant(t *testing.T) {
 
 	t.Run("success", func(t *testing.T) {
 		t.Parallel()
-		mockQuerier := new(sqlc.MockQuerier)
+		mockQuerier := new(mocks.Querier)
 		repo := NewUserRepository(mockQuerier)
 
 		mockQuerier.On("ListUsersByTenant", ctx, tenantID).Return([]sqlc.User{
@@ -209,7 +210,7 @@ func TestUserRepo_ListByTenant(t *testing.T) {
 
 	t.Run("db error", func(t *testing.T) {
 		t.Parallel()
-		mockQuerier := new(sqlc.MockQuerier)
+		mockQuerier := new(mocks.Querier)
 		repo := NewUserRepository(mockQuerier)
 
 		mockQuerier.On("ListUsersByTenant", ctx, tenantID).Return([]sqlc.User(nil), errors.New("db error"))
@@ -233,7 +234,7 @@ func TestUserRepo_Update(t *testing.T) {
 
 	t.Run("success", func(t *testing.T) {
 		t.Parallel()
-		mockQuerier := new(sqlc.MockQuerier)
+		mockQuerier := new(mocks.Querier)
 		repo := NewUserRepository(mockQuerier)
 
 		mockQuerier.On("GetUserByID", ctx, sqlc.GetUserByIDParams{ID: id, TenantID: tenantID}).Return(sqlc.User{
@@ -259,7 +260,7 @@ func TestUserRepo_Update(t *testing.T) {
 
 	t.Run("success with role update", func(t *testing.T) {
 		t.Parallel()
-		mockQuerier := new(sqlc.MockQuerier)
+		mockQuerier := new(mocks.Querier)
 		repo := NewUserRepository(mockQuerier)
 		newRole := domain.RoleAdmin
 		roleInput := domain.UpdateUserInput{Role: &newRole}
@@ -287,7 +288,7 @@ func TestUserRepo_Update(t *testing.T) {
 
 	t.Run("not found", func(t *testing.T) {
 		t.Parallel()
-		mockQuerier := new(sqlc.MockQuerier)
+		mockQuerier := new(mocks.Querier)
 		repo := NewUserRepository(mockQuerier)
 
 		mockQuerier.On("GetUserByID", ctx, mock.Anything).Return(sqlc.User{}, pgx.ErrNoRows)
@@ -301,7 +302,7 @@ func TestUserRepo_Update(t *testing.T) {
 
 	t.Run("db error on get", func(t *testing.T) {
 		t.Parallel()
-		mockQuerier := new(sqlc.MockQuerier)
+		mockQuerier := new(mocks.Querier)
 		repo := NewUserRepository(mockQuerier)
 
 		mockQuerier.On("GetUserByID", ctx, mock.Anything).Return(sqlc.User{}, errors.New("db error"))
@@ -315,7 +316,7 @@ func TestUserRepo_Update(t *testing.T) {
 
 	t.Run("db error on update", func(t *testing.T) {
 		t.Parallel()
-		mockQuerier := new(sqlc.MockQuerier)
+		mockQuerier := new(mocks.Querier)
 		repo := NewUserRepository(mockQuerier)
 
 		mockQuerier.On("GetUserByID", ctx, sqlc.GetUserByIDParams{ID: id, TenantID: tenantID}).Return(sqlc.User{
@@ -343,7 +344,7 @@ func TestUserRepo_UpdateLastLogin(t *testing.T) {
 
 	t.Run("success", func(t *testing.T) {
 		t.Parallel()
-		mockQuerier := new(sqlc.MockQuerier)
+		mockQuerier := new(mocks.Querier)
 		repo := NewUserRepository(mockQuerier)
 
 		mockQuerier.On("UpdateUserLastLogin", ctx, sqlc.UpdateUserLastLoginParams{ID: id}).Return(nil)
@@ -355,7 +356,7 @@ func TestUserRepo_UpdateLastLogin(t *testing.T) {
 
 	t.Run("db error", func(t *testing.T) {
 		t.Parallel()
-		mockQuerier := new(sqlc.MockQuerier)
+		mockQuerier := new(mocks.Querier)
 		repo := NewUserRepository(mockQuerier)
 
 		mockQuerier.On("UpdateUserLastLogin", ctx, mock.Anything).Return(errors.New("db error"))
@@ -376,7 +377,7 @@ func TestUserRepo_Delete(t *testing.T) {
 
 	t.Run("success", func(t *testing.T) {
 		t.Parallel()
-		mockQuerier := new(sqlc.MockQuerier)
+		mockQuerier := new(mocks.Querier)
 		repo := NewUserRepository(mockQuerier)
 
 		mockQuerier.On("SoftDeleteUser", ctx, sqlc.SoftDeleteUserParams{ID: id, TenantID: tenantID}).Return(nil)
@@ -388,7 +389,7 @@ func TestUserRepo_Delete(t *testing.T) {
 
 	t.Run("db error", func(t *testing.T) {
 		t.Parallel()
-		mockQuerier := new(sqlc.MockQuerier)
+		mockQuerier := new(mocks.Querier)
 		repo := NewUserRepository(mockQuerier)
 
 		mockQuerier.On("SoftDeleteUser", ctx, mock.Anything).Return(errors.New("db error"))

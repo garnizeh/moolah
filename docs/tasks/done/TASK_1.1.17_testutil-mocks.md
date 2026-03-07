@@ -1,8 +1,8 @@
 # Task 1.1.17 — `internal/testutil/mocks`: Centralized testify/mock Implementations
 
 > **Roadmap Ref:** Phase 1 — MVP: Core Finance › 1.1 Infrastructure & Platform
-> **Status:** 🔵 `backlog`
-> **Last Updated:** 2026-03-08
+> **Status:** ✅ `done`
+> **Last Updated:** 2026-03-07
 > **Assignee:** —
 > **Estimated Effort:** S
 
@@ -192,3 +192,4 @@ N/A — mock files contain no business logic.
 | Date | Author | Change |
 | --- | --- | --- |
 | 2026-03-08 | — | Task document created |
+| 2026-03-07 | Automated agent | Implemented centralized mocks in `internal/testutil/mocks`, updated tests to use them, removed legacy `internal/platform/db/sqlc/mock_querier.go` and regenerated sqlc artifacts where needed. |

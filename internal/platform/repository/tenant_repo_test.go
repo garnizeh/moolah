@@ -8,6 +8,7 @@ import (
 
 	"github.com/garnizeh/moolah/internal/domain"
 	"github.com/garnizeh/moolah/internal/platform/db/sqlc"
+	"github.com/garnizeh/moolah/internal/testutil/mocks"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -24,7 +25,7 @@ func TestTenantRepo_Create(t *testing.T) {
 
 	t.Run("success", func(t *testing.T) {
 		t.Parallel()
-		mockQuerier := new(sqlc.MockQuerier)
+		mockQuerier := new(mocks.Querier)
 		repo := NewTenantRepository(mockQuerier)
 
 		mockQuerier.On("CreateTenant", ctx, mock.MatchedBy(func(arg sqlc.CreateTenantParams) bool {
@@ -47,7 +48,7 @@ func TestTenantRepo_Create(t *testing.T) {
 
 	t.Run("duplicate name", func(t *testing.T) {
 		t.Parallel()
-		mockQuerier := new(sqlc.MockQuerier)
+		mockQuerier := new(mocks.Querier)
 		repo := NewTenantRepository(mockQuerier)
 
 		mockQuerier.On("CreateTenant", ctx, mock.Anything).Return(sqlc.Tenant{}, &pgconn.PgError{Code: "23505"})
@@ -68,7 +69,7 @@ func TestTenantRepo_GetByID(t *testing.T) {
 
 	t.Run("success", func(t *testing.T) {
 		t.Parallel()
-		mockQuerier := new(sqlc.MockQuerier)
+		mockQuerier := new(mocks.Querier)
 		repo := NewTenantRepository(mockQuerier)
 
 		mockQuerier.On("GetTenantByID", ctx, id).Return(sqlc.Tenant{
@@ -85,7 +86,7 @@ func TestTenantRepo_GetByID(t *testing.T) {
 
 	t.Run("not found", func(t *testing.T) {
 		t.Parallel()
-		mockQuerier := new(sqlc.MockQuerier)
+		mockQuerier := new(mocks.Querier)
 		repo := NewTenantRepository(mockQuerier)
 
 		mockQuerier.On("GetTenantByID", ctx, id).Return(sqlc.Tenant{}, pgx.ErrNoRows)
@@ -105,7 +106,7 @@ func TestTenantRepo_List(t *testing.T) {
 
 	t.Run("success", func(t *testing.T) {
 		t.Parallel()
-		mockQuerier := new(sqlc.MockQuerier)
+		mockQuerier := new(mocks.Querier)
 		repo := NewTenantRepository(mockQuerier)
 
 		mockQuerier.On("ListTenants", ctx).Return([]sqlc.Tenant{
@@ -132,7 +133,7 @@ func TestTenantRepo_Update(t *testing.T) {
 
 	t.Run("success", func(t *testing.T) {
 		t.Parallel()
-		mockQuerier := new(sqlc.MockQuerier)
+		mockQuerier := new(mocks.Querier)
 		repo := NewTenantRepository(mockQuerier)
 
 		mockQuerier.On("GetTenantByID", ctx, id).Return(sqlc.Tenant{
@@ -165,7 +166,7 @@ func TestTenantRepo_Delete(t *testing.T) {
 
 	t.Run("success", func(t *testing.T) {
 		t.Parallel()
-		mockQuerier := new(sqlc.MockQuerier)
+		mockQuerier := new(mocks.Querier)
 		repo := NewTenantRepository(mockQuerier)
 
 		mockQuerier.On("SoftDeleteTenant", ctx, id).Return(nil)
@@ -186,7 +187,7 @@ func TestTenantRepo_Update_Error(t *testing.T) {
 
 	t.Run("get current fails", func(t *testing.T) {
 		t.Parallel()
-		mockQuerier := new(sqlc.MockQuerier)
+		mockQuerier := new(mocks.Querier)
 		repo := NewTenantRepository(mockQuerier)
 
 		mockQuerier.On("GetTenantByID", ctx, id).Return(sqlc.Tenant{}, errors.New("db error"))
@@ -200,7 +201,7 @@ func TestTenantRepo_Update_Error(t *testing.T) {
 
 	t.Run("update fails with conflict", func(t *testing.T) {
 		t.Parallel()
-		mockQuerier := new(sqlc.MockQuerier)
+		mockQuerier := new(mocks.Querier)
 		repo := NewTenantRepository(mockQuerier)
 
 		mockQuerier.On("GetTenantByID", ctx, id).Return(sqlc.Tenant{ID: id, Name: "Old"}, nil)
@@ -222,7 +223,7 @@ func TestTenantRepo_Delete_Error(t *testing.T) {
 
 	t.Run("soft delete fails", func(t *testing.T) {
 		t.Parallel()
-		mockQuerier := new(sqlc.MockQuerier)
+		mockQuerier := new(mocks.Querier)
 		repo := NewTenantRepository(mockQuerier)
 
 		mockQuerier.On("SoftDeleteTenant", ctx, id).Return(errors.New("db error"))
@@ -268,7 +269,7 @@ func TestTenantRepo_Errors(t *testing.T) {
 
 	t.Run("create database error", func(t *testing.T) {
 		t.Parallel()
-		mockQuerier := new(sqlc.MockQuerier)
+		mockQuerier := new(mocks.Querier)
 		repo := NewTenantRepository(mockQuerier)
 
 		mockQuerier.On("CreateTenant", ctx, mock.Anything).Return(sqlc.Tenant{}, errors.New("db error"))
@@ -281,7 +282,7 @@ func TestTenantRepo_Errors(t *testing.T) {
 
 	t.Run("get by id query error", func(t *testing.T) {
 		t.Parallel()
-		mockQuerier := new(sqlc.MockQuerier)
+		mockQuerier := new(mocks.Querier)
 		repo := NewTenantRepository(mockQuerier)
 
 		mockQuerier.On("GetTenantByID", ctx, id).Return(sqlc.Tenant{}, errors.New("db error"))
@@ -294,7 +295,7 @@ func TestTenantRepo_Errors(t *testing.T) {
 
 	t.Run("list database error", func(t *testing.T) {
 		t.Parallel()
-		mockQuerier := new(sqlc.MockQuerier)
+		mockQuerier := new(mocks.Querier)
 		repo := NewTenantRepository(mockQuerier)
 
 		mockQuerier.On("ListTenants", ctx).Return([]sqlc.Tenant(nil), errors.New("db error"))
@@ -307,7 +308,7 @@ func TestTenantRepo_Errors(t *testing.T) {
 
 	t.Run("update generic database error", func(t *testing.T) {
 		t.Parallel()
-		mockQuerier := new(sqlc.MockQuerier)
+		mockQuerier := new(mocks.Querier)
 		repo := NewTenantRepository(mockQuerier)
 
 		mockQuerier.On("GetTenantByID", ctx, id).Return(sqlc.Tenant{ID: id}, nil)
@@ -321,7 +322,7 @@ func TestTenantRepo_Errors(t *testing.T) {
 
 	t.Run("update not found", func(t *testing.T) {
 		t.Parallel()
-		mockQuerier := new(sqlc.MockQuerier)
+		mockQuerier := new(mocks.Querier)
 		repo := NewTenantRepository(mockQuerier)
 
 		mockQuerier.On("GetTenantByID", ctx, id).Return(sqlc.Tenant{}, pgx.ErrNoRows)
@@ -343,7 +344,7 @@ func TestTenantRepo_Update_Partial(t *testing.T) {
 
 	t.Run("update plan only", func(t *testing.T) {
 		t.Parallel()
-		mockQuerier := new(sqlc.MockQuerier)
+		mockQuerier := new(mocks.Querier)
 		repo := NewTenantRepository(mockQuerier)
 
 		mockQuerier.On("GetTenantByID", ctx, id).Return(sqlc.Tenant{

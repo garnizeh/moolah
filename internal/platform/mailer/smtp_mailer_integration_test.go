@@ -17,6 +17,8 @@ import (
 )
 
 func TestSMTPMailer_SendOTP_Integration(t *testing.T) {
+	t.Parallel()
+
 	ctx := context.Background()
 
 	// Get Mailhog server using testutil helper

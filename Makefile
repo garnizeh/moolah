@@ -23,7 +23,7 @@ deps:
 ## lint-check: Run golangci-lint
 lint-check:
 	@echo "🔍 Running linter..."
-	golangci-lint run ./...
+	golangci-lint run --build-tags=integration ./...
 
 ## sqlc-check: Verify if sqlc generate is up to date
 sqlc-check:
@@ -50,7 +50,7 @@ security-check:
 ## test-coverage: Run unit tests and enforce coverage (80% threshold)
 test-coverage:
 	@echo "🧪 Running unit tests with coverage..."
-	@$(GO) test -v -race -count=1 -coverprofile=coverage.out -covermode=atomic $$(go list ./... | grep -v /platform/db/sqlc)
+	@$(GO) test -v -race -count=1 -tags=integration -coverprofile=coverage.out -covermode=atomic $$(go list ./... | grep -v /platform/db/sqlc)
 	@COVERAGE=$$(go tool cover -func=coverage.out | grep total | awk '{print $$3}' | tr -d '%'); \
 	echo "Total coverage: $${COVERAGE}%"; \
 	awk "BEGIN { if ($${COVERAGE} < 80) exit 1 }"; \
@@ -73,7 +73,7 @@ run:
 ## test: Run unit tests
 test:
 	@echo "Running unit tests..."
-	$(GO) test -v ./...
+	$(GO) test -v -tags=integration ./...
 
 ## test-integration: Run integration tests (docker required)
 test-integration:
@@ -83,7 +83,7 @@ test-integration:
 ## lint: Run golangci-lint
 lint:
 	@echo "Running linter..."
-	golangci-lint run ./...
+	golangci-lint run --build-tags=integration ./...
 
 ## generate: Run sqlc generate
 generate:

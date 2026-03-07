@@ -2,50 +2,15 @@ package middleware
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	"time"
 
+	"github.com/garnizeh/moolah/internal/domain"
+	"github.com/garnizeh/moolah/internal/testutil/mocks"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
-
-// MockIdempotencyStore is a mock implementation of IdempotencyStore.
-type MockIdempotencyStore struct {
-	mock.Mock
-}
-
-func (m *MockIdempotencyStore) Get(ctx context.Context, key string) (*CachedResponse, error) {
-	args := m.Called(ctx, key)
-	if args.Get(0) == nil {
-		err := args.Error(1)
-		if err != nil {
-			return nil, fmt.Errorf("mock get: %w", err)
-		}
-		return nil, nil
-	}
-	return args.Get(0).(*CachedResponse), nil
-}
-
-func (m *MockIdempotencyStore) SetLocked(ctx context.Context, key string, ttl time.Duration) (bool, error) {
-	args := m.Called(ctx, key, ttl)
-	err := args.Error(1)
-	if err != nil {
-		return false, fmt.Errorf("mock setlocked: %w", err)
-	}
-	return args.Bool(0), nil
-}
-
-func (m *MockIdempotencyStore) SetResponse(ctx context.Context, key string, resp CachedResponse, ttl time.Duration) error {
-	args := m.Called(ctx, key, resp, ttl)
-	err := args.Error(0)
-	if err != nil {
-		return fmt.Errorf("mock setresponse: %w", err)
-	}
-	return nil
-}
 
 func TestIdempotencyMiddleware(t *testing.T) {
 	t.Parallel()
@@ -56,7 +21,7 @@ func TestIdempotencyMiddleware(t *testing.T) {
 
 	t.Run("missing header returns 400", func(t *testing.T) {
 		t.Parallel()
-		store := new(MockIdempotencyStore)
+		store := new(mocks.IdempotencyStore)
 		mw := Idempotency(store)
 		handler := mw(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {}))
 
@@ -73,7 +38,7 @@ func TestIdempotencyMiddleware(t *testing.T) {
 
 	t.Run("key too long returns 400", func(t *testing.T) {
 		t.Parallel()
-		store := new(MockIdempotencyStore)
+		store := new(mocks.IdempotencyStore)
 		mw := Idempotency(store)
 		handler := mw(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {}))
 
@@ -91,7 +56,7 @@ func TestIdempotencyMiddleware(t *testing.T) {
 
 	t.Run("first request (cache miss) executes handler and caches response", func(t *testing.T) {
 		t.Parallel()
-		store := new(MockIdempotencyStore)
+		store := new(mocks.IdempotencyStore)
 		mw := Idempotency(store)
 		handler := mw(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusCreated)
@@ -102,7 +67,7 @@ func TestIdempotencyMiddleware(t *testing.T) {
 
 		store.On("Get", mock.Anything, redisKey).Return(nil, nil)
 		store.On("SetLocked", mock.Anything, redisKey, idempotencyTTL).Return(true, nil)
-		store.On("SetResponse", mock.Anything, redisKey, mock.MatchedBy(func(resp CachedResponse) bool {
+		store.On("SetResponse", mock.Anything, redisKey, mock.MatchedBy(func(resp domain.CachedResponse) bool {
 			return resp.StatusCode == http.StatusCreated && string(resp.Body) == `{"id":"tx_1"}`
 		}), idempotencyTTL).Return(nil)
 
@@ -121,14 +86,14 @@ func TestIdempotencyMiddleware(t *testing.T) {
 
 	t.Run("duplicate request (cache hit) returns cached response", func(t *testing.T) {
 		t.Parallel()
-		store := new(MockIdempotencyStore)
+		store := new(mocks.IdempotencyStore)
 		mw := Idempotency(store)
 		handlerCalled := false
 		handler := mw(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			handlerCalled = true
 		}))
 
-		cached := &CachedResponse{
+		cached := &domain.CachedResponse{
 			StatusCode: http.StatusCreated,
 			Body:       []byte(`{"id":"tx_1"}`),
 		}
@@ -150,7 +115,7 @@ func TestIdempotencyMiddleware(t *testing.T) {
 
 	t.Run("in-flight request (locked) returns 409", func(t *testing.T) {
 		t.Parallel()
-		store := new(MockIdempotencyStore)
+		store := new(mocks.IdempotencyStore)
 		mw := Idempotency(store)
 		handler := mw(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {}))
 
@@ -172,7 +137,7 @@ func TestIdempotencyMiddleware(t *testing.T) {
 
 	t.Run("5xx response is not cached", func(t *testing.T) {
 		t.Parallel()
-		store := new(MockIdempotencyStore)
+		store := new(mocks.IdempotencyStore)
 		mw := Idempotency(store)
 		handler := mw(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusInternalServerError)

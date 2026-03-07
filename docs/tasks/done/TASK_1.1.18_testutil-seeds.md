@@ -1,9 +1,9 @@
 # Task 1.1.18 — `internal/testutil/seeds`: Canonical Test-Data Factories
 
 > **Roadmap Ref:** Phase 1 — MVP: Core Finance › 1.1 Infrastructure & Platform
-> **Status:** 🔵 `backlog`
-> **Last Updated:** 2026-03-08
-> **Assignee:** —
+> **Status:** ✅ `done`
+> **Last Updated:** 2026-03-07
+> **Assignee:** GitHub Copilot
 > **Estimated Effort:** S
 
 ---
@@ -35,23 +35,23 @@ Depends on: Task 1.1.16 (`testutil/containers` — provides the `sqlc.Querier` u
 
 ### In scope
 
-- [ ] `internal/testutil/seeds/tenant.go` — `CreateTenant(t, ctx, q) domain.Tenant`
+- [x] `internal/testutil/seeds/tenant.go` — `CreateTenant(t, ctx, q) domain.Tenant`
   - Inserts a row with sensible defaults (`plan: free`, generated ULID)
   - Accepts an optional `name` override via a functional option or a `TenantOpts` struct
-- [ ] `internal/testutil/seeds/user.go` — `CreateUser(t, ctx, q, tenantID string) domain.User`
+- [x] `internal/testutil/seeds/user.go` — `CreateUser(t, ctx, q, tenantID string) domain.User`
   - Inserts a user with `role: member` by default
   - Accepts optional overrides (role, email, name)
-- [ ] `internal/testutil/seeds/account.go` — `CreateAccount(t, ctx, q, tenantID, userID string) domain.Account`
+- [x] `internal/testutil/seeds/account.go` — `CreateAccount(t, ctx, q, tenantID, userID string) domain.Account`
   - Inserts a checking account with `balance_cents: 0`, currency `BRL`
   - Accepts optional overrides (account type, currency)
-- [ ] `internal/testutil/seeds/category.go` — `CreateCategory(t, ctx, q, tenantID string) domain.Category`
+- [x] `internal/testutil/seeds/category.go` — `CreateCategory(t, ctx, q, tenantID string) domain.Category`
   - Inserts a root category (no parent) of type `expense`
   - Accepts optional overrides (type, parent ID)
-- [ ] `internal/testutil/seeds/transaction.go` — `CreateTransaction(t, ctx, q, tenantID, accountID, categoryID, userID string) domain.Transaction`
+- [x] `internal/testutil/seeds/transaction.go` — `CreateTransaction(t, ctx, q, tenantID, accountID, categoryID, userID string) domain.Transaction`
   - Inserts a minimal expense transaction with `amount_cents: 100`
   - Accepts optional overrides (type, amount, occurred_at)
-- [ ] All files carry `//go:build integration` at the top
-- [ ] Each function calls `t.Helper()` at entry and `require.NoError(t, err)` on every fallible operation
+- [x] All files carry `//go:build integration` at the top
+- [x] Each function calls `t.Helper()` at entry and `require.NoError(t, err)` on every fallible operation
 
 ### Out of scope
 
@@ -201,17 +201,17 @@ N/A
 
 ## 5. Acceptance Criteria
 
-- [ ] `internal/testutil/seeds/tenant.go` exists with `//go:build integration`; `CreateTenant` compiles and inserts a valid row.
-- [ ] `internal/testutil/seeds/user.go` exists; `CreateUser` compiles and inserts a valid row with correct `tenant_id`.
-- [ ] `internal/testutil/seeds/account.go` exists; `CreateAccount` inserts a valid row.
-- [ ] `internal/testutil/seeds/category.go` exists; `CreateCategory` inserts a valid row.
-- [ ] `internal/testutil/seeds/transaction.go` exists; `CreateTransaction` inserts a valid row referencing the seeded account, category, and user.
-- [ ] All functions call `t.Helper()` as their first statement.
-- [ ] All returned structs are fully populated `domain.*` types (no zero-value fields that should come from the DB, e.g., `CreatedAt`).
-- [ ] `go vet -tags integration ./internal/testutil/seeds/...` passes with zero issues.
-- [ ] `golangci-lint run -tags integration ./internal/testutil/seeds/...` passes with zero issues.
-- [ ] All exported functions have Go doc comments.
-- [ ] `docs/ROADMAP.md` row 1.1.18 updated to ✅ `done`.
+- [x] `internal/testutil/seeds/tenant.go` exists with `//go:build integration`; `CreateTenant` compiles and inserts a valid row.
+- [x] `internal/testutil/seeds/user.go` exists; `CreateUser` compiles and inserts a valid row with correct `tenant_id`.
+- [x] `internal/testutil/seeds/account.go` exists; `CreateAccount` inserts a valid row.
+- [x] `internal/testutil/seeds/category.go` exists; `CreateCategory` inserts a valid row.
+- [x] `internal/testutil/seeds/transaction.go` exists; `CreateTransaction` inserts a valid row referencing the seeded account, category, and user.
+- [x] All functions call `t.Helper()` as their first statement.
+- [x] All returned structs are fully populated `domain.*` types (no zero-value fields that should come from the DB, e.g., `CreatedAt`).
+- [x] `go vet -tags integration ./internal/testutil/seeds/...` passes with zero issues.
+- [x] `golangci-lint run -tags integration ./internal/testutil/seeds/...` passes with zero issues.
+- [x] All exported functions have Go doc comments.
+- [x] `docs/ROADMAP.md` row 1.1.18 updated to ✅ `done`.
 
 ---
 
@@ -220,3 +220,4 @@ N/A
 | Date | Author | Change |
 | --- | --- | --- |
 | 2026-03-08 | — | Task document created |
+| 2026-03-07 | GitHub Copilot | Implemented all seed factory functions. |

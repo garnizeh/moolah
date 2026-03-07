@@ -8,6 +8,7 @@ import (
 
 	"github.com/garnizeh/moolah/internal/domain"
 	"github.com/garnizeh/moolah/internal/platform/db/sqlc"
+	"github.com/garnizeh/moolah/internal/testutil/mocks"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/stretchr/testify/assert"
@@ -27,7 +28,7 @@ func TestAuthRepo_CreateOTPRequest(t *testing.T) {
 
 	t.Run("success", func(t *testing.T) {
 		t.Parallel()
-		mockQuerier := new(sqlc.MockQuerier)
+		mockQuerier := new(mocks.Querier)
 		repo := NewAuthRepository(mockQuerier)
 
 		mockQuerier.On("CreateOTPRequest", ctx, mock.MatchedBy(func(arg sqlc.CreateOTPRequestParams) bool {
@@ -53,7 +54,7 @@ func TestAuthRepo_CreateOTPRequest(t *testing.T) {
 
 	t.Run("error", func(t *testing.T) {
 		t.Parallel()
-		mockQuerier := new(sqlc.MockQuerier)
+		mockQuerier := new(mocks.Querier)
 		repo := NewAuthRepository(mockQuerier)
 
 		mockQuerier.On("CreateOTPRequest", ctx, mock.Anything).Return(sqlc.OtpRequest{}, errors.New("db error"))
@@ -74,7 +75,7 @@ func TestAuthRepo_GetActiveOTPRequest(t *testing.T) {
 
 	t.Run("success", func(t *testing.T) {
 		t.Parallel()
-		mockQuerier := new(sqlc.MockQuerier)
+		mockQuerier := new(mocks.Querier)
 		repo := NewAuthRepository(mockQuerier)
 
 		mockQuerier.On("GetActiveOTPByEmail", ctx, email).Return(sqlc.OtpRequest{
@@ -96,7 +97,7 @@ func TestAuthRepo_GetActiveOTPRequest(t *testing.T) {
 
 	t.Run("not found", func(t *testing.T) {
 		t.Parallel()
-		mockQuerier := new(sqlc.MockQuerier)
+		mockQuerier := new(mocks.Querier)
 		repo := NewAuthRepository(mockQuerier)
 
 		mockQuerier.On("GetActiveOTPByEmail", ctx, email).Return(sqlc.OtpRequest{}, pgx.ErrNoRows)
@@ -110,7 +111,7 @@ func TestAuthRepo_GetActiveOTPRequest(t *testing.T) {
 
 	t.Run("error", func(t *testing.T) {
 		t.Parallel()
-		mockQuerier := new(sqlc.MockQuerier)
+		mockQuerier := new(mocks.Querier)
 		repo := NewAuthRepository(mockQuerier)
 
 		mockQuerier.On("GetActiveOTPByEmail", ctx, email).Return(sqlc.OtpRequest{}, errors.New("db error"))
@@ -131,7 +132,7 @@ func TestAuthRepo_MarkOTPUsed(t *testing.T) {
 
 	t.Run("success", func(t *testing.T) {
 		t.Parallel()
-		mockQuerier := new(sqlc.MockQuerier)
+		mockQuerier := new(mocks.Querier)
 		repo := NewAuthRepository(mockQuerier)
 
 		mockQuerier.On("MarkOTPUsed", ctx, id).Return(nil)
@@ -144,7 +145,7 @@ func TestAuthRepo_MarkOTPUsed(t *testing.T) {
 
 	t.Run("not found", func(t *testing.T) {
 		t.Parallel()
-		mockQuerier := new(sqlc.MockQuerier)
+		mockQuerier := new(mocks.Querier)
 		repo := NewAuthRepository(mockQuerier)
 
 		mockQuerier.On("MarkOTPUsed", ctx, id).Return(pgx.ErrNoRows)
@@ -157,7 +158,7 @@ func TestAuthRepo_MarkOTPUsed(t *testing.T) {
 
 	t.Run("error", func(t *testing.T) {
 		t.Parallel()
-		mockQuerier := new(sqlc.MockQuerier)
+		mockQuerier := new(mocks.Querier)
 		repo := NewAuthRepository(mockQuerier)
 
 		mockQuerier.On("MarkOTPUsed", ctx, id).Return(errors.New("db error"))
@@ -176,7 +177,7 @@ func TestAuthRepo_DeleteExpiredOTPRequests(t *testing.T) {
 
 	t.Run("success", func(t *testing.T) {
 		t.Parallel()
-		mockQuerier := new(sqlc.MockQuerier)
+		mockQuerier := new(mocks.Querier)
 		repo := NewAuthRepository(mockQuerier)
 
 		mockQuerier.On("DeleteExpiredOTPs", ctx).Return(nil)
@@ -189,7 +190,7 @@ func TestAuthRepo_DeleteExpiredOTPRequests(t *testing.T) {
 
 	t.Run("error", func(t *testing.T) {
 		t.Parallel()
-		mockQuerier := new(sqlc.MockQuerier)
+		mockQuerier := new(mocks.Querier)
 		repo := NewAuthRepository(mockQuerier)
 
 		mockQuerier.On("DeleteExpiredOTPs", ctx).Return(errors.New("db error"))

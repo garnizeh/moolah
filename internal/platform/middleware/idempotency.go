@@ -2,30 +2,18 @@ package middleware
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
+
+	"github.com/garnizeh/moolah/internal/domain"
 )
 
 const (
 	idempotencyHeader = "Idempotency-Key"
 	idempotencyTTL    = 24 * time.Hour
 )
-
-// CachedResponse represents a stored HTTP response.
-type CachedResponse struct {
-	Body       []byte `json:"body"`
-	StatusCode int    `json:"status_code"`
-}
-
-// IdempotencyStore defines the contract for storing idempotency keys and responses.
-type IdempotencyStore interface {
-	Get(ctx context.Context, key string) (*CachedResponse, error)
-	SetLocked(ctx context.Context, key string, ttl time.Duration) (bool, error)
-	SetResponse(ctx context.Context, key string, resp CachedResponse, ttl time.Duration) error
-}
 
 // responseRecorder captures the response to be cached.
 type responseRecorder struct {
@@ -49,7 +37,7 @@ func (r *responseRecorder) Write(b []byte) (int, error) {
 }
 
 // Idempotency middleware ensures that POST requests are processed at most once.
-func Idempotency(store IdempotencyStore) func(http.Handler) http.Handler {
+func Idempotency(store domain.IdempotencyStore) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if r.Method != http.MethodPost {
@@ -135,7 +123,7 @@ func Idempotency(store IdempotencyStore) func(http.Handler) http.Handler {
 
 			// 4. Cache only successful/client error responses (exclude 5xx)
 			if rec.statusCode < http.StatusInternalServerError {
-				err := store.SetResponse(r.Context(), redisKey, CachedResponse{
+				err := store.SetResponse(r.Context(), redisKey, domain.CachedResponse{
 					StatusCode: rec.statusCode,
 					Body:       rec.body.Bytes(),
 				}, idempotencyTTL)

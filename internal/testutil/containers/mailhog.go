@@ -40,9 +40,9 @@ func (m *TestMailhog) APIHostAndPort(t *testing.T) (string, int) {
 
 	// APIAddr is expected to be in the format "http://host:port"
 	trimmed := m.APIAddr
-	if after, ok :=strings.CutPrefix(trimmed, "http://"); ok  {
+	if after, ok := strings.CutPrefix(trimmed, "http://"); ok {
 		trimmed = after
-	} else if after0, ok0 :=strings.CutPrefix(trimmed, "https://"); ok0  {
+	} else if after0, ok0 := strings.CutPrefix(trimmed, "https://"); ok0 {
 		trimmed = after0
 	}
 
