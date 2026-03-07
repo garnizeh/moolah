@@ -17,8 +17,8 @@ deps:
 	@echo "Installing dependencies..."
 	@go mod tidy
 	@go mod vendor
-	@gofumpt -w ./...
-	@go fmt ./...
+	@gofumpt -w .
+	@go fmt .
 	@go fix ./...
 
 ## lint-check: Run golangci-lint
