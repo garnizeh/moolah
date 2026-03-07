@@ -24,7 +24,7 @@ Repository implementations cannot be meaningfully unit-tested with mocks — the
 
 ### In scope
 
-- [ ] Shared `TestMain` that starts a `postgres:16-alpine` container via Testcontainers.
+- [ ] Shared `TestMain` that starts a `postgres:17-alpine` container via Testcontainers.
 - [ ] Goose migrations applied via `embed.FS` in `TestMain`.
 - [ ] Helper `newTestTx(t)` that opens a `pgx.Tx` and registers `t.Cleanup` to roll back.
 - [ ] Integration tests for `TenantRepository` (Task 1.3.1).
@@ -71,7 +71,7 @@ package repository_test
 // TestMain in integration_test.go:
 func TestMain(m *testing.M) {
     ctx := context.Background()
-    pgContainer, _ := testcontainers.RunContainer(ctx, "postgres:16-alpine", ...)
+    pgContainer, _ := testcontainers.RunContainer(ctx, "postgres:17-alpine", ...)
     // apply goose migrations
     // set package-level *pgxpool.Pool
     os.Exit(m.Run())

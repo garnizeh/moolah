@@ -1,6 +1,6 @@
 # Moolah — Project Roadmap
 
-> **Version:** 1.0.0 | **Last Updated:** 2026-03-07 | **Status:** 🟡 In Progress
+> **Version:** 1.0.0 | **Last Updated:** 2026-03-08 | **Status:** 🟡 In Progress
 
 ---
 
@@ -59,8 +59,11 @@
 | 1.1.11 | `platform/middleware/logger.go` — request logging middleware | ✅ `done` | 2026-03-07 | tenant_id, user_id, latency |
 | 1.1.12 | `platform/mailer/smtp_mailer.go` — implements `domain.Mailer` | ✅ `done` | 2026-03-07 | |
 | 1.1.13 | `platform/mailer/smtp_mailer_integration_test.go` — Testcontainers + Mailhog | ✅ `done` | 2026-03-07 | |
-| 1.1.14 | `platform/middleware/idempotency.go` — Redis-backed `Idempotency-Key` middleware | 🔵 `backlog` | 2026-03-07 | 24 h TTL; scoped per `userID`; `IdempotencyStore` interface for mockability |
-| 1.1.15 | `platform/idempotency/redis_store.go` — `IdempotencyStore` Redis implementation | 🔵 `backlog` | 2026-03-07 | `SETNX` lock + `SET` response; requires `github.com/redis/go-redis/v9` |
+| 1.1.14 | `platform/middleware/idempotency.go` — Redis-backed `Idempotency-Key` middleware | ✅ `done` | 2026-03-07 | 24 h TTL; scoped per `userID`; `IdempotencyStore` interface for mockability |
+| 1.1.15 | `platform/idempotency/redis_store.go` — `IdempotencyStore` Redis implementation | ✅ `done` | 2026-03-07 | `SETNX` lock + `SET` response; requires `github.com/redis/go-redis/v9` |
+| 1.1.16 | `internal/testutil/containers` — centralized testcontainers-go helpers (Postgres, Redis, Mailhog) | 🔵 `backlog` | 2026-03-08 | Shared via `TestMain`; `//go:build integration`; eliminates per-test container setup |
+| 1.1.17 | `internal/testutil/mocks` — centralized testify/mock implementations (Querier, IdempotencyStore, Mailer) | 🔵 `backlog` | 2026-03-08 | Moves `MockQuerier` out of `sqlc/`; extracts inline mock from `idempotency_test.go` |
+| 1.1.18 | `internal/testutil/seeds` — canonical test-data factories (tenant, user, account, category, transaction) | 🔵 `backlog` | 2026-03-08 | `//go:build integration`; used by repository and service integration tests |
 
 ### 1.2 Domain Layer
 

@@ -16,6 +16,7 @@
 8. [Transaction Flows](#8-transaction-flows)
 9. [Performance & Scaling](#9-performance--scaling)
 10. [CI/CD Pipeline](#10-cicd-pipeline)
+11. [Testing Strategy](#11-testing-strategy)
 
 ---
 
@@ -691,14 +692,30 @@ moolah/
 │   │   └── mailer/
 │   │       └── smtp_mailer.go    # Implements domain.Mailer
 │   │
-│   └── service/
-│       ├── auth_service.go       # OTP generation, verification, Paseto token issuance
-│       ├── auth_service_test.go
-│       ├── tenant_service.go     # Household CRUD and user invitation
-│       ├── tenant_service_test.go
-│       ├── transaction_service.go
-│       ├── transaction_service_test.go
-│       └── admin_service.go      # Cross-tenant support operations
+│   ├── service/
+│   │   ├── auth_service.go       # OTP generation, verification, Paseto token issuance
+│   │   ├── auth_service_test.go
+│   │   ├── tenant_service.go     # Household CRUD and user invitation
+│   │   ├── tenant_service_test.go
+│   │   ├── transaction_service.go
+│   │   ├── transaction_service_test.go
+│   │   └── admin_service.go      # Cross-tenant support operations
+│   │
+│   └── testutil/                 # Shared test infrastructure — imported only by *_test.go files
+│       ├── containers/           # testcontainers-go wrappers (//go:build integration)
+│       │   ├── postgres.go       # NewPostgresDB(t) → *TestPostgresDB{Pool, Queries}
+│       │   ├── redis.go          # NewRedisClient(t) → *redis.Client
+│       │   └── mailhog.go        # NewMailhogServer(t) → *TestMailhog{Addr, APIAddr}
+│       ├── mocks/                # testify/mock implementations (no build tag — safe to compile)
+│       │   ├── mock_querier.go   # MockQuerier (implements sqlc.Querier)
+│       │   ├── mock_idempotency_store.go  # MockIdempotencyStore (implements middleware.IdempotencyStore)
+│       │   └── mock_mailer.go    # MockMailer (implements domain.Mailer)
+│       └── seeds/                # Canonical test fixture factories (//go:build integration)
+│           ├── tenant.go         # CreateTenant(t, ctx, q) → domain.Tenant
+│           ├── user.go           # CreateUser(t, ctx, q, tenantID) → domain.User
+│           ├── account.go        # CreateAccount(t, ctx, q, opts) → domain.Account
+│           ├── category.go       # CreateCategory(t, ctx, q, tenantID) → domain.Category
+│           └── transaction.go    # CreateTransaction(t, ctx, q, opts) → domain.Transaction
 │
 ├── pkg/
 │   ├── config/
@@ -1328,14 +1345,29 @@ All state-mutating `POST` endpoints **require** an `Idempotency-Key` header. The
 - **In-flight key** (another goroutine is processing the same key) — return `409 Conflict`.
 - **Already-processed key** — return the **exact same** cached response without re-executing the handler.
 
-```
-Client ──► Middleware ──► Redis GET idempotency:{userID}:{key}
-                │
-                ├─ miss   ──► SET (locked, TTL=24h) ──► Handler ──► DB
-                │                                            │
-                │                                            └─► SET (response, TTL=24h)
-                │
-                └─ hit    ──► Return cached response (200/201/etc.) immediately
+```mermaid
+graph TD
+    Client[Client] -- "POST /v1/..." --> MW[Middleware]
+    MW -- "GET idempotency:{userID}:{key}" --> Redis{Redis}
+    
+    subgraph "Request Processing"
+    Redis -- miss --> Lock[SET locked, TTL=24h]
+    Lock --> Handler[Handler]
+    Handler --> DB[(PostgreSQL)]
+    DB --> Cache[SET response, TTL=24h]
+    end
+    
+    subgraph "Cache Hit"
+    Redis -- hit --> ReturnCached[Return cached response]
+    end
+
+    subgraph "Conflict Detection"
+    Redis -- "already locked" --> Conflict[Return 409 Conflict]
+    end
+    
+    Cache --> Response[Response]
+    ReturnCached --> Response
+    Conflict --> Response
 ```
 
 #### Header Contract
@@ -1455,18 +1487,36 @@ func Idempotency(store IdempotencyStore) func(http.Handler) http.Handler {
 
 #### Redis Key Lifecycle
 
-```
-t=0       Client sends POST /v1/transactions  (Idempotency-Key: 01HZ...)
-t=0+ε     Middleware: GET idempotency:u:01HZ...  → miss
-t=0+ε     Middleware: SETNX idempotency:u:01HZ... locked  TTL=24h  → OK
-t=1       Handler writes to PostgreSQL → 201 Created {"id":"..."}
-t=1+ε     Middleware: SET idempotency:u:01HZ... {201, body}  TTL=24h
+```mermaid
+sequenceDiagram
+    autonumber
+    participant Client
+    participant MW as Middleware
+    participant Redis
+    participant Handler
+    participant DB as PostgreSQL
 
-t=5       Client retries (network blip)
-t=5+ε     Middleware: GET idempotency:u:01HZ...  → HIT  {201, body}
-t=5+ε     Middleware returns 201 immediately — DB NOT touched
+    Note over Client, DB: Primeira Requisição (t=0)
+    Client->>MW: POST /v1/transactions (Key: 01HZ...)
+    MW->>Redis: GET idempotency:u:01HZ...
+    Redis-->>MW: miss
+    MW->>Redis: SETNX idempotency:u:01HZ... "locked" (TTL=24h)
+    Redis-->>MW: OK
+    MW->>Handler: Executar Handler
+    Handler->>DB: INSERT transaction
+    DB-->>Handler: 201 Created
+    Handler-->>MW: 201 Created {body}
+    MW->>Redis: SET idempotency:u:01HZ... {201, body} (TTL=24h)
+    MW-->>Client: 201 Created {body}
 
-t=24h+1   Redis key expires — key is available for reuse
+    Note over Client, DB: Tentativa de Reenvio (t=5s)
+    Client->>MW: POST /v1/transactions (Key: 01HZ...)
+    MW->>Redis: GET idempotency:u:01HZ...
+    Redis-->>MW: HIT {201, body}
+    MW-->>Client: 201 Created {body} (Resposta imediata, DB não é tocada)
+
+    Note over Client, DB: Expiração (t=24h+1)
+    Note right of Redis: Chave expira no Redis, slot fica livre novamente
 ```
 
 ---
@@ -1785,11 +1835,10 @@ func TestTransactionRepository_CreateAndGet(t *testing.T) {
 
     // Spin up an ephemeral Postgres container
     pgContainer, err := postgres.Run(ctx,
-        "postgres:16-alpine",
+        "postgres:17-alpine",
         postgres.WithDatabase("moolah_test"),
         postgres.WithUsername("test"),
         postgres.WithPassword("test"),
-        postgres.WithInitScripts("../../../docs/schema.sql"),
     )
     require.NoError(t, err)
     t.Cleanup(func() { pgContainer.Terminate(ctx) })
@@ -1868,6 +1917,210 @@ swag:
 build:
  CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o bin/api ./cmd/api
 ```
+
+---
+
+## 11. Testing Strategy
+
+### 11.1 Philosophy
+
+All business logic is unit-tested against interfaces using `testify/mock`; no real database or external service is touched by unit tests. Integration tests run against real ephemeral containers (`testcontainers-go`) and are gated behind the `integration` build tag. This separation keeps the unit test suite fast (< 5 s) and the integration tests thorough.
+
+| Layer | Test type | Infrastructure | Build tag |
+| --- | --- | --- | --- |
+| `internal/domain` | Unit | None | *(none)* |
+| `internal/service` | Unit | `testutil/mocks` | *(none)* |
+| `internal/platform/middleware` | Unit | `testutil/mocks` | *(none)* |
+| `internal/platform/repository` | Integration | `testutil/containers` + `testutil/seeds` | `integration` |
+| `internal/platform/mailer` | Integration | `testutil/containers` (Mailhog) | `integration` |
+| `internal/platform/idempotency` | Integration | `testutil/containers` (Redis) | `integration` |
+
+### 11.2 Centralized Test Infrastructure — `internal/testutil`
+
+To prevent code duplication across test files, all shared test infrastructure lives in `internal/testutil` and its sub-packages. Production code **never** imports `testutil`; the dependency arrow is strictly one-way.
+
+```text
+internal/testutil/
+├── containers/                    # testcontainers-go wrappers (integration tests only)
+│   ├── postgres.go                # NewPostgresDB(t) → *TestPostgresDB{Pool, Queries}
+│   ├── redis.go                   # NewRedisClient(t) → *redis.Client
+│   └── mailhog.go                 # NewMailhogServer(t) → *TestMailhog{Addr, APIAddr}
+├── mocks/                         # testify/mock implementations (unit + integration)
+│   ├── mock_querier.go            # MockQuerier (implements sqlc.Querier)
+│   ├── mock_idempotency_store.go  # MockIdempotencyStore (implements middleware.IdempotencyStore)
+│   └── mock_mailer.go             # MockMailer (implements domain.Mailer)
+└── seeds/                         # Canonical test-data factories (integration tests)
+    ├── tenant.go                  # CreateTenant(t, ctx, q) → domain.Tenant
+    ├── user.go                    # CreateUser(t, ctx, q, tenantID) → domain.User
+    ├── account.go                 # CreateAccount(t, ctx, q, opts) → domain.Account
+    ├── category.go                # CreateCategory(t, ctx, q, tenantID) → domain.Category
+    └── transaction.go             # CreateTransaction(t, ctx, q, opts) → domain.Transaction
+```
+
+### 11.3 Container Helpers (Build Tag: `integration`)
+
+Each container helper follows the same pattern: spin up, register `t.Cleanup` for teardown, return a typed handle. Callers **never** call `container.Terminate` manually — cleanup is always delegated to `t.Cleanup`.
+
+```go
+// internal/testutil/containers/postgres.go
+//go:build integration
+
+package containers
+
+import (
+    "context"
+    "testing"
+
+    "github.com/jackc/pgx/v5/pgxpool"
+    "github.com/stretchr/testify/require"
+    "github.com/testcontainers/testcontainers-go/modules/postgres"
+
+    "github.com/garnizeh/moolah/internal/platform/db/sqlc"
+)
+
+// TestPostgresDB holds an active pgxpool and the sqlc Queries layer bound to it.
+type TestPostgresDB struct {
+    Pool    *pgxpool.Pool
+    Queries *sqlc.Queries
+}
+
+// NewPostgresDB starts an ephemeral PostgreSQL container, applies all migrations
+// via docs/schema.sql, and returns a connected TestPostgresDB.
+// The container and pool are cleaned up when t completes.
+func NewPostgresDB(t *testing.T) *TestPostgresDB {
+    t.Helper()
+    ctx := context.Background()
+
+    pgc, err := postgres.Run(ctx,
+        "postgres:17-alpine",
+        postgres.WithDatabase("moolah_test"),
+        postgres.WithUsername("test"),
+        postgres.WithPassword("test"),
+    )
+    require.NoError(t, err)
+
+    dsn, err := pgc.ConnectionString(ctx, "sslmode=disable")
+    require.NoError(t, err)
+
+    pool, err := pgxpool.New(ctx, dsn)
+    require.NoError(t, err)
+
+    t.Cleanup(func() {
+        pool.Close()
+        _ = pgc.Terminate(ctx)
+    })
+
+    return &TestPostgresDB{
+        Pool:    pool,
+        Queries: sqlc.New(pool),
+    }
+}
+```
+
+For packages that test multiple related entities, the container is shared across all tests via `TestMain` to avoid spinning up a new container per test function:
+
+```go
+// internal/platform/repository/main_test.go
+//go:build integration
+
+package repository_test
+
+import (
+    "os"
+    "testing"
+
+    "github.com/garnizeh/moolah/internal/testutil/containers"
+)
+
+var sharedDB *containers.TestPostgresDB
+
+func TestMain(m *testing.M) {
+    // Spin up once, share across all tests in the package, tear down once.
+    t := &testing.T{}
+    sharedDB = containers.NewPostgresDB(t)
+    os.Exit(m.Run())
+}
+```
+
+### 11.4 Mock Implementations
+
+All mocks use `github.com/stretchr/testify/mock`. They live in `internal/testutil/mocks` and carry no build tag — they import only `testify/mock` and domain types, so they are safe to compile in all environments.
+
+```go
+// internal/testutil/mocks/mock_mailer.go
+package mocks
+
+import (
+    "context"
+
+    "github.com/stretchr/testify/mock"
+
+    "github.com/garnizeh/moolah/internal/domain"
+)
+
+// MockMailer is a testify mock for domain.Mailer.
+type MockMailer struct {
+    mock.Mock
+}
+
+func (m *MockMailer) SendOTP(ctx context.Context, email, code string) error {
+    args := m.Called(ctx, email, code)
+    return args.Error(0)
+}
+
+// Compile-time interface check.
+var _ domain.Mailer = (*MockMailer)(nil)
+```
+
+The `MockIdempotencyStore` is extracted from its inline definition in `idempotency_test.go` and moved here, making it reusable by handler tests in addition to middleware tests.
+
+### 11.5 Seed Helpers
+
+Seed helpers insert minimal valid rows into a real database. They call `require.NoError(t, err)` internally so a seeding failure immediately fails the test with a descriptive message — no error-checking boilerplate in test bodies.
+
+```go
+// internal/testutil/seeds/tenant.go
+//go:build integration
+
+package seeds
+
+import (
+    "context"
+    "testing"
+
+    "github.com/stretchr/testify/require"
+
+    "github.com/garnizeh/moolah/internal/domain"
+    "github.com/garnizeh/moolah/internal/platform/db/sqlc"
+    "github.com/garnizeh/moolah/pkg/ulid"
+)
+
+// CreateTenant inserts a test tenant row and returns the mapped domain.Tenant.
+func CreateTenant(t *testing.T, ctx context.Context, q sqlc.Querier) domain.Tenant {
+    t.Helper()
+    row, err := q.CreateTenant(ctx, sqlc.CreateTenantParams{
+        ID:   ulid.New(),
+        Name: "Test Household",
+        Plan: sqlc.TenantPlanFree,
+    })
+    require.NoError(t, err)
+    return domain.Tenant{
+        ID:        row.ID,
+        Name:      row.Name,
+        Plan:      domain.TenantPlan(row.Plan),
+        CreatedAt: row.CreatedAt.Time,
+        UpdatedAt: row.UpdatedAt.Time,
+    }
+}
+```
+
+### 11.6 Build Tag Conventions
+
+| Sub-package | Build tag | Rationale |
+| --- | --- | --- |
+| `testutil/containers` | `//go:build integration` | Imports testcontainers-go; only needed for integration runs |
+| `testutil/mocks` | *(none)* | Imports only `testify/mock` + domain types; safe to compile in all environments |
+| `testutil/seeds` | `//go:build integration` | Uses a live database; only valid in integration runs |
 
 ---
 

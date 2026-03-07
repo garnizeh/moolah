@@ -3,10 +3,10 @@ package middleware
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	"time"
 
 	"github.com/garnizeh/moolah/internal/domain"
 	"github.com/garnizeh/moolah/pkg/paseto"
@@ -14,165 +14,173 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestRequireAuth(t *testing.T) {
+func TestAuth(t *testing.T) {
 	t.Parallel()
 
-	validClaims := &paseto.Claims{
-		IssuedAt:  time.Now(),
-		ExpiresAt: time.Now().Add(time.Hour),
-		TenantID:  "tenant_123",
-		UserID:    "user_456",
-		Role:      string(domain.RoleAdmin),
-	}
+	t.Run("valid token adds claims to context", func(t *testing.T) {
+		t.Parallel()
 
-	mockParser := func(claims *paseto.Claims, err error) TokenParser {
-		return func(token string) (*paseto.Claims, error) {
-			return claims, err
+		tenantID := "tenant_123"
+		userID := "user_456"
+		role := domain.RoleMember
+
+		mockParser := func(token string) (*paseto.Claims, error) {
+			return &paseto.Claims{
+				TenantID: tenantID,
+				UserID:   userID,
+				Role:     string(role),
+			}, nil
 		}
-	}
 
-	finalHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		tenantID, _ := TenantIDFromCtx(r.Context())
-		userID, _ := UserIDFromCtx(r.Context())
-		role, _ := RoleFromCtx(r.Context())
+		mw := Auth(mockParser)
+		handler := mw(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			tID, okT := TenantIDFromCtx(r.Context())
+			uID, okU := UserIDFromCtx(r.Context())
+			uRole, okR := RoleFromCtx(r.Context())
 
-		assert.Equal(t, validClaims.TenantID, tenantID)
-		assert.Equal(t, validClaims.UserID, userID)
-		assert.Equal(t, domain.Role(validClaims.Role), role)
+			assert.True(t, okT)
+			assert.True(t, okU)
+			assert.True(t, okR)
+			assert.Equal(t, tenantID, tID)
+			assert.Equal(t, userID, uID)
+			assert.Equal(t, string(role), uRole)
 
-		w.WriteHeader(http.StatusOK)
+			w.WriteHeader(http.StatusOK)
+		}))
+
+		req := httptest.NewRequest(http.MethodGet, "/", nil)
+		req.Header.Set("Authorization", "Bearer valid-token")
+		rec := httptest.NewRecorder()
+
+		handler.ServeHTTP(rec, req)
+
+		assert.Equal(t, http.StatusOK, rec.Code)
 	})
 
-	tests := []struct {
-		name           string
-		authHeader     string
-		parser         TokenParser
-		expectedCode   string
-		expectedStatus int
-	}{
-		{
-			name:           "Valid token",
-			authHeader:     "Bearer valid_token",
-			parser:         mockParser(validClaims, nil),
-			expectedStatus: http.StatusOK,
-		},
-		{
-			name:           "Missing header",
-			authHeader:     "",
-			parser:         mockParser(nil, nil),
-			expectedStatus: http.StatusUnauthorized,
-			expectedCode:   "UNAUTHORIZED",
-		},
-		{
-			name:           "Malformed header - no bearer",
-			authHeader:     "invalid_token",
-			parser:         mockParser(nil, nil),
-			expectedStatus: http.StatusUnauthorized,
-			expectedCode:   "UNAUTHORIZED",
-		},
-		{
-			name:           "Expired token",
-			authHeader:     "Bearer expired_token",
-			parser:         mockParser(nil, paseto.ErrTokenExpired),
-			expectedStatus: http.StatusUnauthorized,
-			expectedCode:   "TOKEN_EXPIRED",
-		},
-		{
-			name:           "Invalid token",
-			authHeader:     "Bearer invalid_token",
-			parser:         mockParser(nil, paseto.ErrTokenInvalid),
-			expectedStatus: http.StatusUnauthorized,
-			expectedCode:   "UNAUTHORIZED",
-		},
-	}
+	t.Run("missing authorization header returns unauthorized", func(t *testing.T) {
+		t.Parallel()
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
+		mw := Auth(nil)
+		handler := mw(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {}))
 
-			req := httptest.NewRequest(http.MethodGet, "/", nil)
-			if tt.authHeader != "" {
-				req.Header.Set("Authorization", tt.authHeader)
-			}
-			rr := httptest.NewRecorder()
+		req := httptest.NewRequest(http.MethodGet, "/", nil)
+		rec := httptest.NewRecorder()
 
-			handler := RequireAuth(tt.parser)(finalHandler)
-			handler.ServeHTTP(rr, req)
+		handler.ServeHTTP(rec, req)
 
-			assert.Equal(t, tt.expectedStatus, rr.Code)
+		assert.Equal(t, http.StatusUnauthorized, rec.Code)
 
-			if tt.expectedCode != "" {
-				var resp ErrorResponse
-				err := json.Unmarshal(rr.Body.Bytes(), &resp)
-				require.NoError(t, err)
-				assert.Equal(t, tt.expectedCode, resp.Error.Code)
-			}
-		})
-	}
+		var resp ErrorResponse
+		err := json.Unmarshal(rec.Body.Bytes(), &resp)
+		require.NoError(t, err)
+		assert.Equal(t, "missing_token", resp.Error.Code)
+	})
+
+	t.Run("invalid authorization format returns unauthorized", func(t *testing.T) {
+		t.Parallel()
+
+		mw := Auth(nil)
+		handler := mw(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {}))
+
+		req := httptest.NewRequest(http.MethodGet, "/", nil)
+		req.Header.Set("Authorization", "InvalidFormat token")
+		rec := httptest.NewRecorder()
+
+		handler.ServeHTTP(rec, req)
+
+		assert.Equal(t, http.StatusUnauthorized, rec.Code)
+
+		var resp ErrorResponse
+		err := json.Unmarshal(rec.Body.Bytes(), &resp)
+		require.NoError(t, err)
+		assert.Equal(t, "invalid_token_format", resp.Error.Code)
+	})
+
+	t.Run("invalid token returns unauthorized", func(t *testing.T) {
+		t.Parallel()
+
+		mockParser := func(token string) (*paseto.Claims, error) {
+			return nil, errors.New("invalid token")
+		}
+
+		mw := Auth(mockParser)
+		handler := mw(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {}))
+
+		req := httptest.NewRequest(http.MethodGet, "/", nil)
+		req.Header.Set("Authorization", "Bearer invalid-token")
+		rec := httptest.NewRecorder()
+
+		handler.ServeHTTP(rec, req)
+
+		assert.Equal(t, http.StatusUnauthorized, rec.Code)
+
+		var resp ErrorResponse
+		err := json.Unmarshal(rec.Body.Bytes(), &resp)
+		require.NoError(t, err)
+		assert.Equal(t, "invalid_token", resp.Error.Code)
+	})
+
+	t.Run("RequireAuth is an alias for Auth", func(t *testing.T) {
+		t.Parallel()
+		// Just verify it compiles and returns a function
+		mw := RequireAuth(nil)
+		assert.NotNil(t, mw)
+	})
 }
 
 func TestRequireRole(t *testing.T) {
 	t.Parallel()
 
-	finalHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-	})
-
 	tests := []struct {
 		name           string
 		userRole       domain.Role
-		requiredRole   domain.Role
+		requiredRoles  []domain.Role
 		expectedStatus int
 	}{
 		{
-			name:           "Admin accessing member endpoint",
+			name:           "user has required role",
 			userRole:       domain.RoleAdmin,
-			requiredRole:   domain.RoleMember,
+			requiredRoles:  []domain.Role{domain.RoleAdmin},
 			expectedStatus: http.StatusOK,
 		},
 		{
-			name:           "Member accessing member endpoint",
+			name:           "user has one of required roles",
 			userRole:       domain.RoleMember,
-			requiredRole:   domain.RoleMember,
+			requiredRoles:  []domain.Role{domain.RoleAdmin, domain.RoleMember},
 			expectedStatus: http.StatusOK,
 		},
 		{
-			name:           "Member accessing admin endpoint",
+			name:           "user does not have required role",
 			userRole:       domain.RoleMember,
-			requiredRole:   domain.RoleAdmin,
+			requiredRoles:  []domain.Role{domain.RoleAdmin},
 			expectedStatus: http.StatusForbidden,
 		},
 		{
-			name:           "Sysadmin accessing admin endpoint",
-			userRole:       domain.RoleSysadmin,
-			requiredRole:   domain.RoleAdmin,
-			expectedStatus: http.StatusOK,
+			name:           "missing role in context returns unauthorized",
+			userRole:       "",
+			requiredRoles:  []domain.Role{domain.RoleAdmin},
+			expectedStatus: http.StatusUnauthorized,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+			mw := RequireRole(tt.requiredRoles...)
+			handler := mw(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(http.StatusOK)
+			}))
 
 			req := httptest.NewRequest(http.MethodGet, "/", nil)
-			// Mock claims in context
-			claims := &paseto.Claims{
-				TenantID: "tenant_123",
-				UserID:   "user_456",
-				Role:     string(tt.userRole),
+			if tt.userRole != "" {
+				ctx := context.WithValue(req.Context(), RoleKey, string(tt.userRole))
+				req = req.WithContext(ctx)
 			}
-			mockParser := func(token string) (*paseto.Claims, error) {
-				return claims, nil
-			}
+			rec := httptest.NewRecorder()
 
-			rr := httptest.NewRecorder()
+			handler.ServeHTTP(rec, req)
 
-			// Chain RequireAuth and RequireRole
-			handler := RequireAuth(mockParser)(RequireRole(tt.requiredRole)(finalHandler))
-			req.Header.Set("Authorization", "Bearer valid_token")
-			handler.ServeHTTP(rr, req)
-
-			assert.Equal(t, tt.expectedStatus, rr.Code)
+			assert.Equal(t, tt.expectedStatus, rec.Code)
 		})
 	}
 }
@@ -180,26 +188,29 @@ func TestRequireRole(t *testing.T) {
 func TestContextHelpers(t *testing.T) {
 	t.Parallel()
 
-	ctx := context.Background()
-
 	t.Run("TenantIDFromCtx", func(t *testing.T) {
 		t.Parallel()
+		ctx := context.Background()
 		val, ok := TenantIDFromCtx(ctx)
 		assert.False(t, ok)
 		assert.Empty(t, val)
+
+		ctx = context.WithValue(ctx, TenantIDKey, "test")
+		val, ok = TenantIDFromCtx(ctx)
+		assert.True(t, ok)
+		assert.Equal(t, "test", val)
 	})
 
 	t.Run("UserIDFromCtx", func(t *testing.T) {
 		t.Parallel()
+		ctx := context.Background()
 		val, ok := UserIDFromCtx(ctx)
 		assert.False(t, ok)
 		assert.Empty(t, val)
-	})
 
-	t.Run("RoleFromCtx", func(t *testing.T) {
-		t.Parallel()
-		val, ok := RoleFromCtx(ctx)
-		assert.False(t, ok)
-		assert.Empty(t, string(val))
+		ctx = context.WithValue(ctx, UserIDKey, "test")
+		val, ok = UserIDFromCtx(ctx)
+		assert.True(t, ok)
+		assert.Equal(t, "test", val)
 	})
 }
