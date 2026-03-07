@@ -9,6 +9,16 @@ import (
 )
 
 type Querier interface {
+	AdminForceDeleteUser(ctx context.Context, id string) error
+	AdminGetTenantByID(ctx context.Context, id string) (Tenant, error)
+	AdminGetUserByID(ctx context.Context, id string) (User, error)
+	AdminHardDeleteTenant(ctx context.Context, id string) error
+	AdminListAllAuditLogs(ctx context.Context, arg AdminListAllAuditLogsParams) ([]AuditLog, error)
+	AdminListAllTenants(ctx context.Context, withDeleted bool) ([]Tenant, error)
+	AdminListAllUsers(ctx context.Context) ([]User, error)
+	AdminRestoreTenant(ctx context.Context, id string) error
+	AdminSuspendTenant(ctx context.Context, id string) error
+	AdminUpdateTenantPlan(ctx context.Context, arg AdminUpdateTenantPlanParams) (Tenant, error)
 	CreateAccount(ctx context.Context, arg CreateAccountParams) (Account, error)
 	CreateAuditLog(ctx context.Context, arg CreateAuditLogParams) (AuditLog, error)
 	CreateCategory(ctx context.Context, arg CreateCategoryParams) (Category, error)

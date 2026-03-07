@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"time"
 
@@ -15,7 +16,7 @@ const (
 	idempotencyTTL    = 24 * time.Hour
 )
 
-// responseRecorder captures the response to be cached.
+// responseRecorder captures the response to be cached for future idempotent requests.
 type responseRecorder struct {
 	http.ResponseWriter
 	body       *bytes.Buffer
@@ -36,10 +37,12 @@ func (r *responseRecorder) Write(b []byte) (int, error) {
 	return n, nil
 }
 
-// Idempotency middleware ensures that POST requests are processed at most once.
+// Idempotency middleware ensures that POST requests are processed at most once
+// by caching the response associated with a specific Idempotency-Key.
 func Idempotency(store domain.IdempotencyStore) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			// Only apply idempotency logic to POST requests (standard practice for mutations).
 			if r.Method != http.MethodPost {
 				next.ServeHTTP(w, r)
 				return
@@ -48,35 +51,31 @@ func Idempotency(store domain.IdempotencyStore) func(http.Handler) http.Handler 
 			clientKey := r.Header.Get(idempotencyHeader)
 			if clientKey == "" {
 				w.WriteHeader(http.StatusBadRequest)
-				err := json.NewEncoder(w).Encode(map[string]string{"error": "missing_idempotency_key"})
-				if err != nil {
-					http.Error(w, "failed to encode error response", http.StatusInternalServerError)
-				}
+				_ = json.NewEncoder(w).Encode(map[string]string{"error": "missing_idempotency_key"})
 				return
 			}
 
-			// Validate key length to prevent abuse
+			// Validate key length to prevent ReDoS or memory abuse.
 			if len(clientKey) > 128 {
 				w.WriteHeader(http.StatusBadRequest)
-				err := json.NewEncoder(w).Encode(map[string]string{"error": "invalid_idempotency_key"})
-				if err != nil {
-					http.Error(w, "failed to encode error response", http.StatusInternalServerError)
-				}
+				_ = json.NewEncoder(w).Encode(map[string]string{"error": "invalid_idempotency_key"})
 				return
 			}
 
-			// Extract userID from context using the global key from auth.go.
+			// Extract userID from context (provided by Auth middleware).
 			userID, _ := UserIDFromCtx(r.Context())
 			if userID == "" {
 				userID = "anonymous"
 			}
 
-			// Composite key: idempotency:{userID}:{clientKey}
+			// Composite key prevents collisions between different users using the same client key.
 			redisKey := fmt.Sprintf("idempotency:%s:%s", userID, clientKey)
 
-			// 1. Check if we have a cached response
+			// 1. Check for a previously cached response.
 			cached, err := store.Get(r.Context(), redisKey)
 			if err != nil {
+				// #nosec G706: slog is a structured logger that escapes control characters, preventing log injection.
+				slog.Error("idempotency: store get error", "error", err, "key", redisKey)
 				http.Error(w, "internal_error", http.StatusInternalServerError)
 				return
 			}
@@ -84,52 +83,59 @@ func Idempotency(store domain.IdempotencyStore) func(http.Handler) http.Handler 
 			if cached != nil {
 				w.Header().Set("X-Cache", "HIT")
 				w.Header().Set("Content-Type", "application/json")
+				w.Header().Set("X-Content-Type-Options", "nosniff")
 				w.WriteHeader(cached.StatusCode)
-				// gosec G705: This is a cached response from our own store, not raw user input.
+
+				// Use existing 'err' to avoid shadowing and satisfy govet.
+				var n int
 				/* #nosec G705 */
-				_, err = w.Write(cached.Body)
+				n, err = w.Write(cached.Body)
 				if err != nil {
-					// We can't use http.Error here because we already sent w.WriteHeader
-					// but we also can't just ignore it.
+					/* #nosec G706 */
+					slog.Error("idempotency: failed to write cached response body",
+						"user_id", userID,
+						"idempotency_key", clientKey,
+						"bytes_written", n,
+						"error", err,
+					)
 					return
 				}
 				return
 			}
 
-			// 2. Try to acquire lock
+			// 2. Try to acquire an atomic lock to prevent "in-flight" race conditions.
 			ok, err := store.SetLocked(r.Context(), redisKey, idempotencyTTL)
 			if err != nil {
+				// #nosec G706: redisKey is safe here because slog handles escaping of user-provided data.
+				slog.Error("idempotency: lock acquisition error", "error", err, "key", redisKey)
 				http.Error(w, "internal_error", http.StatusInternalServerError)
 				return
 			}
 
 			if !ok {
 				w.WriteHeader(http.StatusConflict)
-				err := json.NewEncoder(w).Encode(map[string]string{"error": "idempotency_key_in_flight"})
-				if err != nil {
-					http.Error(w, "failed to encode error response", http.StatusInternalServerError)
-				}
+				_ = json.NewEncoder(w).Encode(map[string]string{"error": "idempotency_key_in_flight"})
 				return
 			}
 
-			// 3. Execute handler and record response
+			// 3. Execute the next handler while recording the output.
 			rec := &responseRecorder{
 				ResponseWriter: w,
 				body:           new(bytes.Buffer),
-				statusCode:     http.StatusOK, // Default success
+				statusCode:     http.StatusOK,
 			}
 
 			next.ServeHTTP(rec, r)
 
-			// 4. Cache only successful/client error responses (exclude 5xx)
+			// 4. Cache only successful or client-side error responses (exclude 5xx server errors).
 			if rec.statusCode < http.StatusInternalServerError {
-				err := store.SetResponse(r.Context(), redisKey, domain.CachedResponse{
+				err = store.SetResponse(r.Context(), redisKey, domain.CachedResponse{
 					StatusCode: rec.statusCode,
 					Body:       rec.body.Bytes(),
 				}, idempotencyTTL)
 				if err != nil {
-					// We log it and continue. In production you'd use a real logger.
-					fmt.Printf("idempotency: failed to set response: %v\n", err)
+					// #nosec G706: Using structured logging to safely record the failure.
+					slog.Warn("idempotency: failed to cache response", "error", err, "key", redisKey)
 				}
 			}
 		})

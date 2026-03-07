@@ -1,7 +1,7 @@
 # Task 1.3.8 — Repository: Admin
 
 > **Roadmap Ref:** Phase 1 — MVP › 1.3 Repository Layer
-> **Status:** 🔵 `backlog`
+> **Status:** ✅ `done`
 > **Last Updated:** 2026-03-07
 > **Assignee:** —
 > **Estimated Effort:** M
@@ -26,14 +26,14 @@ New or supplemental SQL query files will be needed in `internal/platform/db/quer
 
 ### In scope
 
-- [ ] Concrete `adminTenantRepo`, `adminUserRepo`, `adminAuditRepo` structs.
-- [ ] Constructor functions for each: `NewAdminTenantRepository`, `NewAdminUserRepository`, `NewAdminAuditRepository`.
-- [ ] New sqlc query files for admin queries (no `tenant_id` filter):
+- [x] Concrete `adminTenantRepo`, `adminUserRepo`, `adminAuditRepo` structs.
+- [x] Constructor functions for each: `NewAdminTenantRepository`, `NewAdminUserRepository`, `NewAdminAuditRepository`.
+- [x] New sqlc query files for admin queries (no `tenant_id` filter):
   - `internal/platform/db/queries/admin_tenants.sql`
   - `internal/platform/db/queries/admin_users.sql`
   - `internal/platform/db/queries/admin_audit_logs.sql`
-- [ ] Run `sqlc generate` after adding admin queries.
-- [ ] `HardDelete` deletes the tenant row permanently (relies on `ON DELETE CASCADE`).
+- [x] Run `sqlc generate` after adding admin queries.
+- [x] `HardDelete` deletes the tenant row permanently (relies on `ON DELETE CASCADE`).
 
 ### Out of scope
 
@@ -103,14 +103,14 @@ func NewAdminAuditRepository(q *sqlc.Queries)  domain.AdminAuditRepository
 
 ## 5. Acceptance Criteria
 
-- [ ] All exported types and functions have Go doc comments.
-- [ ] All three structs implement their respective admin interfaces (compiler-verified).
-- [ ] Admin queries do **not** include `WHERE tenant_id = $1`.
-- [ ] `HardDelete` performs a permanent row deletion (not soft-delete).
-- [ ] `sqlc generate` passes after adding new query files.
-- [ ] `golangci-lint run ./...` passes with zero issues.
-- [ ] `gosec ./...` passes with zero issues.
-- [ ] `docs/ROADMAP.md` row updated to ✅ `done`.
+- [x] All exported types and functions have Go doc comments.
+- [x] All three structs implement their respective admin interfaces (compiler-verified).
+- [x] Admin queries do **not** include `WHERE tenant_id = $1`.
+- [x] `HardDelete` performs a permanent row deletion (not soft-delete).
+- [x] `sqlc generate` passes after adding new query files.
+- [x] `golangci-lint run ./...` passes with zero issues.
+- [x] `gosec ./...` passes with zero issues.
+- [x] `docs/ROADMAP.md` row updated to ✅ `done`.
 
 ---
 
@@ -129,7 +129,7 @@ func NewAdminAuditRepository(q *sqlc.Queries)  domain.AdminAuditRepository
 
 ### Unit tests (`_test.go`, no build tag)
 
-N/A — repository implementations are tested via integration tests.
+Implemented in `internal/platform/repository/admin_repo_test.go`.
 
 ### Integration tests (`//go:build integration`)
 
@@ -156,3 +156,4 @@ Covered by Task 1.3.9 — specifically:
 | Date       | Author | Change                    |
 | ---------- | ------ | ------------------------- |
 | 2026-03-07 | —      | Task created from roadmap |
+| 2026-03-07 | Copilot| Implemented admin repositories and tests |

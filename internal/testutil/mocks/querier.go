@@ -319,4 +319,84 @@ func (m *Querier) UpdateUserLastLogin(ctx context.Context, arg sqlc.UpdateUserLa
 	return nil
 }
 
+func (m *Querier) AdminForceDeleteUser(ctx context.Context, id string) error {
+	args := m.Called(ctx, id)
+	if err := args.Error(0); err != nil {
+		return fmt.Errorf("mock querier AdminForceDeleteUser: %w", err)
+	}
+	return nil
+}
+
+func (m *Querier) AdminGetTenantByID(ctx context.Context, id string) (sqlc.Tenant, error) {
+	args := m.Called(ctx, id)
+	if err := args.Error(1); err != nil {
+		return sqlc.Tenant{}, fmt.Errorf("mock querier AdminGetTenantByID: %w", err)
+	}
+	return args.Get(0).(sqlc.Tenant), nil
+}
+
+func (m *Querier) AdminGetUserByID(ctx context.Context, id string) (sqlc.User, error) {
+	args := m.Called(ctx, id)
+	if err := args.Error(1); err != nil {
+		return sqlc.User{}, fmt.Errorf("mock querier AdminGetUserByID: %w", err)
+	}
+	return args.Get(0).(sqlc.User), nil
+}
+
+func (m *Querier) AdminHardDeleteTenant(ctx context.Context, id string) error {
+	args := m.Called(ctx, id)
+	if err := args.Error(0); err != nil {
+		return fmt.Errorf("mock querier AdminHardDeleteTenant: %w", err)
+	}
+	return nil
+}
+
+func (m *Querier) AdminListAllAuditLogs(ctx context.Context, arg sqlc.AdminListAllAuditLogsParams) ([]sqlc.AuditLog, error) {
+	args := m.Called(ctx, arg)
+	if err := args.Error(1); err != nil {
+		return nil, fmt.Errorf("mock querier AdminListAllAuditLogs: %w", err)
+	}
+	return args.Get(0).([]sqlc.AuditLog), nil
+}
+
+func (m *Querier) AdminListAllTenants(ctx context.Context, withDeleted bool) ([]sqlc.Tenant, error) {
+	args := m.Called(ctx, withDeleted)
+	if err := args.Error(1); err != nil {
+		return nil, fmt.Errorf("mock querier AdminListAllTenants: %w", err)
+	}
+	return args.Get(0).([]sqlc.Tenant), nil
+}
+
+func (m *Querier) AdminListAllUsers(ctx context.Context) ([]sqlc.User, error) {
+	args := m.Called(ctx)
+	if err := args.Error(1); err != nil {
+		return nil, fmt.Errorf("mock querier AdminListAllUsers: %w", err)
+	}
+	return args.Get(0).([]sqlc.User), nil
+}
+
+func (m *Querier) AdminRestoreTenant(ctx context.Context, id string) error {
+	args := m.Called(ctx, id)
+	if err := args.Error(0); err != nil {
+		return fmt.Errorf("mock querier AdminRestoreTenant: %w", err)
+	}
+	return nil
+}
+
+func (m *Querier) AdminSuspendTenant(ctx context.Context, id string) error {
+	args := m.Called(ctx, id)
+	if err := args.Error(0); err != nil {
+		return fmt.Errorf("mock querier AdminSuspendTenant: %w", err)
+	}
+	return nil
+}
+
+func (m *Querier) AdminUpdateTenantPlan(ctx context.Context, arg sqlc.AdminUpdateTenantPlanParams) (sqlc.Tenant, error) {
+	args := m.Called(ctx, arg)
+	if err := args.Error(1); err != nil {
+		return sqlc.Tenant{}, fmt.Errorf("mock querier AdminUpdateTenantPlan: %w", err)
+	}
+	return args.Get(0).(sqlc.Tenant), nil
+}
+
 var _ sqlc.Querier = (*Querier)(nil)
