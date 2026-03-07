@@ -81,10 +81,12 @@ jobs:
           awk "BEGIN { exit (${COVERAGE} < 80) }" || (echo "ERROR: Coverage ${COVERAGE}% is below the 80% threshold" && exit 1)
 
       - name: Upload coverage report to Codecov
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           files: ./coverage.out
           fail_ci_if_error: false
+          token: ${{ secrets.CODECOV_TOKEN }}
+          slug: garnizeh/moolah          
 
   # ─── Stage 4: Integration Tests (testcontainers-go) ──────────────────────
   integration-tests:
