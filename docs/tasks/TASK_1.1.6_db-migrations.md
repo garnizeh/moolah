@@ -1,7 +1,7 @@
 # Task 1.1.6 — Database Migrations (Goose)
 
 > **Roadmap Ref:** Phase 1 — MVP: Core Finance › 1.1 Infrastructure & Platform
-> **Status:** � `in-progress`
+> **Status:** ✅ `done`
 > **Last Updated:** 2026-03-07
 > **Assignee:** GitHub Copilot
 > **Estimated Effort:** M
