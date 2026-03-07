@@ -89,7 +89,21 @@ Follow this directory layout strictly when suggesting new files:
 
 ---
 
-## 7. Coding Style & Best Practices
+## 7. Task Documentation
+
+> **`docs/tasks/TASK_TEMPLATE.md` is the mandatory template for all task documents.**
+
+### Mandatory Rules
+- **Whenever creating a task document**, copy `docs/tasks/TASK_TEMPLATE.md` verbatim as the starting point.
+  - Save it as `docs/tasks/TASK_X.Y.Z_short-slug.md` (e.g., `docs/tasks/TASK_1.2.3_domain-account.md`).
+- **Every section of the template must be filled in** — do not omit or collapse sections; use `N/A` only when a section genuinely does not apply.
+- The task document must be created **before any implementation begins** for that task.
+- **Acceptance Criteria** must be checked off (✅) as each criterion is met; the doc is the single source of truth for task completion.
+- **After the task is done**, update both the task document (`Status: ✅ done`, Change Log entry) and the corresponding row in `docs/ROADMAP.md`.
+
+---
+
+## 8. Coding Style & Best Practices
 - **Error Handling:** Use `errors.Is` and `errors.As`. Return wrapped errors with clear context.
 - **Dependency Injection:** Use constructor functions (e.g., `func NewService(repo Repository) *Service`).
 - **SQLC Naming:** Use descriptive names for queries (e.g., `-- name: GetTransactionByID :one`).
