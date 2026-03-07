@@ -23,7 +23,9 @@ func TestRequestLogger(t *testing.T) {
 
 		handler := RequestLogger(logger)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusCreated)
-			_, _ = w.Write([]byte("ok"))
+			if _, err := w.Write([]byte("ok")); err != nil {
+				t.Errorf("failed to write response: %v", err)
+			}
 		}))
 
 		req := httptest.NewRequest(http.MethodPost, "/test-path", nil)
@@ -91,7 +93,9 @@ func TestRequestLogger(t *testing.T) {
 
 		handler := RequestLogger(logger)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			// No WriteHeader called
-			_, _ = w.Write([]byte("ok"))
+			if _, err := w.Write([]byte("ok")); err != nil {
+				panic(err)
+			}
 		}))
 
 		req := httptest.NewRequest(http.MethodGet, "/", nil)

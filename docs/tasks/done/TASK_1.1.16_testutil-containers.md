@@ -1,8 +1,8 @@
 # Task 1.1.16 — `internal/testutil/containers`: Centralized Testcontainer Helpers
 
 > **Roadmap Ref:** Phase 1 — MVP: Core Finance › 1.1 Infrastructure & Platform
-> **Status:** 🔵 `backlog`
-> **Last Updated:** 2026-03-08
+> **Status:** ✅ `done`
+> **Last Updated:** 2026-03-07
 > **Assignee:** —
 > **Estimated Effort:** S
 
@@ -40,22 +40,22 @@ Required by: Task 1.3.9 (repository integration tests), future service integrati
 
 ### In scope
 
-- [ ] `internal/testutil/containers/postgres.go` — `NewPostgresDB(t *testing.T) *TestPostgresDB`
+- [x] `internal/testutil/containers/postgres.go` — `NewPostgresDB(t *testing.T) *TestPostgresDB`
   - Starts `postgres:17-alpine` via `testcontainers-go/modules/postgres`
   - Applies `docs/schema.sql` as init script
   - Returns `*TestPostgresDB{Pool *pgxpool.Pool, Queries *sqlc.Queries}`
   - Registers `t.Cleanup` for pool close + container termination
-- [ ] `internal/testutil/containers/redis.go` — `NewRedisClient(t *testing.T) *redis.Client`
+- [x] `internal/testutil/containers/redis.go` — `NewRedisClient(t *testing.T) *redis.Client`
   - Starts `redis:7-alpine`
   - Returns a connected `*redis.Client`
   - Registers `t.Cleanup`
-- [ ] `internal/testutil/containers/mailhog.go` — `NewMailhogServer(t *testing.T) *TestMailhog`
-  - Starts `mailhog/mailhog:latest` (generic container)
+- [x] `internal/testutil/containers/mailhog.go` — `NewMailhogServer(t *testing.T) *TestMailhog`
+  - Starts `mailhog/mailhog:v1.0.1` (generic container)
   - Returns `*TestMailhog{SMTPAddr string, APIAddr string}` (both host:port)
   - Registers `t.Cleanup`
-- [ ] All files carry `//go:build integration` at the top
-- [ ] Unit tests for the helpers themselves are **not** required (they are integration infrastructure)
-- [ ] Document `TestMain`-shared-container usage pattern in each file's package doc comment
+- [x] All files carry `//go:build integration` at the top
+- [x] Unit tests for the helpers themselves are **not** required (they are integration infrastructure)
+- [x] Document `TestMain`-shared-container usage pattern in each file's package doc comment
 
 ### Out of scope
 
@@ -169,16 +169,16 @@ N/A
 
 ## 5. Acceptance Criteria
 
-- [ ] `internal/testutil/containers/postgres.go` exists with `//go:build integration` and exports `NewPostgresDB` returning `*TestPostgresDB`.
-- [ ] `internal/testutil/containers/redis.go` exists with `//go:build integration` and exports `NewRedisClient` returning `*redis.Client`.
-- [ ] `internal/testutil/containers/mailhog.go` exists with `//go:build integration` and exports `NewMailhogServer` returning `*TestMailhog`.
-- [ ] `TestPostgresDB.Queries` is a fully initialized `*sqlc.Queries` usable immediately after `NewPostgresDB` returns.
-- [ ] `t.Cleanup` is always registered — no manual `Terminate` calls needed by callers.
-- [ ] `go build ./...` (without `-tags integration`) compiles without importing this package.
-- [ ] `go vet -tags integration ./internal/testutil/containers/...` passes with zero issues.
-- [ ] `golangci-lint run -tags integration ./internal/testutil/containers/...` passes with zero issues.
-- [ ] All exported types and functions have Go doc comments.
-- [ ] `docs/ROADMAP.md` row 1.1.16 updated to ✅ `done`.
+- [x] `internal/testutil/containers/postgres.go` exists with `//go:build integration` and exports `NewPostgresDB` returning `*TestPostgresDB`.
+- [x] `internal/testutil/containers/redis.go` exists with `//go:build integration` and exports `NewRedisClient` returning `*redis.Client`.
+- [x] `internal/testutil/containers/mailhog.go` exists with `//go:build integration` and exports `NewMailhogServer` returning `*TestMailhog`.
+- [x] `TestPostgresDB.Queries` is a fully initialized `*sqlc.Queries` usable immediately after `NewPostgresDB` returns.
+- [x] `t.Cleanup` is always registered — no manual `Terminate` calls needed by callers.
+- [x] `go build ./...` (without `-tags integration`) compiles without importing this package.
+- [x] `go vet -tags integration ./internal/testutil/containers/...` passes with zero issues.
+- [x] `golangci-lint run -tags integration ./internal/testutil/containers/...` passes with zero issues.
+- [x] All exported types and functions have Go doc comments.
+- [x] `docs/ROADMAP.md` row 1.1.16 updated to ✅ `done`.
 
 ---
 
@@ -187,3 +187,4 @@ N/A
 | Date | Author | Change |
 | --- | --- | --- |
 | 2026-03-08 | — | Task document created |
+| 2026-03-07 | GitHub Copilot | Implementation completed and verified |

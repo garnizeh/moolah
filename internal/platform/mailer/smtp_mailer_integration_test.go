@@ -11,43 +11,20 @@ import (
 	"time"
 
 	"github.com/garnizeh/moolah/internal/platform/mailer"
+	"github.com/garnizeh/moolah/internal/testutil/containers"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/testcontainers/testcontainers-go"
-	"github.com/testcontainers/testcontainers-go/wait"
 )
 
 func TestSMTPMailer_SendOTP_Integration(t *testing.T) {
 	ctx := context.Background()
 
-	// Define Mailhog container
-	req := testcontainers.ContainerRequest{
-		Image:        "mailhog/mailhog:v1.0.1",
-		ExposedPorts: []string{"1025/tcp", "8025/tcp"},
-		WaitingFor:   wait.ForHTTP("/api/v2/messages").WithPort("8025/tcp"),
-	}
-
-	mailhog, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
-		ContainerRequest: req,
-		Started:          true,
-	})
-	require.NoError(t, err)
-	defer func() {
-		_ = mailhog.Terminate(ctx)
-	}()
-
-	// Get mapped ports
-	smtpHost, err := mailhog.Host(ctx)
-	require.NoError(t, err)
-
-	smtpPort, err := mailhog.MappedPort(ctx, "1025")
-	require.NoError(t, err)
-
-	httpPort, err := mailhog.MappedPort(ctx, "8025")
-	require.NoError(t, err)
+	// Get Mailhog server using testutil helper
+	mh := containers.NewMailhogServer(t)
+	host, port := mh.SMTPHostAndPort(t)
 
 	// Create Mailer
-	m, err := mailer.NewSMTPMailer(smtpHost, smtpPort.Int(), "", "", "noreply@moolah.test")
+	m, err := mailer.NewSMTPMailer(host, port, "", "", "noreply@moolah.test")
 	require.NoError(t, err)
 
 	// Send OTP
@@ -60,7 +37,8 @@ func TestSMTPMailer_SendOTP_Integration(t *testing.T) {
 	// Give it a tiny bit of time to process
 	time.Sleep(500 * time.Millisecond)
 
-	apiURL := fmt.Sprintf("http://%s:%d/api/v2/messages", smtpHost, httpPort.Int())
+	host, port = mh.APIHostAndPort(t)
+	apiURL := fmt.Sprintf("http://%s:%d/api/v2/messages", host, port)
 	resp, err := http.Get(apiURL)
 	require.NoError(t, err)
 	defer resp.Body.Close()

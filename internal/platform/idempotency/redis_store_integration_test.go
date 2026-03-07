@@ -4,42 +4,21 @@ package idempotency
 
 import (
 	"context"
-	"log"
-	"strings"
 	"testing"
 	"time"
 
 	"github.com/garnizeh/moolah/internal/platform/middleware"
-	goredis "github.com/redis/go-redis/v9"
+	"github.com/garnizeh/moolah/internal/testutil/containers"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-	"github.com/testcontainers/testcontainers-go"
-	"github.com/testcontainers/testcontainers-go/modules/redis"
 )
 
 func TestRedisStore_Integration(t *testing.T) {
 	ctx := context.Background()
 
-	// Start Redis container
-	redisContainer, err := redis.Run(ctx, "redis:7")
-	require.NoError(t, err)
-	defer func() {
-		if err := testcontainers.TerminateContainer(redisContainer); err != nil {
-			log.Printf("failed to terminate container: %s", err)
-		}
-	}()
+	// Get client using testutil helper - starts container and registers cleanup
+	client := containers.NewRedisClient(t)
 
-	endpoint, err := redisContainer.ConnectionString(ctx)
-	require.NoError(t, err)
-
-	// Remove redis:// prefix - cache expects host:port format
-	addr := strings.TrimPrefix(endpoint, "redis://")
-
-	client := goredis.NewClient(&goredis.Options{
-		Addr: addr,
-	})
-	defer client.Close()
-
+	// Create store instance
 	store := NewRedisStore(client)
 
 	t.Run("get miss", func(t *testing.T) {

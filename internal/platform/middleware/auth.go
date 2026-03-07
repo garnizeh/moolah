@@ -3,6 +3,7 @@ package middleware
 import (
 	"context"
 	"encoding/json"
+	"log"
 	"net/http"
 	"strings"
 
@@ -109,7 +110,7 @@ func RequireRole(roles ...domain.Role) func(http.Handler) http.Handler {
 			if !allowed {
 				w.Header().Set("Content-Type", "application/json")
 				w.WriteHeader(http.StatusForbidden)
-				_ = json.NewEncoder(w).Encode(ErrorResponse{
+				err := json.NewEncoder(w).Encode(ErrorResponse{
 					Error: struct {
 						Code    string `json:"code"`
 						Message string `json:"message"`
@@ -118,6 +119,12 @@ func RequireRole(roles ...domain.Role) func(http.Handler) http.Handler {
 						Message: "You don't have permission to perform this action",
 					},
 				})
+				if err != nil {
+					// Log the error and return a generic message if JSON encoding fails
+					// TODO: use a structured logger instead of the standard library log package.
+					log.Printf("failed to encode forbidden response: %v", err)
+					http.Error(w, `{"error": {"code": "forbidden", "message": "You don't have permission to perform this action"}}`, http.StatusForbidden)
+				}
 				return
 			}
 
@@ -129,7 +136,7 @@ func RequireRole(roles ...domain.Role) func(http.Handler) http.Handler {
 func unauthorized(w http.ResponseWriter, code, message string) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusUnauthorized)
-	_ = json.NewEncoder(w).Encode(ErrorResponse{
+	err := json.NewEncoder(w).Encode(ErrorResponse{
 		Error: struct {
 			Code    string `json:"code"`
 			Message string `json:"message"`
@@ -138,4 +145,10 @@ func unauthorized(w http.ResponseWriter, code, message string) {
 			Message: message,
 		},
 	})
+	if err != nil {
+		// Log the error and return a generic message if JSON encoding fails
+		// TODO: use a structured logger instead of the standard library log package.
+		log.Printf("failed to encode unauthorized response: %v", err)
+		http.Error(w, `{"error": {"code": "unauthorized", "message": "Unauthorized"}}`, http.StatusUnauthorized)
+	}
 }

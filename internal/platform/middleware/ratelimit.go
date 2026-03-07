@@ -121,12 +121,18 @@ func (s *RateLimiterStore) OTPRateLimiter() func(http.Handler) http.Handler {
 				w.Header().Set("Content-Type", "application/json")
 				w.Header().Set("Retry-After", retryAfter)
 				w.WriteHeader(http.StatusTooManyRequests)
-				_ = json.NewEncoder(w).Encode(map[string]any{
+				if err := json.NewEncoder(w).Encode(map[string]any{
 					"error": map[string]string{
 						"code":    "RATE_LIMITED",
 						"message": "Too many OTP requests. Please wait before retrying.",
 					},
-				})
+				}); err != nil {
+					// Fallback if JSON encoding fails
+					_, err = w.Write([]byte(`{"error":{"code":"INTERNAL_ERROR","message":"failed to encode rate limit error"}}`))
+					if err != nil {
+						s.log.Error("failed to write fallback rate limit response", "error", err)
+					}
+				}
 				return
 			}
 			s.mu.Unlock()

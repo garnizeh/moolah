@@ -22,41 +22,66 @@ func TestSMTPMailer_SendOTP_HappyPath(t *testing.T) {
 	defer l.Close()
 
 	addr := l.Addr().String()
-	_, portStr, _ := net.SplitHostPort(addr)
+	_, portStr, err := net.SplitHostPort(addr)
+	require.NoError(t, err)
 	var port int
-	_, _ = fmt.Sscanf(portStr, "%d", &port)
+	_, err = fmt.Sscanf(portStr, "%d", &port)
+	require.NoError(t, err)
 
 	go func() {
 		conn, acceptErr := l.Accept()
 		if acceptErr != nil {
 			return
 		}
-		defer conn.Close()
+		defer func() {
+			if closeErr := conn.Close(); closeErr != nil {
+				t.Errorf("failed to close fake SMTP connection: %v", closeErr)
+			}
+		}()
 
-		writer := textproto.NewWriter(bufio.NewWriter(conn))
+		bufWriter := bufio.NewWriter(conn)
+		writer := textproto.NewWriter(bufWriter)
 		reader := textproto.NewReader(bufio.NewReader(conn))
 
-		_ = writer.PrintfLine("220 localhost ESMTP")
+		if lerr := writer.PrintfLine("220 localhost ESMTP"); lerr != nil {
+			t.Errorf("failed to write greeting: %v", lerr)
+			return
+		}
 		for {
 			line, readLineErr := reader.ReadLine()
 			if readLineErr != nil {
 				break
 			}
 			if strings.HasPrefix(line, "QUIT") {
-				_ = writer.PrintfLine("221 Bye")
+				if lerr := writer.PrintfLine("221 Bye"); lerr != nil {
+					t.Errorf("failed to write bye: %v", lerr)
+				}
 				break
 			}
 			if strings.HasPrefix(line, "DATA") {
-				_ = writer.PrintfLine("354 Start mail input; end with <CRLF>.<CRLF>")
-				_, _ = reader.ReadDotBytes()
-				_ = writer.PrintfLine("250 OK")
+				if lerr := writer.PrintfLine("354 Start mail input; end with <CRLF>.<CRLF>"); lerr != nil {
+					t.Errorf("failed to write data response: %v", lerr)
+					return
+				}
+				if _, rerr := reader.ReadDotBytes(); rerr != nil {
+					t.Errorf("failed to read data dot bytes: %v", rerr)
+					return
+				}
+				if lerr := writer.PrintfLine("250 OK"); lerr != nil {
+					t.Errorf("failed to write data 250 ok: %v", lerr)
+					return
+				}
 				continue
 			}
-			_ = writer.PrintfLine("250 OK")
+			if lerr := writer.PrintfLine("250 OK"); lerr != nil {
+				t.Errorf("failed to write default 250 ok: %v", lerr)
+				return
+			}
 		}
 	}()
 
-	m, _ := NewSMTPMailer("127.0.0.1", port, "", "", "no-reply@moolah.io")
+	m, err := NewSMTPMailer("127.0.0.1", port, "", "", "no-reply@moolah.io")
+	require.NoError(t, err)
 	err = m.SendOTP(context.Background(), "user@example.com", "123456")
 	assert.NoError(t, err)
 }

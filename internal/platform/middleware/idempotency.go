@@ -3,6 +3,7 @@ package middleware
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
@@ -59,14 +60,20 @@ func Idempotency(store IdempotencyStore) func(http.Handler) http.Handler {
 			clientKey := r.Header.Get(idempotencyHeader)
 			if clientKey == "" {
 				w.WriteHeader(http.StatusBadRequest)
-				_, _ = w.Write([]byte(`{"error": "missing_idempotency_key"}`))
+				err := json.NewEncoder(w).Encode(map[string]string{"error": "missing_idempotency_key"})
+				if err != nil {
+					http.Error(w, "failed to encode error response", http.StatusInternalServerError)
+				}
 				return
 			}
 
 			// Validate key length to prevent abuse
 			if len(clientKey) > 128 {
 				w.WriteHeader(http.StatusBadRequest)
-				_, _ = w.Write([]byte(`{"error": "invalid_idempotency_key"}`))
+				err := json.NewEncoder(w).Encode(map[string]string{"error": "invalid_idempotency_key"})
+				if err != nil {
+					http.Error(w, "failed to encode error response", http.StatusInternalServerError)
+				}
 				return
 			}
 
@@ -92,7 +99,12 @@ func Idempotency(store IdempotencyStore) func(http.Handler) http.Handler {
 				w.WriteHeader(cached.StatusCode)
 				// gosec G705: This is a cached response from our own store, not raw user input.
 				/* #nosec G705 */
-				_, _ = w.Write(cached.Body)
+				_, err = w.Write(cached.Body)
+				if err != nil {
+					// We can't use http.Error here because we already sent w.WriteHeader
+					// but we also can't just ignore it.
+					return
+				}
 				return
 			}
 
@@ -105,7 +117,10 @@ func Idempotency(store IdempotencyStore) func(http.Handler) http.Handler {
 
 			if !ok {
 				w.WriteHeader(http.StatusConflict)
-				_, _ = w.Write([]byte(`{"error": "idempotency_key_in_flight"}`))
+				err := json.NewEncoder(w).Encode(map[string]string{"error": "idempotency_key_in_flight"})
+				if err != nil {
+					http.Error(w, "failed to encode error response", http.StatusInternalServerError)
+				}
 				return
 			}
 
@@ -120,10 +135,14 @@ func Idempotency(store IdempotencyStore) func(http.Handler) http.Handler {
 
 			// 4. Cache only successful/client error responses (exclude 5xx)
 			if rec.statusCode < http.StatusInternalServerError {
-				_ = store.SetResponse(r.Context(), redisKey, CachedResponse{
+				err := store.SetResponse(r.Context(), redisKey, CachedResponse{
 					StatusCode: rec.statusCode,
 					Body:       rec.body.Bytes(),
 				}, idempotencyTTL)
+				if err != nil {
+					// We log it and continue. In production you'd use a real logger.
+					fmt.Printf("idempotency: failed to set response: %v\n", err)
+				}
 			}
 		})
 	}
