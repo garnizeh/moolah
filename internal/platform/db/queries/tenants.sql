@@ -22,3 +22,9 @@ RETURNING id, name, plan, created_at, updated_at, deleted_at;
 UPDATE tenants
 SET deleted_at = NOW()
 WHERE id = $1 AND deleted_at IS NULL;
+
+-- name: ListTenants :many
+SELECT id, name, plan, created_at, updated_at, deleted_at
+FROM tenants
+WHERE deleted_at IS NULL
+ORDER BY name ASC;

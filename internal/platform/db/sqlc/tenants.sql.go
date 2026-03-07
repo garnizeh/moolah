@@ -57,6 +57,40 @@ func (q *Queries) GetTenantByID(ctx context.Context, id string) (Tenant, error) 
 	return i, err
 }
 
+const listTenants = `-- name: ListTenants :many
+SELECT id, name, plan, created_at, updated_at, deleted_at
+FROM tenants
+WHERE deleted_at IS NULL
+ORDER BY name ASC
+`
+
+func (q *Queries) ListTenants(ctx context.Context) ([]Tenant, error) {
+	rows, err := q.db.Query(ctx, listTenants)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Tenant{}
+	for rows.Next() {
+		var i Tenant
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Plan,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const softDeleteTenant = `-- name: SoftDeleteTenant :exec
 UPDATE tenants
 SET deleted_at = NOW()

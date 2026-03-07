@@ -30,6 +30,7 @@ type Querier interface {
 	ListCategoriesByTenant(ctx context.Context, tenantID string) ([]Category, error)
 	ListChildCategories(ctx context.Context, arg ListChildCategoriesParams) ([]Category, error)
 	ListRootCategoriesByTenant(ctx context.Context, tenantID string) ([]Category, error)
+	ListTenants(ctx context.Context) ([]Tenant, error)
 	// One query with optional filters using COALESCE or IS NULL pattern
 	ListTransactionsByTenant(ctx context.Context, arg ListTransactionsByTenantParams) ([]Transaction, error)
 	ListUsersByTenant(ctx context.Context, tenantID string) ([]User, error)
