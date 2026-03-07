@@ -1,7 +1,7 @@
-# Task 1.1.5 — pkg/otputil: Cryptographically Secure 6-Digit OTP
+# Task 1.1.5 — pkg/otp: Cryptographically Secure 6-Digit OTP
 
 > **Roadmap Ref:** Phase 1 — MVP: Core Finance › 1.1 Infrastructure & Platform
-> **Status:** 🔵 `backlog`
+> **Status:** ✅ `done`
 > **Last Updated:** 2026-03-07
 > **Assignee:** —
 > **Estimated Effort:** S
@@ -10,7 +10,7 @@
 
 ## 1. Summary
 
-Implement a `pkg/otputil` package that generates a cryptographically secure 6-digit one-time password and returns its bcrypt hash for storage. A companion `Verify` function checks a plain-text candidate against the stored hash. The plain-text code is never persisted — only the hash reaches the database (`otp_requests.code_hash`).
+Implement a `pkg/otp` package that generates a cryptographically secure 6-digit one-time password and returns its bcrypt hash for storage. A companion `Verify` function checks a plain-text candidate against the stored hash. The plain-text code is never persisted — only the hash reaches the database (`otp_requests.code_hash`).
 
 ---
 
@@ -28,9 +28,9 @@ Email + OTP is the sole authentication strategy (no passwords). The 6-digit code
 
 ### In scope
 
-- [ ] `pkg/otputil/otp.go` — `Generate() (plain, hash string, err error)` and `Verify(plain, hash string) bool`
-- [ ] `pkg/otputil/otp_test.go` — generation uniqueness, format, and verify correctness tests
-- [ ] bcrypt cost constant = 12 (good default for 2026 hardware; adjustable via a package-level constant)
+- [x] `pkg/otp/otp.go` — `Generate() (plain, hash string, err error)` and `Verify(plain, hash string) bool`
+- [x] `pkg/otp/otp_test.go` — generation uniqueness, format, and verify correctness tests
+- [x] bcrypt cost constant = 12 (good default for 2026 hardware; adjustable via a package-level constant)
 
 ### Out of scope
 
@@ -46,14 +46,14 @@ Email + OTP is the sole authentication strategy (no passwords). The 6-digit code
 
 | Action | Path                         | Purpose                              |
 | ------ | ---------------------------- | ------------------------------------ |
-| CREATE | `pkg/otputil/otp.go`         | Generate + Verify functions          |
-| CREATE | `pkg/otputil/otp_test.go`    | Unit tests                           |
+| CREATE | `pkg/otp/otp.go`             | Generate + Verify functions          |
+| CREATE | `pkg/otp/otp_test.go`        | Unit tests                           |
 
 ### Key interfaces / types
 
 ```go
-// pkg/otputil/otp.go
-package otputil
+// pkg/otp/otp.go
+package otp
 
 import (
     "crypto/rand"
@@ -73,12 +73,12 @@ func Generate() (plain, hash string, err error) {
     max := big.NewInt(1_000_000)
     n, err := rand.Int(rand.Reader, max)
     if err != nil {
-        return "", "", fmt.Errorf("otputil: generate: %w", err)
+        return "", "", fmt.Errorf("otp: generate: %w", err)
     }
     plain = fmt.Sprintf("%06d", n.Int64())
     b, err := bcrypt.GenerateFromPassword([]byte(plain), bcryptCost)
     if err != nil {
-        return "", "", fmt.Errorf("otputil: hash: %w", err)
+        return "", "", fmt.Errorf("otp: hash: %w", err)
     }
     return plain, string(b), nil
 }
@@ -109,15 +109,15 @@ N/A
 
 ## 5. Acceptance Criteria
 
-- [ ] `Generate()` returns a 6-character string containing only decimal digits `[0-9]`.
-- [ ] Leading zeros are preserved (e.g., `"007432"`).
-- [ ] 1 000 consecutive calls produce no duplicates (statistical sanity check).
-- [ ] `Verify(plain, hash)` returns `true` when plain is the code used to produce hash.
-- [ ] `Verify("wrong", hash)` returns `false`.
-- [ ] Test coverage for `pkg/otputil` = 100%.
-- [ ] `golangci-lint run ./pkg/otputil/...` passes with zero issues.
-- [ ] `gosec ./pkg/otputil/...` passes with zero issues.
-- [ ] `docs/ROADMAP.md` row 1.1.5 updated to ✅ `done`.
+- [x] `Generate()` returns a 6-character string containing only decimal digits `[0-9]`.
+- [x] Leading zeros are preserved (e.g., `"007432"`).
+- [x] 1 000 consecutive calls produce no duplicates (statistical sanity check).
+- [x] `Verify(plain, hash)` returns `true` when plain is the code used to produce hash.
+- [x] `Verify("wrong", hash)` returns `false`.
+- [x] Test coverage for `pkg/otp` = 100%.
+- [x] `golangci-lint run ./pkg/otp/...` passes with zero issues.
+- [x] `gosec ./pkg/otp/...` passes with zero issues.
+- [x] `docs/ROADMAP.md` row 1.1.5 updated to ✅ `done`.
 
 ---
 
@@ -132,7 +132,7 @@ N/A
 
 ## 7. Testing Plan
 
-### Unit tests (`pkg/otputil/otp_test.go`, no build tag)
+### Unit tests (`pkg/otp/otp_test.go`, no build tag)
 
 - **Format:** assert returned `plain` matches `^[0-9]{6}$`.
 - **Leading zeros:** generate 10 000 codes; assert at least one starts with `"0"` (probabilistic).

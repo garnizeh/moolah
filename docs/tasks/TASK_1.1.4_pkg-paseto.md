@@ -1,4 +1,4 @@
-# Task 1.1.4 — pkg/pasetoutils: PASETO v4 Local Token Seal/Parse
+# Task 1.1.4 — pkg/paseto: PASETO v4 Local Token Seal/Parse
 
 > **Roadmap Ref:** Phase 1 — MVP: Core Finance › 1.1 Infrastructure & Platform
 > **Status:** 🔵 `backlog`
@@ -10,7 +10,7 @@
 
 ## 1. Summary
 
-Implement a `pkg/pasetoutils` package that wraps PASETO v4 local (symmetric) token creation and verification. The package exposes typed `Claims`, a `Seal` function (issues a token), and a `Parse` function (validates and extracts claims). Consumed by the auth service (issue tokens) and the auth middleware (validate tokens on every protected request).
+Implement a `pkg/paseto` package that wraps PASETO v4 local (symmetric) token creation and verification. The package exposes typed `Claims`, a `Seal` function (issues a token), and a `Parse` function (validates and extracts claims). Consumed by the auth service (issue tokens) and the auth middleware (validate tokens on every protected request).
 
 ---
 
@@ -27,8 +27,8 @@ The project uses PASETO v4 local tokens instead of JWT. PASETO v4 local uses `XC
 
 ### In scope
 
-- [ ] `pkg/pasetoutils/paseto.go` — `Claims` struct, `Seal`, `Parse`
-- [ ] `pkg/pasetoutils/paseto_test.go` — round-trip, expiry, tamper, wrong-key tests
+- [ ] `pkg/paseto/paseto.go` — `Claims` struct, `Seal`, `Parse`
+- [ ] `pkg/paseto/paseto_test.go` — round-trip, expiry, tamper, wrong-key tests
 - [ ] Claims carry: `TenantID`, `UserID`, `Role`, `IssuedAt`, `ExpiresAt`
 
 ### Out of scope
@@ -45,14 +45,14 @@ The project uses PASETO v4 local tokens instead of JWT. PASETO v4 local uses `XC
 
 | Action | Path                              | Purpose                              |
 | ------ | --------------------------------- | ------------------------------------ |
-| CREATE | `pkg/pasetoutils/paseto.go`       | Seal, Parse, Claims types            |
-| CREATE | `pkg/pasetoutils/paseto_test.go`  | Unit tests for all token scenarios   |
+| CREATE | `pkg/paseto/paseto.go`       | Seal, Parse, Claims types            |
+| CREATE | `pkg/paseto/paseto_test.go`  | Unit tests for all token scenarios   |
 
 ### Key interfaces / types
 
 ```go
-// pkg/pasetoutils/paseto.go
-package pasetoutils
+// pkg/paseto/paseto.go
+package paseto
 
 import (
     "errors"
@@ -62,10 +62,10 @@ import (
 )
 
 // ErrTokenExpired is returned when a valid token is past its expiry time.
-var ErrTokenExpired = errors.New("pasetoutils: token expired")
+var ErrTokenExpired = errors.New("paseto: token expired")
 
 // ErrTokenInvalid is returned when the token cannot be decrypted or parsed.
-var ErrTokenInvalid = errors.New("pasetoutils: token invalid")
+var ErrTokenInvalid = errors.New("paseto: token invalid")
 
 // Claims holds the application-specific payload embedded in the token.
 type Claims struct {
@@ -110,9 +110,9 @@ N/A
 - [ ] `Parse` returns `ErrTokenInvalid` when decrypting with a different key.
 - [ ] `Parse` returns `ErrTokenInvalid` for a randomly modified token string.
 - [ ] `Claims` fields `TenantID`, `UserID`, `Role` survive the round-trip unchanged.
-- [ ] Test coverage for `pkg/pasetoutils` = 100%.
-- [ ] `golangci-lint run ./pkg/pasetoutils/...` passes with zero issues.
-- [ ] `gosec ./pkg/pasetoutils/...` passes with zero issues.
+- [ ] Test coverage for `pkg/paseto` = 100%.
+- [ ] `golangci-lint run ./pkg/paseto/...` passes with zero issues.
+- [ ] `gosec ./pkg/paseto/...` passes with zero issues.
 - [ ] `docs/ROADMAP.md` row 1.1.4 updated to ✅ `done`.
 
 ---
@@ -128,7 +128,7 @@ N/A
 
 ## 7. Testing Plan
 
-### Unit tests (`pkg/pasetoutils/paseto_test.go`, no build tag)
+### Unit tests (`pkg/paseto/paseto_test.go`, no build tag)
 
 - **Round-trip:** seal with TTL=1h; parse immediately; assert all claims fields equal.
 - **Expired:** seal with TTL=-1s (already expired); parse; assert `errors.Is(err, ErrTokenExpired)`.
