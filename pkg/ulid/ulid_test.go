@@ -9,12 +9,16 @@ import (
 )
 
 func TestNew(t *testing.T) {
+	t.Parallel()
+
 	t.Run("returns valid format", func(t *testing.T) {
+		t.Parallel()
 		id := New()
 		assert.Len(t, id, 26, "ULID should be 26 characters")
 	})
 
 	t.Run("produces unique values", func(t *testing.T) {
+		t.Parallel()
 		const count = 1000
 		ids := make(map[string]struct{}, count)
 		for i := 0; i < count; i++ {
@@ -27,6 +31,7 @@ func TestNew(t *testing.T) {
 	})
 
 	t.Run("is monotonic within same millisecond", func(t *testing.T) {
+		t.Parallel()
 		const count = 100
 		ids := make([]string, count)
 		for i := 0; i < count; i++ {
@@ -37,6 +42,7 @@ func TestNew(t *testing.T) {
 	})
 
 	t.Run("is thread-safe with race detector", func(t *testing.T) {
+		t.Parallel()
 		const count = 100
 		const goroutines = 20
 		var wg sync.WaitGroup

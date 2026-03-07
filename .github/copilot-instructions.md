@@ -99,6 +99,7 @@ Follow this directory layout strictly when suggesting new files:
 - **Every section of the template must be filled in** — do not omit or collapse sections; use `N/A` only when a section genuinely does not apply.
 - The task document must be created **before any implementation begins** for that task.
 - **Acceptance Criteria** must be checked off (✅) as each criterion is met; the doc is the single source of truth for task completion.
+- **TASK COMPLETION MANDATORY RULE:** NEVER report a task as "done" or update the roadmap status to ✅ `done` until all acceptance criteria are met AND the `make task-check` command passes in the terminal. **If the command fails, the agent MUST resolve all errors (linting, tests, security, etc.) and run it again until it passes before proceeding.**
 - **After the task is done**, update both the task document (`Status: ✅ done`, Change Log entry) and the corresponding row in `docs/ROADMAP.md`.
 
 ---

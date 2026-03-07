@@ -17,7 +17,7 @@ formatters:
     generated: strict
     warn-unused: true
     paths:
-      - docs/swagger
+      - api
       - internal/platform/db/sqlc
 
 linters:
@@ -62,7 +62,7 @@ linters:
       - legacy
       - std-error-handling
     paths:
-      - docs/swagger
+      - api
       - internal/platform/db/sqlc
     rules:
       - path: _test\.go

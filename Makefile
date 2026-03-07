@@ -1,4 +1,4 @@
-.PHONY: all build run test lint generate migrate-up migrate-down clean help
+.PHONY: all build run test lint generate migrate-up migrate-down clean help task-check
 
 # Configuration
 BINARY_NAME=moolah-api
@@ -9,6 +9,49 @@ OUT_DIR=bin
 GO=go
 
 all: lint generate test build
+
+## task-check: Run all checks required before completing a task (Linter, SQLC, Security, Unit Tests with Coverage)
+task-check: lint-check sqlc-check security-check test-coverage
+
+## lint-check: Run golangci-lint
+lint-check:
+	@echo "🔍 Running linter..."
+	golangci-lint run ./...
+
+## sqlc-check: Verify if sqlc generate is up to date
+sqlc-check:
+	@echo "⚙️ Checking sqlc generation..."
+	@if [ -n "$$(ls internal/platform/db/queries/*.sql 2>/dev/null)" ]; then \
+		sqlc generate; \
+		if [ -n "$$(git diff --name-only internal/platform/db/sqlc/)" ]; then \
+			echo "❌ Error: sqlc generated code is out of date. Commit the changes."; \
+			exit 1; \
+		fi; \
+		echo "✅ sqlc is up to date."; \
+	else \
+		echo "⏭️ No SQL queries found in internal/platform/db/queries/. Skipping sqlc generate."; \
+	fi
+
+## security-check: Run security scans (govulncheck and gosec)
+security-check:
+	@echo "🛡️ Running security scans..."
+	@go install golang.org/x/vuln/cmd/govulncheck@latest
+	@govulncheck ./...
+	@go install github.com/securego/gosec/v2/cmd/gosec@latest
+	@gosec ./...
+
+## test-coverage: Run unit tests and enforce coverage (80% threshold)
+test-coverage:
+	@echo "🧪 Running unit tests with coverage..."
+	@$(GO) test -v -race -count=1 -coverprofile=coverage.out -covermode=atomic $$(go list ./... | grep -v /platform/db/sqlc)
+	@COVERAGE=$$(go tool cover -func=coverage.out | grep total | awk '{print $$3}' | tr -d '%'); \
+	echo "Total coverage: $${COVERAGE}%"; \
+	awk "BEGIN { if ($${COVERAGE} < 80) exit 1 }"; \
+	if [ $$? -ne 0 ]; then \
+		echo "❌ ERROR: Coverage $${COVERAGE}% is below the 80% threshold"; \
+		exit 1; \
+	fi
+	@echo "✅ Tests passed with sufficient coverage."
 
 ## build: Build the API binary
 build:
