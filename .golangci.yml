@@ -20,22 +20,6 @@ run:
   # Default: true
   tests: true
 
-  # List of build tags, all linters use it.
-  # Default: []
-  # build-tags:
-  #   - mytag
-
-  # Which dirs to skip.
-  # Default: [vendor$, third_party$, testdata$, examples$, Godeps$, builtin$]
-  # skip-dirs:
-  #   - test/testdata_etc
-
-  # Which files to skip.
-  # Default: []
-  # skip-files:
-  #   - ".*\.pb\.go$"
-  #   - ".*\.gen\.go$"
-
   # If set, we pass it to "go list -mod={option}".
   # Allowed values: readonly|vendor|mod
   # Default: ""
@@ -52,16 +36,17 @@ run:
 output:
   # The formats used to render issues.
   formats:
-    - format: colored-line-number
+    text:
+      # Use colors.
+      # Default: true
+      colors: true
+      # Print linter name in the end of issue text.
+      # Default: true
+      print-linter-name: true
+      # Print lines of code with issue.
+      # Default: true
+      print-issued-lines: true
   
-  # Print lines of code with issue.
-  # Default: true
-  print-issued-lines: true
-
-  # Print linter name in the end of issue text.
-  # Default: true
-  print-linter-name: true
-
   # Make issues output unique by line.
   # Default: true
   uniq-by-line: true
