@@ -1,5 +1,8 @@
 # Moolah — Household Finance & Investment SaaS
 
+[![Go Version](https://img.shields.io/badge/Go-1.26.1-00ADD8?logo=go&logoColor=white)](https://go.dev/dl/)
+[![Coverage](https://codecov.io/gh/garnizeh/moolah/branch/main/graph/badge.svg)](https://codecov.io/gh/garnizeh/moolah)
+
 Moolah is a multi-tenant personal finance application built with Go, focusing on simplicity, scalability, and financial integrity. It helps households manage their accounts payable, cash flow, credit card installments, and investment portfolios.
 
 ## 🚀 Technical Stack
