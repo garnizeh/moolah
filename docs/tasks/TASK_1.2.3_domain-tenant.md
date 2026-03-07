@@ -1,7 +1,7 @@
 # Task 1.2.3 — Domain Tenant Entity & Repository Interface
 
 > **Roadmap Ref:** Phase 1 — MVP › 1.2 Domain Layer
-> **Status:** 🔵 `backlog`
+> **Status:** ✅ `done`
 > **Last Updated:** 2026-03-07
 > **Assignee:** —
 > **Estimated Effort:** M
@@ -24,10 +24,10 @@ The `Tenant` represents a household — the root multi-tenancy entity. Every oth
 
 ### In scope
 
-- [ ] `Tenant` struct with all business-relevant fields.
-- [ ] `CreateTenantInput` and `UpdateTenantInput` value objects.
-- [ ] `TenantRepository` interface covering CRUD operations.
-- [ ] Unit tests for any helper methods on `Tenant`.
+- [x] `Tenant` struct with all business-relevant fields.
+- [x] `CreateTenantInput` and `UpdateTenantInput` value objects.
+- [x] `TenantRepository` interface covering CRUD operations.
+- [x] Unit tests for any helper methods on `Tenant`.
 
 ### Out of scope
 
@@ -59,12 +59,12 @@ const (
 
 // Tenant is the root multi-tenancy entity (a household).
 type Tenant struct {
-    ID        string
-    Name      string
-    Plan      TenantPlan
     CreatedAt time.Time
     UpdatedAt time.Time
     DeletedAt *time.Time
+    ID        string
+    Name      string
+    Plan      TenantPlan
 }
 
 type CreateTenantInput struct {
@@ -107,12 +107,12 @@ N/A — endpoints are registered in Task 1.5.5.
 
 ## 5. Acceptance Criteria
 
-- [ ] All exported types and functions have Go doc comments.
-- [ ] `TenantRepository` interface is defined in `internal/domain/tenant.go`.
-- [ ] `Tenant` struct uses `time.Time` (not `pgtype.Timestamptz`) for clean domain isolation.
-- [ ] `golangci-lint run ./...` passes with zero issues.
-- [ ] `gosec ./...` passes with zero issues.
-- [ ] `docs/ROADMAP.md` row updated to ✅ `done`.
+- [x] All exported types and functions have Go doc comments.
+- [x] `TenantRepository` interface is defined in `internal/domain/tenant.go`.
+- [x] `Tenant` struct uses `time.Time` (not `pgtype.Timestamptz`) for clean domain isolation.
+- [x] `golangci-lint run ./...` passes with zero issues.
+- [x] `gosec ./...` passes with zero issues.
+- [x] `docs/ROADMAP.md` row updated to ✅ `done`.
 
 ---
 
@@ -120,7 +120,7 @@ N/A — endpoints are registered in Task 1.5.5.
 
 | Dependency                       | Type     | Status     |
 | -------------------------------- | -------- | ---------- |
-| Task 1.2.1 — `domain/errors.go`  | Upstream | 🔵 backlog |
+| Task 1.2.1 — `domain/errors.go`  | Upstream | ✅ done |
 
 ---
 
@@ -148,4 +148,6 @@ N/A — endpoints are registered in Task 1.5.5.
 
 | Date       | Author | Change                    |
 | ---------- | ------ | ------------------------- |
+| 2026-03-07 | Agent  | Created entity and repo interface. Applied fieldalignment fix. |
+
 | 2026-03-07 | —      | Task created from roadmap |
