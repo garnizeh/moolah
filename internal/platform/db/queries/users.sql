@@ -13,7 +13,7 @@ WHERE tenant_id = $1 AND id = $2 AND deleted_at IS NULL;
 -- name: GetUserByEmail :one
 SELECT id, tenant_id, email, name, role, last_login_at, created_at, updated_at, deleted_at
 FROM users
-WHERE tenant_id = $1 AND email = $2 AND deleted_at IS NULL;
+WHERE email = $1 AND deleted_at IS NULL;
 
 -- name: ListUsersByTenant :many
 SELECT id, tenant_id, email, name, role, last_login_at, created_at, updated_at, deleted_at
@@ -34,7 +34,7 @@ RETURNING id, tenant_id, email, name, role, last_login_at, created_at, updated_a
 UPDATE users
 SET last_login_at = NOW(),
     updated_at = NOW()
-WHERE tenant_id = $1 AND id = $2 AND deleted_at IS NULL;
+WHERE id = $1 AND deleted_at IS NULL;
 
 -- name: SoftDeleteUser :exec
 UPDATE users

@@ -51,9 +51,7 @@ func (r *userRepo) GetByID(ctx context.Context, tenantID, id string) (*domain.Us
 
 // GetByEmail retrieves a user by their unique email across all tenants.
 func (r *userRepo) GetByEmail(ctx context.Context, email string) (*domain.User, error) {
-	u, err := r.q.GetUserByEmail(ctx, sqlc.GetUserByEmailParams{
-		Email: email,
-	})
+	u, err := r.q.GetUserByEmail(ctx, email)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get user by email: %w", TranslateError(err))
 	}
@@ -110,9 +108,7 @@ func (r *userRepo) Update(ctx context.Context, tenantID, id string, input domain
 
 // UpdateLastLogin updates the login timestamp for a user.
 func (r *userRepo) UpdateLastLogin(ctx context.Context, id string) error {
-	err := r.q.UpdateUserLastLogin(ctx, sqlc.UpdateUserLastLoginParams{
-		ID: id,
-	})
+	err := r.q.UpdateUserLastLogin(ctx, id)
 	if err != nil {
 		return fmt.Errorf("failed to update user last login: %w", TranslateError(err))
 	}

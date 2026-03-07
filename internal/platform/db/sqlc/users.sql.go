@@ -51,16 +51,11 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 const getUserByEmail = `-- name: GetUserByEmail :one
 SELECT id, tenant_id, email, name, role, last_login_at, created_at, updated_at, deleted_at
 FROM users
-WHERE tenant_id = $1 AND email = $2 AND deleted_at IS NULL
+WHERE email = $1 AND deleted_at IS NULL
 `
 
-type GetUserByEmailParams struct {
-	TenantID string `json:"tenant_id"`
-	Email    string `json:"email"`
-}
-
-func (q *Queries) GetUserByEmail(ctx context.Context, arg GetUserByEmailParams) (User, error) {
-	row := q.db.QueryRow(ctx, getUserByEmail, arg.TenantID, arg.Email)
+func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error) {
+	row := q.db.QueryRow(ctx, getUserByEmail, email)
 	var i User
 	err := row.Scan(
 		&i.ID,
@@ -202,15 +197,10 @@ const updateUserLastLogin = `-- name: UpdateUserLastLogin :exec
 UPDATE users
 SET last_login_at = NOW(),
     updated_at = NOW()
-WHERE tenant_id = $1 AND id = $2 AND deleted_at IS NULL
+WHERE id = $1 AND deleted_at IS NULL
 `
 
-type UpdateUserLastLoginParams struct {
-	TenantID string `json:"tenant_id"`
-	ID       string `json:"id"`
-}
-
-func (q *Queries) UpdateUserLastLogin(ctx context.Context, arg UpdateUserLastLoginParams) error {
-	_, err := q.db.Exec(ctx, updateUserLastLogin, arg.TenantID, arg.ID)
+func (q *Queries) UpdateUserLastLogin(ctx context.Context, id string) error {
+	_, err := q.db.Exec(ctx, updateUserLastLogin, id)
 	return err
 }

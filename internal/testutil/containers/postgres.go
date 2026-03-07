@@ -4,6 +4,7 @@ package containers
 
 import (
 	"context"
+	"sync"
 	"testing"
 	"time"
 
@@ -24,6 +25,8 @@ type TestPostgresDB struct {
 	Pool    *pgxpool.Pool
 	Queries *sqlc.Queries
 }
+
+var gooseMigrationMu sync.Mutex
 
 // NewPostgresDB starts an ephemeral PostgreSQL container, applies migrations,
 // and returns a connected TestPostgresDB. Container and pool are cleaned up when t
@@ -63,13 +66,15 @@ func NewPostgresDB(t *testing.T) *TestPostgresDB {
 	dbConfig := config.ConnConfig.Copy()
 	sqlDB := stdlib.OpenDB(*dbConfig)
 
-	// Run migrations using the standard sqlDB
+	// Goose keeps migration configuration in package-level state, so running
+	// setup concurrently across integration suites triggers race detector failures.
+	gooseMigrationMu.Lock()
 	goose.SetBaseFS(migrations.FS)
 	err = goose.SetDialect("postgres")
-	require.NoError(t, err, "failed to set goose dialect")
-
-	// Run the migration up to the latest version
-	err = goose.Up(sqlDB, ".")
+	if err == nil {
+		err = goose.Up(sqlDB, ".")
+	}
+	gooseMigrationMu.Unlock()
 	require.NoError(t, err, "failed to run migrations")
 
 	// Close the stdlib bridge

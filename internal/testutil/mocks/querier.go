@@ -198,8 +198,8 @@ func (m *Querier) GetTransactionByID(ctx context.Context, arg sqlc.GetTransactio
 	return r0, args.Error(1) //nolint:wrapcheck
 }
 
-func (m *Querier) GetUserByEmail(ctx context.Context, arg sqlc.GetUserByEmailParams) (sqlc.User, error) {
-	args := m.Called(ctx, arg)
+func (m *Querier) GetUserByEmail(ctx context.Context, email string) (sqlc.User, error) {
+	args := m.Called(ctx, email)
 	var r0 sqlc.User
 	if rf, ok := args.Get(0).(sqlc.User); ok {
 		r0 = rf
@@ -377,7 +377,7 @@ func (m *Querier) UpdateUser(ctx context.Context, arg sqlc.UpdateUserParams) (sq
 	return r0, args.Error(1) //nolint:wrapcheck
 }
 
-func (m *Querier) UpdateUserLastLogin(ctx context.Context, arg sqlc.UpdateUserLastLoginParams) error {
-	args := m.Called(ctx, arg)
+func (m *Querier) UpdateUserLastLogin(ctx context.Context, id string) error {
+	args := m.Called(ctx, id)
 	return args.Error(0) //nolint:wrapcheck
 }

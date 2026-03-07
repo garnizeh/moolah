@@ -146,7 +146,7 @@ func TestUserRepo_GetByEmail(t *testing.T) {
 		mockQuerier := new(mocks.Querier)
 		repo := NewUserRepository(mockQuerier)
 
-		mockQuerier.On("GetUserByEmail", ctx, sqlc.GetUserByEmailParams{Email: email}).Return(sqlc.User{
+		mockQuerier.On("GetUserByEmail", ctx, email).Return(sqlc.User{
 			ID:    "U1",
 			Email: email,
 		}, nil)
@@ -347,7 +347,7 @@ func TestUserRepo_UpdateLastLogin(t *testing.T) {
 		mockQuerier := new(mocks.Querier)
 		repo := NewUserRepository(mockQuerier)
 
-		mockQuerier.On("UpdateUserLastLogin", ctx, sqlc.UpdateUserLastLoginParams{ID: id}).Return(nil)
+		mockQuerier.On("UpdateUserLastLogin", ctx, id).Return(nil)
 
 		err := repo.UpdateLastLogin(ctx, id)
 

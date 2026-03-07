@@ -74,9 +74,12 @@ func TestUserRepo_Integration(t *testing.T) {
 
 	t.Run("GetByEmail", func(t *testing.T) {
 		t.Parallel()
+		isolationTenant, err := tenantRepo.Create(ctx, domain.CreateTenantInput{Name: "GetEmail T"})
+		require.NoError(t, err)
+
 		email := "byemail@example.com"
 		user, err := userRepo.Create(ctx, domain.CreateUserInput{
-			TenantID: tenant.ID,
+			TenantID: isolationTenant.ID,
 			Email:    email,
 			Name:     "Email User",
 			Role:     domain.RoleMember,
@@ -162,8 +165,11 @@ func TestUserRepo_Integration(t *testing.T) {
 
 	t.Run("UpdateLastLogin", func(t *testing.T) {
 		t.Parallel()
+		isolationTenant, err := tenantRepo.Create(ctx, domain.CreateTenantInput{Name: "UpdateLogin T"})
+		require.NoError(t, err)
+
 		user, err := userRepo.Create(ctx, domain.CreateUserInput{
-			TenantID: tenant.ID,
+			TenantID: isolationTenant.ID,
 			Email:    "login@example.com",
 			Name:     "Login User",
 			Role:     domain.RoleMember,

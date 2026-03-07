@@ -101,6 +101,10 @@ func TestAdminRepo_Integration(t *testing.T) {
 		require.True(t, foundU1)
 		require.True(t, foundU2)
 
+		// 2. HardDelete User 2
+		err = adminUserRepo.ForceDelete(ctx, u2.ID)
+		require.NoError(t, err)
+
 		allAfter, err := adminUserRepo.ListAll(ctx)
 		require.NoError(t, err)
 		for _, u := range allAfter {

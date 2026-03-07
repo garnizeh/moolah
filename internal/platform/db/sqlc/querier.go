@@ -32,7 +32,7 @@ type Querier interface {
 	GetCategoryByID(ctx context.Context, arg GetCategoryByIDParams) (Category, error)
 	GetTenantByID(ctx context.Context, id string) (Tenant, error)
 	GetTransactionByID(ctx context.Context, arg GetTransactionByIDParams) (Transaction, error)
-	GetUserByEmail(ctx context.Context, arg GetUserByEmailParams) (User, error)
+	GetUserByEmail(ctx context.Context, email string) (User, error)
 	GetUserByID(ctx context.Context, arg GetUserByIDParams) (User, error)
 	ListAccountsByTenant(ctx context.Context, tenantID string) ([]Account, error)
 	ListAccountsByUser(ctx context.Context, arg ListAccountsByUserParams) ([]Account, error)
@@ -55,7 +55,7 @@ type Querier interface {
 	UpdateTenant(ctx context.Context, arg UpdateTenantParams) (Tenant, error)
 	UpdateTransaction(ctx context.Context, arg UpdateTransactionParams) (Transaction, error)
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)
-	UpdateUserLastLogin(ctx context.Context, arg UpdateUserLastLoginParams) error
+	UpdateUserLastLogin(ctx context.Context, id string) error
 }
 
 var _ Querier = (*Queries)(nil)

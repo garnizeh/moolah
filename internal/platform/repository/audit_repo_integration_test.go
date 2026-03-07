@@ -55,11 +55,14 @@ func TestAuditRepo_Integration(t *testing.T) {
 
 	t.Run("ListByTenant Isolation", func(t *testing.T) {
 		t.Parallel()
+		isolationTenant, err := tenantRepo.Create(ctx, domain.CreateTenantInput{Name: "Isolation T"})
+		require.NoError(t, err)
+
 		otherTenant, err := tenantRepo.Create(ctx, domain.CreateTenantInput{Name: "Other T"})
 		require.NoError(t, err)
 
 		input := domain.CreateAuditLogInput{
-			TenantID:   tenant.ID,
+			TenantID:   isolationTenant.ID,
 			ActorID:    "actor-1",
 			ActorRole:  domain.RoleAdmin,
 			Action:     domain.AuditActionCreate,
@@ -70,7 +73,7 @@ func TestAuditRepo_Integration(t *testing.T) {
 		require.NoError(t, err)
 
 		// List for correct tenant
-		logs, err := repo.ListByTenant(ctx, tenant.ID, domain.ListAuditLogsParams{})
+		logs, err := repo.ListByTenant(ctx, isolationTenant.ID, domain.ListAuditLogsParams{})
 		require.NoError(t, err)
 		require.NotEmpty(t, logs)
 

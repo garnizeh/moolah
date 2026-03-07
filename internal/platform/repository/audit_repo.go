@@ -60,6 +60,11 @@ func (r *auditRepo) Create(ctx context.Context, input domain.CreateAuditLogInput
 
 // ListByTenant returns audit logs for a specific tenant with optional filters.
 func (r *auditRepo) ListByTenant(ctx context.Context, tenantID string, params domain.ListAuditLogsParams) ([]domain.AuditLog, error) {
+	limit := params.Limit
+	if limit <= 0 {
+		limit = 100
+	}
+
 	// Note: Currently sqlc query ListAuditLogsByTenant only takes tenant_id, skip filters for Phase 1
 	// if the sqlc query doesn't support them yet. However, TASK_1.3.7 says "ListByTenant applies all ListAuditLogsParams filters".
 	// Looking at sqlc code, it only has TenantID, OffsetOff, LimitOff.
@@ -68,7 +73,7 @@ func (r *auditRepo) ListByTenant(ctx context.Context, tenantID string, params do
 	arg := sqlc.ListAuditLogsByTenantParams{
 		TenantID:  tenantID,
 		OffsetOff: params.Offset,
-		LimitOff:  params.Limit,
+		LimitOff:  limit,
 	}
 
 	rows, err := r.q.ListAuditLogsByTenant(ctx, arg)
