@@ -25,6 +25,7 @@ type Querier interface {
 	GetUserByEmail(ctx context.Context, arg GetUserByEmailParams) (User, error)
 	GetUserByID(ctx context.Context, arg GetUserByIDParams) (User, error)
 	ListAccountsByTenant(ctx context.Context, tenantID string) ([]Account, error)
+	ListAccountsByUser(ctx context.Context, arg ListAccountsByUserParams) ([]Account, error)
 	ListAuditLogsByEntity(ctx context.Context, arg ListAuditLogsByEntityParams) ([]AuditLog, error)
 	ListAuditLogsByTenant(ctx context.Context, arg ListAuditLogsByTenantParams) ([]AuditLog, error)
 	ListCategoriesByTenant(ctx context.Context, tenantID string) ([]Category, error)

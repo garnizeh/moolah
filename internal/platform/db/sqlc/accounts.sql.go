@@ -120,6 +120,49 @@ func (q *Queries) ListAccountsByTenant(ctx context.Context, tenantID string) ([]
 	return items, nil
 }
 
+const listAccountsByUser = `-- name: ListAccountsByUser :many
+SELECT id, tenant_id, user_id, name, type, currency, balance_cents, created_at, updated_at, deleted_at
+FROM accounts
+WHERE tenant_id = $1 AND user_id = $2 AND deleted_at IS NULL
+ORDER BY name ASC
+`
+
+type ListAccountsByUserParams struct {
+	TenantID string `json:"tenant_id"`
+	UserID   string `json:"user_id"`
+}
+
+func (q *Queries) ListAccountsByUser(ctx context.Context, arg ListAccountsByUserParams) ([]Account, error) {
+	rows, err := q.db.Query(ctx, listAccountsByUser, arg.TenantID, arg.UserID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Account{}
+	for rows.Next() {
+		var i Account
+		if err := rows.Scan(
+			&i.ID,
+			&i.TenantID,
+			&i.UserID,
+			&i.Name,
+			&i.Type,
+			&i.Currency,
+			&i.BalanceCents,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const softDeleteAccount = `-- name: SoftDeleteAccount :exec
 UPDATE accounts
 SET deleted_at = NOW()

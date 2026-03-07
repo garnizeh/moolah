@@ -143,6 +143,14 @@ func (m *Querier) ListAccountsByTenant(ctx context.Context, tenantID string) ([]
 	return args.Get(0).([]sqlc.Account), nil
 }
 
+func (m *Querier) ListAccountsByUser(ctx context.Context, arg sqlc.ListAccountsByUserParams) ([]sqlc.Account, error) {
+	args := m.Called(ctx, arg)
+	if err := args.Error(1); err != nil {
+		return nil, fmt.Errorf("mock querier ListAccountsByUser: %w", err)
+	}
+	return args.Get(0).([]sqlc.Account), nil
+}
+
 func (m *Querier) ListAuditLogsByEntity(ctx context.Context, arg sqlc.ListAuditLogsByEntityParams) ([]sqlc.AuditLog, error) {
 	args := m.Called(ctx, arg)
 	if err := args.Error(1); err != nil {

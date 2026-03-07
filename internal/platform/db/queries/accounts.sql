@@ -16,6 +16,12 @@ FROM accounts
 WHERE tenant_id = $1 AND deleted_at IS NULL
 ORDER BY name ASC;
 
+-- name: ListAccountsByUser :many
+SELECT id, tenant_id, user_id, name, type, currency, balance_cents, created_at, updated_at, deleted_at
+FROM accounts
+WHERE tenant_id = $1 AND user_id = $2 AND deleted_at IS NULL
+ORDER BY name ASC;
+
 -- name: UpdateAccount :one
 UPDATE accounts
 SET name = $3,
