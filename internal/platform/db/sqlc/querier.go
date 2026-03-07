@@ -40,10 +40,8 @@ type Querier interface {
 	ListAuditLogsByTenant(ctx context.Context, arg ListAuditLogsByTenantParams) ([]AuditLog, error)
 	ListCategoriesByTenant(ctx context.Context, tenantID string) ([]Category, error)
 	ListChildCategories(ctx context.Context, arg ListChildCategoriesParams) ([]Category, error)
-	ListRootCategoriesByTenant(ctx context.Context, tenantID string) ([]Category, error)
 	ListTenants(ctx context.Context) ([]Tenant, error)
-	// One query with optional filters using COALESCE or IS NULL pattern
-	ListTransactionsByTenant(ctx context.Context, arg ListTransactionsByTenantParams) ([]Transaction, error)
+	ListTransactionsByTenant(ctx context.Context, tenantID string) ([]Transaction, error)
 	ListUsersByTenant(ctx context.Context, tenantID string) ([]User, error)
 	MarkOTPUsed(ctx context.Context, id string) error
 	SoftDeleteAccount(ctx context.Context, arg SoftDeleteAccountParams) error

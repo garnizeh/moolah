@@ -136,7 +136,7 @@ func TestAuditRepo_ListByTenant(t *testing.T) {
 		mockQuerier := new(mocks.Querier)
 		repo := NewAuditRepository(mockQuerier)
 
-		mockQuerier.On("ListAuditLogsByTenant", ctx, mock.Anything).Return(nil, errors.New("db error"))
+		mockQuerier.On("ListAuditLogsByTenant", ctx, mock.Anything).Return(([]sqlc.AuditLog)(nil), errors.New("db error"))
 
 		logs, err := repo.ListByTenant(ctx, tenantID, domain.ListAuditLogsParams{})
 		require.Error(t, err)
@@ -175,7 +175,7 @@ func TestAuditRepo_ListByEntity(t *testing.T) {
 		mockQuerier := new(mocks.Querier)
 		repo := NewAuditRepository(mockQuerier)
 
-		mockQuerier.On("ListAuditLogsByEntity", ctx, mock.Anything).Return(nil, errors.New("db error"))
+		mockQuerier.On("ListAuditLogsByEntity", ctx, mock.Anything).Return(([]sqlc.AuditLog)(nil), errors.New("db error"))
 
 		logs, err := repo.ListByEntity(ctx, tenantID, "account", entityID)
 		require.Error(t, err)
@@ -187,7 +187,7 @@ func TestAuditRepo_ListByEntity(t *testing.T) {
 		mockQuerier := new(mocks.Querier)
 		repo := NewAuditRepository(mockQuerier)
 
-		mockQuerier.On("ListAuditLogsByEntity", ctx, mock.Anything).Return(nil, pgx.ErrNoRows)
+		mockQuerier.On("ListAuditLogsByEntity", ctx, mock.Anything).Return(([]sqlc.AuditLog)(nil), pgx.ErrNoRows)
 
 		logs, err := repo.ListByEntity(ctx, tenantID, "account", entityID)
 		require.ErrorIs(t, err, domain.ErrNotFound)

@@ -40,6 +40,7 @@ type CreateTransactionInput struct {
 	OccurredAt       time.Time       `validate:"required"`
 	AccountID        string          `validate:"required"`
 	CategoryID       string          `validate:"required"`
+	UserID           string          `validate:"required"`
 	Description      string          `validate:"required,min=1,max=255"`
 	MasterPurchaseID string          `validate:"omitempty"`
 	Type             TransactionType `validate:"required,oneof=income expense transfer"`

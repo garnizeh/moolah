@@ -8,7 +8,8 @@ CREATE TABLE tenants (
     updated_at TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
     deleted_at TIMESTAMPTZ,
 
-    CONSTRAINT pk_tenants PRIMARY KEY (id)
+    CONSTRAINT pk_tenants PRIMARY KEY (id),
+    CONSTRAINT uk_tenants_name UNIQUE (name)
 );
 -- +goose StatementEnd
 

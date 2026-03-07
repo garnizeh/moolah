@@ -14,8 +14,8 @@ import (
 const createTransaction = `-- name: CreateTransaction :one
 INSERT INTO transactions (
     id, tenant_id, account_id, category_id, user_id, 
-    master_purchase_id, description, amount_cents, type, 
-    occurred_at, created_at, updated_at
+    master_purchase_id, description, amount_cents, type, occurred_at, 
+    created_at, updated_at
 ) VALUES (
     $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW(), NOW()
 ) RETURNING id, tenant_id, account_id, category_id, user_id, master_purchase_id, description, amount_cents, type, occurred_at, created_at, updated_at, deleted_at
@@ -67,8 +67,7 @@ func (q *Queries) CreateTransaction(ctx context.Context, arg CreateTransactionPa
 }
 
 const getTransactionByID = `-- name: GetTransactionByID :one
-SELECT id, tenant_id, account_id, category_id, user_id, master_purchase_id, description, amount_cents, type, occurred_at, created_at, updated_at, deleted_at
-FROM transactions
+SELECT id, tenant_id, account_id, category_id, user_id, master_purchase_id, description, amount_cents, type, occurred_at, created_at, updated_at, deleted_at FROM transactions
 WHERE tenant_id = $1 AND id = $2 AND deleted_at IS NULL
 `
 
@@ -99,39 +98,13 @@ func (q *Queries) GetTransactionByID(ctx context.Context, arg GetTransactionByID
 }
 
 const listTransactionsByTenant = `-- name: ListTransactionsByTenant :many
-SELECT id, tenant_id, account_id, category_id, user_id, master_purchase_id, description, amount_cents, type, occurred_at, created_at, updated_at, deleted_at
-FROM transactions
-WHERE tenant_id = $1 
-    AND ($2::CHAR(26) IS NULL OR account_id = $2)
-    AND ($3::CHAR(26) IS NULL OR category_id = $3)
-    AND ($4::TIMESTAMPTZ IS NULL OR occurred_at >= $4)
-    AND ($5::TIMESTAMPTZ IS NULL OR occurred_at <= $5)
-    AND deleted_at IS NULL
+SELECT id, tenant_id, account_id, category_id, user_id, master_purchase_id, description, amount_cents, type, occurred_at, created_at, updated_at, deleted_at FROM transactions
+WHERE tenant_id = $1 AND deleted_at IS NULL
 ORDER BY occurred_at DESC
-LIMIT $7 OFFSET $6
 `
 
-type ListTransactionsByTenantParams struct {
-	TenantID   string             `json:"tenant_id"`
-	AccountID  pgtype.Text        `json:"account_id"`
-	CategoryID pgtype.Text        `json:"category_id"`
-	StartDate  pgtype.Timestamptz `json:"start_date"`
-	EndDate    pgtype.Timestamptz `json:"end_date"`
-	OffsetOff  int32              `json:"offset_off"`
-	LimitOff   int32              `json:"limit_off"`
-}
-
-// One query with optional filters using COALESCE or IS NULL pattern
-func (q *Queries) ListTransactionsByTenant(ctx context.Context, arg ListTransactionsByTenantParams) ([]Transaction, error) {
-	rows, err := q.db.Query(ctx, listTransactionsByTenant,
-		arg.TenantID,
-		arg.AccountID,
-		arg.CategoryID,
-		arg.StartDate,
-		arg.EndDate,
-		arg.OffsetOff,
-		arg.LimitOff,
-	)
+func (q *Queries) ListTransactionsByTenant(ctx context.Context, tenantID string) ([]Transaction, error) {
+	rows, err := q.db.Query(ctx, listTransactionsByTenant, tenantID)
 	if err != nil {
 		return nil, err
 	}
@@ -167,7 +140,7 @@ func (q *Queries) ListTransactionsByTenant(ctx context.Context, arg ListTransact
 const softDeleteTransaction = `-- name: SoftDeleteTransaction :exec
 UPDATE transactions
 SET deleted_at = NOW()
-WHERE tenant_id = $1 AND id = $2 AND deleted_at IS NULL
+WHERE tenant_id = $1 AND id = $2
 `
 
 type SoftDeleteTransactionParams struct {
@@ -182,28 +155,27 @@ func (q *Queries) SoftDeleteTransaction(ctx context.Context, arg SoftDeleteTrans
 
 const updateTransaction = `-- name: UpdateTransaction :one
 UPDATE transactions
-SET account_id = $3,
+SET 
+    account_id = $3,
     category_id = $4,
     description = $5,
     amount_cents = $6,
     type = $7,
     occurred_at = $8,
-    master_purchase_id = $9,
     updated_at = NOW()
 WHERE tenant_id = $1 AND id = $2 AND deleted_at IS NULL
 RETURNING id, tenant_id, account_id, category_id, user_id, master_purchase_id, description, amount_cents, type, occurred_at, created_at, updated_at, deleted_at
 `
 
 type UpdateTransactionParams struct {
-	TenantID         string             `json:"tenant_id"`
-	ID               string             `json:"id"`
-	AccountID        string             `json:"account_id"`
-	CategoryID       string             `json:"category_id"`
-	Description      string             `json:"description"`
-	AmountCents      int64              `json:"amount_cents"`
-	Type             TransactionType    `json:"type"`
-	OccurredAt       pgtype.Timestamptz `json:"occurred_at"`
-	MasterPurchaseID pgtype.Text        `json:"master_purchase_id"`
+	TenantID    string             `json:"tenant_id"`
+	ID          string             `json:"id"`
+	AccountID   string             `json:"account_id"`
+	CategoryID  string             `json:"category_id"`
+	Description string             `json:"description"`
+	AmountCents int64              `json:"amount_cents"`
+	Type        TransactionType    `json:"type"`
+	OccurredAt  pgtype.Timestamptz `json:"occurred_at"`
 }
 
 func (q *Queries) UpdateTransaction(ctx context.Context, arg UpdateTransactionParams) (Transaction, error) {
@@ -216,7 +188,6 @@ func (q *Queries) UpdateTransaction(ctx context.Context, arg UpdateTransactionPa
 		arg.AmountCents,
 		arg.Type,
 		arg.OccurredAt,
-		arg.MasterPurchaseID,
 	)
 	var i Transaction
 	err := row.Scan(

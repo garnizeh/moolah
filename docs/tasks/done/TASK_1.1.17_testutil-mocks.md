@@ -49,7 +49,7 @@ Required by: Tasks 1.4.x (service layer unit tests), 1.5.x (handler unit tests).
   - Compile-time check: `var _ domain.Mailer = (*MockMailer)(nil)`
 - [ ] Update `internal/platform/db/sqlc/mock_querier.go` — replace with a compile-time re-export or remove and update all import sites
 - [ ] Update `internal/platform/middleware/idempotency_test.go` — remove the inline `MockIdempotencyStore` definition, import from `testutil/mocks` instead
-- [ ] Update all existing repository tests that import `sqlc.MockQuerier` to use `mocks.MockQuerier`
+- [ ] Update all existing repository tests that import `sqlc.MockQuerier` to use `mocks.Querier`
 - [ ] No build tags on any file in this package
 
 ### Out of scope
@@ -68,7 +68,7 @@ Required by: Tasks 1.4.x (service layer unit tests), 1.5.x (handler unit tests).
 | CREATE | `internal/testutil/mocks/mock_querier.go` | MockQuerier — implements `sqlc.Querier` |
 | CREATE | `internal/testutil/mocks/mock_idempotency_store.go` | MockIdempotencyStore — implements `middleware.IdempotencyStore` |
 | CREATE | `internal/testutil/mocks/mock_mailer.go` | MockMailer — implements `domain.Mailer` |
-| MODIFY | `internal/platform/db/sqlc/mock_querier.go` | Replace body with type alias pointing to `mocks.MockQuerier`, or delete and fix imports |
+| MODIFY | `internal/platform/db/sqlc/mock_querier.go` | Replace body with type alias pointing to `mocks.Querier`, or delete and fix imports |
 | MODIFY | `internal/platform/middleware/idempotency_test.go` | Remove inline `MockIdempotencyStore` definition; import `mocks` instead |
 | MODIFY | `internal/platform/repository/*_test.go` | Update import from `sqlc` package to `mocks` package for `MockQuerier` |
 
@@ -179,7 +179,7 @@ N/A — mock files contain no business logic.
 - [ ] `internal/testutil/mocks/mock_mailer.go` exists; `MockMailer` implements `domain.Mailer` (compile-time check passes).
 - [ ] No file in `internal/testutil/mocks/` carries a `//go:build` tag.
 - [ ] `internal/platform/middleware/idempotency_test.go` no longer defines `MockIdempotencyStore` inline — it imports from `testutil/mocks`.
-- [ ] All repository `_test.go` files that previously referenced `sqlc.MockQuerier` now reference `mocks.MockQuerier`.
+- [ ] All repository `_test.go` files that previously referenced `sqlc.MockQuerier` now reference `mocks.Querier`.
 - [ ] `go test ./...` (unit tests, no integration tag) passes with zero failures.
 - [ ] `golangci-lint run ./internal/testutil/mocks/...` passes with zero issues.
 - [ ] All exported types and functions have Go doc comments.

@@ -93,7 +93,7 @@
 | 1.3.6 | `repository/transaction_repo.go` | ✅ `done` | 2026-03-07 | 100% coverage |
 | 1.3.7 | `repository/audit_repo.go` | ✅ `done` | 2026-03-07 | |
 | 1.3.8 | `repository/admin_repo.go` | ✅ `done` | 2026-03-07 | |
-| 1.3.9 | Integration tests for all repositories (testcontainers-go) | 🔵 `backlog` | 2026-03-06 | `//go:build integration` tag |
+| 1.3.9 | Integration tests for all repositories (testcontainers-go) | � `in-progress` | 2026-03-07 | `//go:build integration` tag |
 
 ### 1.4 Service Layer
 

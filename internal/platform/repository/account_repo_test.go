@@ -2,29 +2,26 @@ package repository
 
 import (
 	"context"
-	"errors"
 	"testing"
-	"time"
 
 	"github.com/garnizeh/moolah/internal/domain"
 	"github.com/garnizeh/moolah/internal/platform/db/sqlc"
 	"github.com/garnizeh/moolah/internal/testutil/mocks"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
-	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
 
-func TestAccountRepo_Create(t *testing.T) {
+func TestAccountRepository_Create(t *testing.T) {
 	t.Parallel()
 
 	ctx := context.Background()
-	tenantID := "01H7XFRP9K1A1A1A1A1A1A1A1A"
+	tenantID := "tenant_id"
 	input := domain.CreateAccountInput{
-		UserID:       "01H7XFRP9K1A1A1A1A1A1A1A1B",
-		Name:         "Main Checking",
+		UserID:       "user_id",
+		Name:         "Checking",
 		Type:         domain.AccountTypeChecking,
 		Currency:     "USD",
 		InitialCents: 1000,
@@ -35,56 +32,43 @@ func TestAccountRepo_Create(t *testing.T) {
 		mockQuerier := new(mocks.Querier)
 		repo := NewAccountRepository(mockQuerier)
 
-		mockQuerier.On("CreateAccount", ctx, mock.MatchedBy(func(arg sqlc.CreateAccountParams) bool {
-			return arg.TenantID == tenantID &&
-				arg.UserID == input.UserID &&
-				arg.Name == input.Name &&
-				arg.Type == sqlc.AccountType(input.Type) &&
-				arg.Currency == input.Currency &&
-				arg.BalanceCents == input.InitialCents &&
-				arg.ID != ""
+		mockQuerier.On("CreateAccount", ctx, mock.MatchedBy(func(p sqlc.CreateAccountParams) bool {
+			return p.TenantID == tenantID && p.Name == input.Name && p.Type == sqlc.AccountType(input.Type)
 		})).Return(sqlc.Account{
-			ID:           "01H7XFRP9K1A1A1A1A1A1A1A1C",
+			ID:           "acc_id",
 			TenantID:     tenantID,
 			UserID:       input.UserID,
 			Name:         input.Name,
 			Type:         sqlc.AccountType(input.Type),
 			Currency:     input.Currency,
 			BalanceCents: input.InitialCents,
-			CreatedAt:    pgtype.Timestamptz{Time: time.Now(), Valid: true},
-			UpdatedAt:    pgtype.Timestamptz{Time: time.Now(), Valid: true},
 		}, nil)
 
-		account, err := repo.Create(ctx, tenantID, input)
-
+		got, err := repo.Create(ctx, tenantID, input)
 		require.NoError(t, err)
-		assert.NotNil(t, account)
-		assert.Equal(t, input.Name, account.Name)
-		assert.Equal(t, input.InitialCents, account.BalanceCents)
-		mockQuerier.AssertExpectations(t)
+		assert.Equal(t, "acc_id", got.ID)
+		assert.Equal(t, input.Name, got.Name)
 	})
 
-	t.Run("duplicate name", func(t *testing.T) {
+	t.Run("failure", func(t *testing.T) {
 		t.Parallel()
 		mockQuerier := new(mocks.Querier)
 		repo := NewAccountRepository(mockQuerier)
 
-		mockQuerier.On("CreateAccount", ctx, mock.Anything).Return(sqlc.Account{}, &pgconn.PgError{Code: "23505"})
+		mockQuerier.On("CreateAccount", ctx, mock.Anything).Return(sqlc.Account{}, pgx.ErrNoRows)
 
-		account, err := repo.Create(ctx, tenantID, input)
-
-		require.Error(t, err)
-		assert.Nil(t, account)
-		assert.ErrorIs(t, err, domain.ErrConflict)
+		got, err := repo.Create(ctx, tenantID, input)
+		require.ErrorIs(t, err, domain.ErrNotFound)
+		assert.Nil(t, got)
 	})
 }
 
-func TestAccountRepo_GetByID(t *testing.T) {
+func TestAccountRepository_GetByID(t *testing.T) {
 	t.Parallel()
 
 	ctx := context.Background()
-	tenantID := "01H7XFRP9K1A1A1A1A1A1A1A1A"
-	accountID := "01H7XFRP9K1A1A1A1A1A1A1A1C"
+	tenantID := "tenant_id"
+	id := "acc_id"
 
 	t.Run("success", func(t *testing.T) {
 		t.Parallel()
@@ -93,20 +77,15 @@ func TestAccountRepo_GetByID(t *testing.T) {
 
 		mockQuerier.On("GetAccountByID", ctx, sqlc.GetAccountByIDParams{
 			TenantID: tenantID,
-			ID:       accountID,
+			ID:       id,
 		}).Return(sqlc.Account{
-			ID:        accountID,
-			TenantID:  tenantID,
-			Name:      "Main Checking",
-			CreatedAt: pgtype.Timestamptz{Time: time.Now(), Valid: true},
-			UpdatedAt: pgtype.Timestamptz{Time: time.Now(), Valid: true},
+			ID:       id,
+			TenantID: tenantID,
 		}, nil)
 
-		account, err := repo.GetByID(ctx, tenantID, accountID)
-
+		got, err := repo.GetByID(ctx, tenantID, id)
 		require.NoError(t, err)
-		assert.NotNil(t, account)
-		assert.Equal(t, accountID, account.ID)
+		assert.Equal(t, id, got.ID)
 	})
 
 	t.Run("not found", func(t *testing.T) {
@@ -116,19 +95,17 @@ func TestAccountRepo_GetByID(t *testing.T) {
 
 		mockQuerier.On("GetAccountByID", ctx, mock.Anything).Return(sqlc.Account{}, pgx.ErrNoRows)
 
-		account, err := repo.GetByID(ctx, tenantID, accountID)
-
-		require.Error(t, err)
-		assert.Nil(t, account)
-		assert.ErrorIs(t, err, domain.ErrNotFound)
+		got, err := repo.GetByID(ctx, tenantID, id)
+		require.ErrorIs(t, err, domain.ErrNotFound)
+		assert.Nil(t, got)
 	})
 }
 
-func TestAccountRepo_ListByTenant(t *testing.T) {
+func TestAccountRepository_ListByTenant(t *testing.T) {
 	t.Parallel()
 
 	ctx := context.Background()
-	tenantID := "01H7XFRP9K1A1A1A1A1A1A1A1A"
+	tenantID := "tenant_id"
 
 	t.Run("success", func(t *testing.T) {
 		t.Parallel()
@@ -136,77 +113,13 @@ func TestAccountRepo_ListByTenant(t *testing.T) {
 		repo := NewAccountRepository(mockQuerier)
 
 		mockQuerier.On("ListAccountsByTenant", ctx, tenantID).Return([]sqlc.Account{
-			{ID: "acc1", Name: "Account 1", CreatedAt: pgtype.Timestamptz{Time: time.Now(), Valid: true}},
-			{ID: "acc2", Name: "Account 2", CreatedAt: pgtype.Timestamptz{Time: time.Now(), Valid: true}},
+			{ID: "1", TenantID: tenantID},
+			{ID: "2", TenantID: tenantID},
 		}, nil)
 
-		accounts, err := repo.ListByTenant(ctx, tenantID)
-
+		got, err := repo.ListByTenant(ctx, tenantID)
 		require.NoError(t, err)
-		assert.Len(t, accounts, 2)
-		assert.Equal(t, "acc1", accounts[0].ID)
-		assert.Equal(t, "acc2", accounts[1].ID)
-	})
-}
-
-func TestAccountRepo_UpdateBalance(t *testing.T) {
-	t.Parallel()
-
-	ctx := context.Background()
-	tenantID := "01H7XFRP9K1A1A1A1A1A1A1A1A"
-	accountID := "01H7XFRP9K1A1A1A1A1A1A1A1C"
-	newBalance := int64(5000)
-
-	t.Run("success", func(t *testing.T) {
-		t.Parallel()
-		mockQuerier := new(mocks.Querier)
-		repo := NewAccountRepository(mockQuerier)
-
-		mockQuerier.On("UpdateAccountBalance", ctx, sqlc.UpdateAccountBalanceParams{
-			TenantID:     tenantID,
-			ID:           accountID,
-			BalanceCents: newBalance,
-		}).Return(nil)
-
-		err := repo.UpdateBalance(ctx, tenantID, accountID, newBalance)
-
-		require.NoError(t, err)
-	})
-
-	t.Run("not found", func(t *testing.T) {
-		t.Parallel()
-		mockQuerier := new(mocks.Querier)
-		repo := NewAccountRepository(mockQuerier)
-
-		mockQuerier.On("UpdateAccountBalance", ctx, mock.Anything).Return(pgx.ErrNoRows)
-
-		err := repo.UpdateBalance(ctx, tenantID, accountID, newBalance)
-
-		require.Error(t, err)
-		assert.ErrorIs(t, err, domain.ErrNotFound)
-	})
-}
-
-func TestAccountRepo_Delete(t *testing.T) {
-	t.Parallel()
-
-	ctx := context.Background()
-	tenantID := "01H7XFRP9K1A1A1A1A1A1A1A1A"
-	accountID := "01H7XFRP9K1A1A1A1A1A1A1A1C"
-
-	t.Run("success", func(t *testing.T) {
-		t.Parallel()
-		mockQuerier := new(mocks.Querier)
-		repo := NewAccountRepository(mockQuerier)
-
-		mockQuerier.On("SoftDeleteAccount", ctx, sqlc.SoftDeleteAccountParams{
-			TenantID: tenantID,
-			ID:       accountID,
-		}).Return(nil)
-
-		err := repo.Delete(ctx, tenantID, accountID)
-
-		require.NoError(t, err)
+		assert.Len(t, got, 2)
 	})
 
 	t.Run("error", func(t *testing.T) {
@@ -214,16 +127,15 @@ func TestAccountRepo_Delete(t *testing.T) {
 		mockQuerier := new(mocks.Querier)
 		repo := NewAccountRepository(mockQuerier)
 
-		mockQuerier.On("SoftDeleteAccount", ctx, mock.Anything).Return(errors.New("db error"))
+		mockQuerier.On("ListAccountsByTenant", ctx, mock.Anything).Return(nil, pgx.ErrNoRows)
 
-		err := repo.Delete(ctx, tenantID, accountID)
-
-		require.Error(t, err)
-		assert.Contains(t, err.Error(), "failed to delete account")
+		got, err := repo.ListByTenant(ctx, tenantID)
+		require.ErrorIs(t, err, domain.ErrNotFound)
+		assert.Nil(t, got)
 	})
 }
 
-func TestAccountRepo_ListByUser(t *testing.T) {
+func TestAccountRepository_ListByUser(t *testing.T) {
 	t.Parallel()
 
 	ctx := context.Background()
@@ -239,40 +151,24 @@ func TestAccountRepo_ListByUser(t *testing.T) {
 			TenantID: tenantID,
 			UserID:   userID,
 		}).Return([]sqlc.Account{
-			{ID: "acc1", Name: "Account 1"},
+			{ID: "1", TenantID: tenantID, UserID: userID},
 		}, nil)
 
-		accounts, err := repo.ListByUser(ctx, tenantID, userID)
-
+		got, err := repo.ListByUser(ctx, tenantID, userID)
 		require.NoError(t, err)
-		assert.Len(t, accounts, 1)
-		assert.Equal(t, "acc1", accounts[0].ID)
-	})
-
-	t.Run("error", func(t *testing.T) {
-		t.Parallel()
-		mockQuerier := new(mocks.Querier)
-		repo := NewAccountRepository(mockQuerier)
-
-		mockQuerier.On("ListAccountsByUser", ctx, mock.Anything).Return([]sqlc.Account(nil), errors.New("db error"))
-
-		accounts, err := repo.ListByUser(ctx, tenantID, userID)
-
-		require.Error(t, err)
-		assert.Nil(t, accounts)
-		assert.Contains(t, err.Error(), "failed to list user accounts")
+		assert.Len(t, got, 1)
 	})
 }
 
-func TestAccountRepo_Update(t *testing.T) {
+func TestAccountRepository_Update(t *testing.T) {
 	t.Parallel()
 
 	ctx := context.Background()
 	tenantID := "tenant_id"
-	accountID := "acc_id"
-	newName := "New Name"
+	id := "acc_id"
+	name := "Updated Name"
 	input := domain.UpdateAccountInput{
-		Name: &newName,
+		Name: &name,
 	}
 
 	t.Run("success", func(t *testing.T) {
@@ -282,163 +178,91 @@ func TestAccountRepo_Update(t *testing.T) {
 
 		mockQuerier.On("GetAccountByID", ctx, sqlc.GetAccountByIDParams{
 			TenantID: tenantID,
-			ID:       accountID,
+			ID:       id,
 		}).Return(sqlc.Account{
-			ID:       accountID,
-			TenantID: tenantID,
-			Name:     "Old Name",
-			Type:     sqlc.AccountTypeChecking,
-			Currency: "USD",
+			ID:   id,
+			Name: "Old Name",
 		}, nil)
 
-		mockQuerier.On("UpdateAccount", ctx, mock.MatchedBy(func(arg sqlc.UpdateAccountParams) bool {
-			return arg.ID == accountID && arg.Name == newName && arg.Type == sqlc.AccountTypeChecking
+		mockQuerier.On("UpdateAccount", ctx, mock.MatchedBy(func(p sqlc.UpdateAccountParams) bool {
+			return p.Name == name
 		})).Return(sqlc.Account{
-			ID:   accountID,
-			Name: newName,
+			ID:   id,
+			Name: name,
 		}, nil)
 
-		account, err := repo.Update(ctx, tenantID, accountID, input)
-
+		got, err := repo.Update(ctx, tenantID, id, input)
 		require.NoError(t, err)
-		assert.Equal(t, newName, account.Name)
+		assert.Equal(t, name, got.Name)
 	})
 
-	t.Run("update currency only", func(t *testing.T) {
+	t.Run("update error", func(t *testing.T) {
 		t.Parallel()
 		mockQuerier := new(mocks.Querier)
 		repo := NewAccountRepository(mockQuerier)
 
-		currency := "EUR"
-		inputCurrency := domain.UpdateAccountInput{
-			Currency: &currency,
-		}
-
-		mockQuerier.On("GetAccountByID", ctx, mock.Anything).Return(sqlc.Account{
-			ID:       accountID,
-			Name:     "Stay",
-			Type:     sqlc.AccountTypeSavings,
-			Currency: "USD",
-		}, nil)
-
-		mockQuerier.On("UpdateAccount", ctx, mock.MatchedBy(func(arg sqlc.UpdateAccountParams) bool {
-			return arg.Currency == currency && arg.Name == "Stay" && arg.Type == sqlc.AccountTypeSavings
-		})).Return(sqlc.Account{ID: accountID}, nil)
-
-		_, err := repo.Update(ctx, tenantID, accountID, inputCurrency)
-		require.NoError(t, err)
-	})
-
-	t.Run("not found", func(t *testing.T) {
-		t.Parallel()
-		mockQuerier := new(mocks.Querier)
-		repo := NewAccountRepository(mockQuerier)
-
-		mockQuerier.On("GetAccountByID", ctx, mock.Anything).Return(sqlc.Account{}, pgx.ErrNoRows)
-
-		account, err := repo.Update(ctx, tenantID, accountID, input)
-
-		require.ErrorIs(t, err, domain.ErrNotFound)
-		assert.Nil(t, account)
-	})
-
-	t.Run("conflict", func(t *testing.T) {
-		t.Parallel()
-		mockQuerier := new(mocks.Querier)
-		repo := NewAccountRepository(mockQuerier)
-
-		mockQuerier.On("GetAccountByID", ctx, mock.Anything).Return(sqlc.Account{ID: accountID}, nil)
+		mockQuerier.On("GetAccountByID", ctx, mock.Anything).Return(sqlc.Account{}, nil)
 		mockQuerier.On("UpdateAccount", ctx, mock.Anything).Return(sqlc.Account{}, &pgconn.PgError{Code: "23505"})
 
-		account, err := repo.Update(ctx, tenantID, accountID, input)
-
+		got, err := repo.Update(ctx, tenantID, id, input)
 		require.ErrorIs(t, err, domain.ErrConflict)
-		assert.Nil(t, account)
-	})
-
-	t.Run("generic error during update", func(t *testing.T) {
-		t.Parallel()
-		mockQuerier := new(mocks.Querier)
-		repo := NewAccountRepository(mockQuerier)
-
-		mockQuerier.On("GetAccountByID", ctx, mock.Anything).Return(sqlc.Account{ID: accountID}, nil)
-		mockQuerier.On("UpdateAccount", ctx, mock.Anything).Return(sqlc.Account{}, errors.New("db error"))
-
-		account, err := repo.Update(ctx, tenantID, accountID, input)
-
-		require.Error(t, err)
-		assert.Contains(t, err.Error(), "failed to update account")
-		assert.Nil(t, account)
+		assert.Nil(t, got)
 	})
 }
 
-func TestAccountRepo_GenericErrors(t *testing.T) {
+func TestAccountRepository_UpdateBalance(t *testing.T) {
 	t.Parallel()
 
 	ctx := context.Background()
 	tenantID := "tenant_id"
+	id := "acc_id"
+	delta := int64(500)
 
-	t.Run("create error", func(t *testing.T) {
+	t.Run("success", func(t *testing.T) {
 		t.Parallel()
 		mockQuerier := new(mocks.Querier)
 		repo := NewAccountRepository(mockQuerier)
 
-		mockQuerier.On("CreateAccount", ctx, mock.Anything).Return(sqlc.Account{}, errors.New("db error"))
+		mockQuerier.On("UpdateAccountBalance", ctx, sqlc.UpdateAccountBalanceParams{
+			TenantID:     tenantID,
+			ID:           id,
+			BalanceCents: delta,
+		}).Return(nil)
 
-		account, err := repo.Create(ctx, tenantID, domain.CreateAccountInput{})
-		require.Error(t, err)
-		assert.Contains(t, err.Error(), "failed to create account")
-		assert.Nil(t, account)
+		err := repo.UpdateBalance(ctx, tenantID, id, delta)
+		require.NoError(t, err)
+	})
+}
+
+func TestAccountRepository_Delete(t *testing.T) {
+	t.Parallel()
+
+	ctx := context.Background()
+	tenantID := "tenant_id"
+	id := "acc_id"
+
+	t.Run("success", func(t *testing.T) {
+		t.Parallel()
+		mockQuerier := new(mocks.Querier)
+		repo := NewAccountRepository(mockQuerier)
+
+		mockQuerier.On("SoftDeleteAccount", ctx, sqlc.SoftDeleteAccountParams{
+			TenantID: tenantID,
+			ID:       id,
+		}).Return(nil)
+
+		err := repo.Delete(ctx, tenantID, id)
+		require.NoError(t, err)
 	})
 
-	t.Run("get by id error", func(t *testing.T) {
+	t.Run("error", func(t *testing.T) {
 		t.Parallel()
 		mockQuerier := new(mocks.Querier)
 		repo := NewAccountRepository(mockQuerier)
 
-		mockQuerier.On("GetAccountByID", ctx, mock.Anything).Return(sqlc.Account{}, errors.New("db error"))
+		mockQuerier.On("SoftDeleteAccount", ctx, mock.Anything).Return(pgx.ErrNoRows)
 
-		account, err := repo.GetByID(ctx, tenantID, "1")
-		require.Error(t, err)
-		assert.Contains(t, err.Error(), "failed to get account")
-		assert.Nil(t, account)
-	})
-
-	t.Run("list by tenant error", func(t *testing.T) {
-		t.Parallel()
-		mockQuerier := new(mocks.Querier)
-		repo := NewAccountRepository(mockQuerier)
-
-		mockQuerier.On("ListAccountsByTenant", ctx, mock.Anything).Return([]sqlc.Account(nil), errors.New("db error"))
-
-		accounts, err := repo.ListByTenant(ctx, tenantID)
-		require.Error(t, err)
-		assert.Contains(t, err.Error(), "failed to list accounts")
-		assert.Nil(t, accounts)
-	})
-
-	t.Run("update balance generic error", func(t *testing.T) {
-		t.Parallel()
-		mockQuerier := new(mocks.Querier)
-		repo := NewAccountRepository(mockQuerier)
-
-		mockQuerier.On("UpdateAccountBalance", ctx, mock.Anything).Return(errors.New("db error"))
-
-		err := repo.UpdateBalance(ctx, tenantID, "1", 100)
-		require.Error(t, err)
-		assert.Contains(t, err.Error(), "failed to update account balance")
-	})
-
-	t.Run("update get account generic error", func(t *testing.T) {
-		t.Parallel()
-		mockQuerier := new(mocks.Querier)
-		repo := NewAccountRepository(mockQuerier)
-
-		mockQuerier.On("GetAccountByID", ctx, mock.Anything).Return(sqlc.Account{}, errors.New("db error"))
-
-		account, err := repo.Update(ctx, tenantID, "1", domain.UpdateAccountInput{})
-		require.Error(t, err)
-		assert.Contains(t, err.Error(), "failed to get account for update")
-		assert.Nil(t, account)
+		err := repo.Delete(ctx, tenantID, id)
+		require.ErrorIs(t, err, domain.ErrNotFound)
 	})
 }

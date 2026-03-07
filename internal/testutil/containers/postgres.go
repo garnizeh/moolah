@@ -4,14 +4,18 @@ package containers
 
 import (
 	"context"
-	"path/filepath"
-	"runtime"
 	"testing"
+	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/jackc/pgx/v5/stdlib"
+	"github.com/pressly/goose/v3"
 	"github.com/stretchr/testify/require"
+	"github.com/testcontainers/testcontainers-go"
 	tcpostgres "github.com/testcontainers/testcontainers-go/modules/postgres"
+	"github.com/testcontainers/testcontainers-go/wait"
 
+	"github.com/garnizeh/moolah/internal/platform/db/migrations"
 	"github.com/garnizeh/moolah/internal/platform/db/sqlc"
 )
 
@@ -21,33 +25,58 @@ type TestPostgresDB struct {
 	Queries *sqlc.Queries
 }
 
-// NewPostgresDB starts an ephemeral PostgreSQL container, applies docs/schema.sql,
+// NewPostgresDB starts an ephemeral PostgreSQL container, applies migrations,
 // and returns a connected TestPostgresDB. Container and pool are cleaned up when t
 // completes.
 func NewPostgresDB(t *testing.T) *TestPostgresDB {
 	t.Helper()
 	ctx := context.Background()
 
-	// Get absolute path to schema.sql relative to this file
-	_, b, _, _ := runtime.Caller(0)
-	basepath := filepath.Dir(b)
-	schemaPath := filepath.Join(basepath, "..", "..", "..", "docs", "schema.sql")
-
+	// Start the PostgreSQL container
 	pgc, err := tcpostgres.Run(ctx,
 		"postgres:17-alpine",
 		tcpostgres.WithDatabase("moolah_test"),
 		tcpostgres.WithUsername("test"),
 		tcpostgres.WithPassword("test"),
-		tcpostgres.WithInitScripts(schemaPath),
+		testcontainers.WithWaitStrategy(
+			wait.ForLog("database system is ready to accept connections").
+				WithOccurrence(2).
+				WithStartupTimeout(30*time.Second),
+		),
 	)
 	require.NoError(t, err, "failed to start postgres container")
 
+	// Get the connection string from the container
 	dsn, err := pgc.ConnectionString(ctx, "sslmode=disable")
 	require.NoError(t, err, "failed to get connection string")
 
-	pool, err := pgxpool.New(ctx, dsn)
+	// Get the configuration from your DSN
+	config, err := pgxpool.ParseConfig(dsn)
+	require.NoError(t, err, "failed to parse config")
+
+	// Create the pgxpool as usual
+	pool, err := pgxpool.NewWithConfig(ctx, config)
 	require.NoError(t, err, "failed to connect to postgres")
 
+	// Convert the pgx config to a standard *sql.DB for goose
+	// We use the ConnConfig from the pool's configuration
+	dbConfig := config.ConnConfig.Copy()
+	sqlDB := stdlib.OpenDB(*dbConfig)
+
+	// Run migrations using the standard sqlDB
+	goose.SetBaseFS(migrations.FS)
+	err = goose.SetDialect("postgres")
+	require.NoError(t, err, "failed to set goose dialect")
+
+	// Run the migration up to the latest version
+	err = goose.Up(sqlDB, ".")
+	require.NoError(t, err, "failed to run migrations")
+
+	// Close the stdlib bridge
+	err = sqlDB.Close()
+	require.NoError(t, err, "failed to close sqlDB")
+
+	// Ensure the pool is closed and container terminated when the test finishes
 	t.Cleanup(func() {
 		pool.Close()
 		err := pgc.Terminate(ctx)

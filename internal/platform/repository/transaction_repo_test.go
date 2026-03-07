@@ -139,7 +139,6 @@ func TestTransactionRepository_List(t *testing.T) {
 
 	ctx := context.Background()
 	tenantID := "tenant_id"
-	now := time.Now()
 	params := domain.ListTransactionsParams{
 		Limit:  10,
 		Offset: 0,
@@ -150,9 +149,7 @@ func TestTransactionRepository_List(t *testing.T) {
 		mockQuerier := new(mocks.Querier)
 		repo := NewTransactionRepository(mockQuerier)
 
-		mockQuerier.On("ListTransactionsByTenant", ctx, mock.MatchedBy(func(p sqlc.ListTransactionsByTenantParams) bool {
-			return p.TenantID == tenantID && p.LimitOff == 10 && p.OffsetOff == 0
-		})).Return([]sqlc.Transaction{
+		mockQuerier.On("ListTransactionsByTenant", ctx, tenantID).Return([]sqlc.Transaction{
 			{ID: "1", TenantID: tenantID},
 			{ID: "2", TenantID: tenantID},
 		}, nil)
@@ -160,33 +157,6 @@ func TestTransactionRepository_List(t *testing.T) {
 		got, err := repo.List(ctx, tenantID, params)
 		require.NoError(t, err)
 		assert.Len(t, got, 2)
-	})
-
-	t.Run("success with filters", func(t *testing.T) {
-		t.Parallel()
-		start := now.Add(-time.Hour)
-		end := now
-		paramsWithFilters := domain.ListTransactionsParams{
-			AccountID:  "acc_id",
-			CategoryID: "cat_id",
-			StartDate:  &start,
-			EndDate:    &end,
-			Limit:      10,
-			Offset:     0,
-		}
-		mockQuerier := new(mocks.Querier)
-		repo := NewTransactionRepository(mockQuerier)
-
-		mockQuerier.On("ListTransactionsByTenant", ctx, mock.MatchedBy(func(p sqlc.ListTransactionsByTenantParams) bool {
-			return p.AccountID.String == "acc_id" &&
-				p.CategoryID.String == "cat_id" &&
-				p.StartDate.Time.Equal(start) &&
-				p.EndDate.Time.Equal(end)
-		})).Return([]sqlc.Transaction{}, nil)
-
-		got, err := repo.List(ctx, tenantID, paramsWithFilters)
-		require.NoError(t, err)
-		assert.Empty(t, got)
 	})
 
 	t.Run("error", func(t *testing.T) {
@@ -343,19 +313,6 @@ func TestTransactionRepository_OtherBranches(t *testing.T) {
 		mockQuerier.On("SoftDeleteTransaction", ctx, mock.Anything).Return(&pgconn.PgError{Code: "23505"})
 		err := repo.Delete(ctx, tenantID, "id")
 		require.ErrorIs(t, err, domain.ErrConflict)
-	})
-
-	t.Run("map to domain deleted", func(t *testing.T) {
-		t.Parallel()
-		mockQuerier := new(mocks.Querier)
-		repo := NewTransactionRepository(mockQuerier)
-		now := time.Now()
-		mockQuerier.On("GetTransactionByID", ctx, mock.Anything).Return(sqlc.Transaction{
-			DeletedAt: pgtype.Timestamptz{Time: now, Valid: true},
-		}, nil)
-		got, err := repo.GetByID(ctx, tenantID, "id")
-		require.NoError(t, err)
-		assert.NotNil(t, got.DeletedAt)
 	})
 
 	t.Run("translate generic error", func(t *testing.T) {

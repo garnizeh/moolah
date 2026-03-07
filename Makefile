@@ -1,4 +1,4 @@
-.PHONY: all build run test lint generate migrate-up migrate-down clean help task-check deps
+.PHONY: all build run test lint generate clean help task-check deps
 
 # Configuration
 BINARY_NAME=moolah-api

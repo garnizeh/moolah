@@ -109,3 +109,19 @@ Follow this directory layout strictly when suggesting new files:
 - **Dependency Injection:** Use constructor functions (e.g., `func NewService(repo Repository) *Service`).
 - **SQLC Naming:** Use descriptive names for queries (e.g., `-- name: GetTransactionByID :one`).
 - **Validation:** Use `go-playground/validator` for incoming request payloads.
+
+---
+
+## 9. Linting & Testing Safety (Pre-emptive)
+To avoid recurring linting and testing errors found in `make task-check`, always follow these rules:
+
+### A. Testing Hygiene
+- **Subtests & Parallelism:** When using `t.Run`, you MUST call `t.Parallel()` inside the subtest if the parent test calls `t.Parallel()`. All integration tests in `internal/platform/repository` must follow this pattern to satisfy `paralleltest` and `tparallel` linters.
+- **Testify Assertions:** Use `require.GreaterOrEqual(t, actual, expected)` instead of `require.True(t, actual >= expected)` to satisfy `testifylint`.
+- **Mock Return Types:** When returning `nil` for a slice in `gomock`/`testify`, always use an explicit cast like `([]sqlc.AuditLog)(nil)` to avoid type assertion panics.
+
+### B. Code Style & Linting
+- **Formatting:** Always ensure files are formatted using `gofumpt` standards (no extra empty lines, consistent indentation).
+- **Variable Naming:** NEVER use underscores in variable names (e.g., use `u1Accs` instead of `u1_accs`) to satisfy `ST1003` (staticcheck).
+- **Error Wrapping:** In mock implementations or manual error returns, if you are returning an error from an external package (like `testify/mock`), wrap it or use `args.Error(i)` correctly. For `wrapcheck` compliance in mocks, ensure the returned error is handled according to project standards.
+- **Blank Imports:** Avoid unused imports and ensure all imports are used or removed.

@@ -56,8 +56,7 @@ func (q *Queries) CreateCategory(ctx context.Context, arg CreateCategoryParams) 
 }
 
 const getCategoryByID = `-- name: GetCategoryByID :one
-SELECT id, tenant_id, parent_id, name, icon, color, type, created_at, updated_at, deleted_at
-FROM categories
+SELECT id, tenant_id, parent_id, name, icon, color, type, created_at, updated_at, deleted_at FROM categories
 WHERE tenant_id = $1 AND id = $2 AND deleted_at IS NULL
 `
 
@@ -85,8 +84,7 @@ func (q *Queries) GetCategoryByID(ctx context.Context, arg GetCategoryByIDParams
 }
 
 const listCategoriesByTenant = `-- name: ListCategoriesByTenant :many
-SELECT id, tenant_id, parent_id, name, icon, color, type, created_at, updated_at, deleted_at
-FROM categories
+SELECT id, tenant_id, parent_id, name, icon, color, type, created_at, updated_at, deleted_at FROM categories
 WHERE tenant_id = $1 AND deleted_at IS NULL
 ORDER BY name ASC
 `
@@ -123,8 +121,7 @@ func (q *Queries) ListCategoriesByTenant(ctx context.Context, tenantID string) (
 }
 
 const listChildCategories = `-- name: ListChildCategories :many
-SELECT id, tenant_id, parent_id, name, icon, color, type, created_at, updated_at, deleted_at
-FROM categories
+SELECT id, tenant_id, parent_id, name, icon, color, type, created_at, updated_at, deleted_at FROM categories
 WHERE tenant_id = $1 AND parent_id = $2 AND deleted_at IS NULL
 ORDER BY name ASC
 `
@@ -165,48 +162,10 @@ func (q *Queries) ListChildCategories(ctx context.Context, arg ListChildCategori
 	return items, nil
 }
 
-const listRootCategoriesByTenant = `-- name: ListRootCategoriesByTenant :many
-SELECT id, tenant_id, parent_id, name, icon, color, type, created_at, updated_at, deleted_at
-FROM categories
-WHERE tenant_id = $1 AND parent_id IS NULL AND deleted_at IS NULL
-ORDER BY name ASC
-`
-
-func (q *Queries) ListRootCategoriesByTenant(ctx context.Context, tenantID string) ([]Category, error) {
-	rows, err := q.db.Query(ctx, listRootCategoriesByTenant, tenantID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []Category{}
-	for rows.Next() {
-		var i Category
-		if err := rows.Scan(
-			&i.ID,
-			&i.TenantID,
-			&i.ParentID,
-			&i.Name,
-			&i.Icon,
-			&i.Color,
-			&i.Type,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-			&i.DeletedAt,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const softDeleteCategory = `-- name: SoftDeleteCategory :exec
 UPDATE categories
 SET deleted_at = NOW()
-WHERE tenant_id = $1 AND id = $2 AND deleted_at IS NULL
+WHERE tenant_id = $1 AND id = $2
 `
 
 type SoftDeleteCategoryParams struct {
@@ -221,11 +180,12 @@ func (q *Queries) SoftDeleteCategory(ctx context.Context, arg SoftDeleteCategory
 
 const updateCategory = `-- name: UpdateCategory :one
 UPDATE categories
-SET name = $3,
-    icon = $4,
-    color = $5,
-    type = $6,
-    parent_id = $7,
+SET 
+    parent_id = $3,
+    name = $4,
+    icon = $5,
+    color = $6,
+    type = $7,
     updated_at = NOW()
 WHERE tenant_id = $1 AND id = $2 AND deleted_at IS NULL
 RETURNING id, tenant_id, parent_id, name, icon, color, type, created_at, updated_at, deleted_at
@@ -234,22 +194,22 @@ RETURNING id, tenant_id, parent_id, name, icon, color, type, created_at, updated
 type UpdateCategoryParams struct {
 	TenantID string       `json:"tenant_id"`
 	ID       string       `json:"id"`
+	ParentID string       `json:"parent_id"`
 	Name     string       `json:"name"`
 	Icon     pgtype.Text  `json:"icon"`
 	Color    pgtype.Text  `json:"color"`
 	Type     CategoryType `json:"type"`
-	ParentID string       `json:"parent_id"`
 }
 
 func (q *Queries) UpdateCategory(ctx context.Context, arg UpdateCategoryParams) (Category, error) {
 	row := q.db.QueryRow(ctx, updateCategory,
 		arg.TenantID,
 		arg.ID,
+		arg.ParentID,
 		arg.Name,
 		arg.Icon,
 		arg.Color,
 		arg.Type,
-		arg.ParentID,
 	)
 	var i Category
 	err := row.Scan(

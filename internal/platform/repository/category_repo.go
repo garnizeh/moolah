@@ -24,7 +24,7 @@ func NewCategoryRepository(q sqlc.Querier) domain.CategoryRepository {
 
 // Create persists a new category for the specified tenant.
 func (r *categoryRepo) Create(ctx context.Context, tenantID string, input domain.CreateCategoryInput) (*domain.Category, error) {
-	row, err := r.q.CreateCategory(ctx, sqlc.CreateCategoryParams{
+	arg := sqlc.CreateCategoryParams{
 		ID:       ulid.New(),
 		TenantID: tenantID,
 		ParentID: input.ParentID,
@@ -32,7 +32,9 @@ func (r *categoryRepo) Create(ctx context.Context, tenantID string, input domain
 		Icon:     pgtype.Text{String: input.Icon, Valid: input.Icon != ""},
 		Color:    pgtype.Text{String: input.Color, Valid: input.Color != ""},
 		Type:     sqlc.CategoryType(input.Type),
-	})
+	}
+
+	row, err := r.q.CreateCategory(ctx, arg)
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
@@ -129,7 +131,6 @@ func (r *categoryRepo) Update(ctx context.Context, tenantID, id string, input do
 		Icon:     pgtype.Text{String: icon, Valid: icon != ""},
 		Color:    pgtype.Text{String: color, Valid: color != ""},
 		Type:     current.Type,
-		ParentID: current.ParentID,
 	})
 	if err != nil {
 		var pgErr *pgconn.PgError

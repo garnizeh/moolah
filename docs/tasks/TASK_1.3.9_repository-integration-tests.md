@@ -1,7 +1,7 @@
 # Task 1.3.9 — Repository Integration Tests (Testcontainers)
 
 > **Roadmap Ref:** Phase 1 — MVP › 1.3 Repository Layer
-> **Status:** 🔵 `backlog`
+> **Status:** � `in-progress`
 > **Last Updated:** 2026-03-07
 > **Assignee:** —
 > **Estimated Effort:** L
@@ -10,13 +10,13 @@
 
 ## 1. Summary
 
-Write integration tests for all Phase 1 repository implementations (Tasks 1.3.1 – 1.3.8) using `testcontainers-go`. A single shared Postgres container is spun up for the test suite, Goose migrations are applied, and each test runs in an isolated transaction that is rolled back, ensuring a clean state between cases.
+Write integration tests for all Phase 1 repository implementations (Tasks 1.3.1 – 1.3.8) using `testcontainers-go`. Each test suite (file) spins up a fresh Postgres container using the `testutil/containers` package, applies Goose migrations, and provides a clean environment for testing database interactions.
 
 ---
 
 ## 2. Context & Motivation
 
-Repository implementations cannot be meaningfully unit-tested with mocks — they exist precisely to translate Go calls into SQL. Integration tests against a real Postgres instance (via Testcontainers) are the only way to validate query correctness, constraint enforcement, and error mapping. Running migrations in-process ensures tests always match the current schema state.
+Repository implementations cannot be meaningfully unit-tested with mocks — they exist precisely to translate Go calls into SQL. Integration tests against a real Postgres instance (via Testcontainers) are the only way to validate query correctness, constraint enforcement, and error mapping. Each repository will have its own dedicated integration test file to ensure isolation and discoverability.
 
 ---
 
@@ -24,10 +24,7 @@ Repository implementations cannot be meaningfully unit-tested with mocks — the
 
 ### In scope
 
-- [ ] Shared `TestMain` that starts a `postgres:17-alpine` container via Testcontainers.
-- [ ] Goose migrations applied via `embed.FS` in `TestMain`.
-- [ ] Helper `newTestTx(t)` that opens a `pgx.Tx` and registers `t.Cleanup` to roll back.
-- [ ] Integration tests for `TenantRepository` (Task 1.3.1).
+- [x] Dedicated integration test file for `TenantRepository` (Task 1.3.1) using `containers.NewPostgresDB(t)`.
 - [ ] Integration tests for `UserRepository` (Task 1.3.2).
 - [ ] Integration tests for `AuthRepository` / OTP lifecycle (Task 1.3.3).
 - [ ] Integration tests for `AccountRepository` (Task 1.3.4).
@@ -51,7 +48,6 @@ Repository implementations cannot be meaningfully unit-tested with mocks — the
 
 | Action | Path                                                               | Purpose                                  |
 | ------ | ------------------------------------------------------------------ | ---------------------------------------- |
-| CREATE | `internal/platform/repository/integration_test.go`                | `TestMain`, container setup, tx helper   |
 | CREATE | `internal/platform/repository/tenant_repo_integration_test.go`    | Tenant repository integration tests      |
 | CREATE | `internal/platform/repository/user_repo_integration_test.go`      | User repository integration tests        |
 | CREATE | `internal/platform/repository/auth_repo_integration_test.go`      | Auth/OTP repository integration tests    |
@@ -68,21 +64,20 @@ Repository implementations cannot be meaningfully unit-tested with mocks — the
 
 package repository_test
 
-// TestMain in integration_test.go:
-func TestMain(m *testing.M) {
-    ctx := context.Background()
-    pgContainer, _ := testcontainers.RunContainer(ctx, "postgres:17-alpine", ...)
-    // apply goose migrations
-    // set package-level *pgxpool.Pool
-    os.Exit(m.Run())
-}
+func TestExampleRepo_Integration(t *testing.T) {
+    t.Parallel()
 
-// newTestTx returns a *sqlc.Queries backed by a rolled-back transaction.
-func newTestTx(t *testing.T) *sqlc.Queries {
-    t.Helper()
-    tx, _ := pool.Begin(context.Background())
-    t.Cleanup(func() { _ = tx.Rollback(context.Background()) })
-    return sqlc.New(tx)
+    ctx := context.Background()
+
+    // Start a fresh container per test suite using the testutil/containers package
+    db := containers.NewPostgresDB(t)
+    
+    // Initialize repository with queries from the container
+    repo := repository.NewExampleRepository(db.Queries)
+
+    t.Run("Action", func(t *testing.T) {
+        // test logic
+    })
 }
 ```
 
@@ -142,14 +137,12 @@ func newTestTx(t *testing.T) *sqlc.Queries {
 
 ## 5. Acceptance Criteria
 
-- [ ] `//go:build integration` tag on all test files.
-- [ ] Testcontainers spins up and tears down a clean Postgres instance.
-- [ ] Migrations are applied in `TestMain`.
-- [ ] Each test is isolated via transaction rollback.
+- [x] `//go:build integration` tag on all test files.
+- [x] Testcontainers spins up and tears down a clean Postgres instance via `NewPostgresDB`.
+- [ ] Migrations are applied via `embed.FS` (handled by utility).
 - [ ] All repository methods have at least one positive test (happy path).
 - [ ] Error translation tests: `ErrNotFound`, `ErrConflict`, `ErrInvalidOTP` verified.
 - [ ] Tests pass with `go test -tags=integration ./internal/platform/repository/...`.
-- [ ] Tests are completely independent — no shared global state between test functions.
 - [ ] `golangci-lint run ./...` passes with zero issues.
 - [ ] `gosec ./...` passes with zero issues.
 - [ ] `docs/ROADMAP.md` row updated to ✅ `done`.
@@ -184,8 +177,7 @@ These are the integration tests themselves — no further testing layer above th
 | # | Question                                                                            | Owner | Resolution |
 | - | ----------------------------------------------------------------------------------- | ----- | ---------- |
 | 1 | Should each repo have its own test file or one combined file per repo?              | —     | One file per repository for discoverability. |
-| 2 | Should `TestMain` use a fresh container per package or reuse a module-level one?    | —     | Single container per `go test` invocation; all repo tests share it via package-level pool. |
-| 3 | Should cleanup be `ROLLBACK` per test or `TRUNCATE` all tables between tests?       | —     | `ROLLBACK` per test — faster and more idiomatic with pgx. |
+| 2 | Should we use a shared TestMain container or fresh per suite?                       | —     | Fresh container per test suite using `testutil/containers.NewPostgresDB(t)`. |
 
 ---
 
