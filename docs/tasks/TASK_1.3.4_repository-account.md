@@ -1,9 +1,9 @@
 # Task 1.3.4 — Repository: Account
 
 > **Roadmap Ref:** Phase 1 — MVP › 1.3 Repository Layer
-> **Status:** 🔵 `backlog`
+> **Status:** ✅ `done`
 > **Last Updated:** 2026-03-07
-> **Assignee:** —
+> **Assignee:** GitHub Copilot
 > **Estimated Effort:** M
 
 ---
@@ -24,11 +24,11 @@ The `AccountRepository` interface is defined in `internal/domain/account.go` (Ta
 
 ### In scope
 
-- [ ] Concrete `accountRepo` struct implementing `domain.AccountRepository`.
-- [ ] Constructor `NewAccountRepository(q *sqlc.Queries) domain.AccountRepository`.
-- [ ] Mapping functions between `sqlc.Account` and `domain.Account`.
-- [ ] Error translation: `pgx.ErrNoRows` → `domain.ErrNotFound`, unique violation → `domain.ErrConflict`.
-- [ ] All queries include `WHERE tenant_id = $1 AND deleted_at IS NULL`.
+- [x] Concrete `accountRepo` struct implementing `domain.AccountRepository`.
+- [x] Constructor `NewAccountRepository(q *sqlc.Queries) domain.AccountRepository`.
+- [x] Mapping functions between `sqlc.Account` and `domain.Account`.
+- [x] Error translation: `pgx.ErrNoRows` → `domain.ErrNotFound`, unique violation → `domain.ErrConflict`.
+- [x] All queries include `WHERE tenant_id = $1 AND deleted_at IS NULL`.
 
 ### Out of scope
 
@@ -45,15 +45,18 @@ The `AccountRepository` interface is defined in `internal/domain/account.go` (Ta
 | Action | Path                                            | Purpose                          |
 | ------ | ----------------------------------------------- | -------------------------------- |
 | CREATE | `internal/platform/repository/account_repo.go` | Concrete AccountRepository impl  |
+| CREATE | `internal/platform/repository/account_repo_test.go` | Unit tests for AccountRepository |
+| MODIFY | `internal/platform/db/queries/accounts.sql`    | Added ListAccountsByUser query   |
+| MODIFY | `internal/testutil/mocks/querier.go`           | Added mock ListAccountsByUser    |
 
 ### Key interfaces / types
 
 ```go
 type accountRepo struct {
-    q *sqlc.Queries
+    q sqlc.Querier
 }
 
-func NewAccountRepository(q *sqlc.Queries) domain.AccountRepository {
+func NewAccountRepository(q sqlc.Querier) domain.AccountRepository {
     return &accountRepo{q: q}
 }
 ```
@@ -83,14 +86,14 @@ All queries already exist in `internal/platform/db/queries/accounts.sql` (Task 1
 
 ## 5. Acceptance Criteria
 
-- [ ] All exported types and functions have Go doc comments.
-- [ ] Struct implements `domain.AccountRepository` (verified by compiler).
-- [ ] Every SQL query enforces `tenant_id` isolation and `deleted_at IS NULL`.
-- [ ] `BalanceCents` is correctly mapped to/from the database column (no float conversion).
-- [ ] All pgx errors are translated to domain sentinel errors.
-- [ ] `golangci-lint run ./...` passes with zero issues.
-- [ ] `gosec ./...` passes with zero issues.
-- [ ] `docs/ROADMAP.md` row updated to ✅ `done`.
+- [x] All exported types and functions have Go doc comments.
+- [x] Struct implements `domain.AccountRepository` (verified by compiler).
+- [x] Every SQL query enforces `tenant_id` isolation and `deleted_at IS NULL`.
+- [x] `BalanceCents` is correctly mapped to/from the database column (no float conversion).
+- [x] All pgx errors are translated to domain sentinel errors.
+- [x] `golangci-lint run ./...` passes with zero issues.
+- [x] `gosec ./......` passes with zero issues.
+- [x] `docs/ROADMAP.md` row updated to ✅ `done`.
 
 ---
 
@@ -109,7 +112,7 @@ All queries already exist in `internal/platform/db/queries/accounts.sql` (Task 1
 
 ### Unit tests (`_test.go`, no build tag)
 
-N/A — repository implementations are tested via integration tests.
+Implemented in `internal/platform/repository/account_repo_test.go` using testify/mock.
 
 ### Integration tests (`//go:build integration`)
 
@@ -135,3 +138,4 @@ Covered by Task 1.3.9 — specifically:
 | Date       | Author | Change                    |
 | ---------- | ------ | ------------------------- |
 | 2026-03-07 | —      | Task created from roadmap |
+| 2026-03-07 | GitHub Copilot | Implemented AccountRepository and unit tests |
