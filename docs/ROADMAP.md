@@ -47,7 +47,7 @@
 | # | Task | Status | Last Updated | Notes |
 | --- | --- | --- | --- | --- |
 | 1.1.1 | `pkg/ulid` — thread-safe monotonic ULID factory | ✅ `done` | 2026-03-07 | |
-| 1.1.2 | `pkg/logger` — structured `slog` JSON logger | 🔵 `backlog` | 2026-03-06 | |
+| 1.1.2 | `pkg/logger` — structured `slog` JSON logger | ✅ `done` | 2026-03-07 | |
 | 1.1.3 | `pkg/config` — env-based config with validation | 🔵 `backlog` | 2026-03-06 | Panic on missing required vars |
 | 1.1.4 | `pkg/pasetoutils` — PASETO v4 local seal/parse | 🔵 `backlog` | 2026-03-06 | `aidanwoods.dev/go-paseto` |
 | 1.1.5 | `pkg/otputil` — cryptographically secure 6-digit OTP | 🔵 `backlog` | 2026-03-06 | bcrypt hash storage |

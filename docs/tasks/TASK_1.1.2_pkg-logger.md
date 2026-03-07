@@ -1,7 +1,7 @@
 # Task 1.1.2 — pkg/logger: Structured slog JSON Logger
 
 > **Roadmap Ref:** Phase 1 — MVP: Core Finance › 1.1 Infrastructure & Platform
-> **Status:** 🔵 `backlog`
+> **Status:** ✅ `done`
 > **Last Updated:** 2026-03-07
 > **Assignee:** —
 > **Estimated Effort:** S
@@ -100,32 +100,32 @@ N/A
 
 ### Error cases to handle
 
-| Scenario              | Handling                                          |
-| --------------------- | ------------------------------------------------- |
+| Scenario | Handling |
+| -------- | -------- |
 | Unknown `level` value | Fall back to `slog.LevelInfo`; log a warning once |
-| Unknown `format` value| Fall back to JSON handler                         |
+| Unknown `format` value | Fall back to JSON handler |
 
 ---
 
 ## 5. Acceptance Criteria
 
-- [ ] `New("info", "json")` returns a `*slog.Logger` whose output is valid JSON.
-- [ ] `New("info", "text")` returns a `*slog.Logger` whose output is human-readable text.
-- [ ] Messages below the configured level are suppressed.
-- [ ] The function never calls `slog.SetDefault` or writes to a global.
-- [ ] Test coverage for `pkg/logger` = 100%.
-- [ ] `golangci-lint run ./pkg/logger/...` passes with zero issues.
-- [ ] `gosec ./pkg/logger/...` passes with zero issues.
-- [ ] `docs/ROADMAP.md` row 1.1.2 updated to ✅ `done`.
+- [x] `New("info", "json")` returns a `*slog.Logger` whose output is valid JSON.
+- [x] `New("info", "text")` returns a `*slog.Logger` whose output is human-readable text.
+- [x] Messages below the configured level are suppressed.
+- [x] The function never calls `slog.SetDefault` or writes to a global.
+- [x] Test coverage for `pkg/logger` = 100%.
+- [x] `golangci-lint run ./pkg/logger/...` passes with zero issues.
+- [x] `gosec ./pkg/logger/...` passes with zero issues.
+- [x] `docs/ROADMAP.md` row 1.1.2 updated to ✅ `done`.
 
 ---
 
 ## 6. Dependencies
 
-| Dependency                          | Type     | Status     |
-| ----------------------------------- | -------- | ---------- |
-| Go 1.21+ (`log/slog` stdlib)        | Runtime  | ✅ done   |
-| Phase 0 complete (module scaffolded)| Upstream | ✅ done   |
+| Dependency | Type | Status |
+| ---------- | ---- | ------ |
+| Go 1.21+ (`log/slog` stdlib) | Runtime | ✅ done |
+| Phase 0 complete (module scaffolded) | Upstream | ✅ done |
 
 ---
 
@@ -148,14 +148,14 @@ N/A
 
 ## 8. Open Questions
 
-| # | Question                                          | Owner | Resolution |
-| - | ------------------------------------------------- | ----- | ---------- |
-| 1 | Should `New` accept `io.Writer` for testability? | —     | Yes — add an optional writer parameter to avoid capturing stdout in tests. |
+| # | Question | Owner | Resolution |
+| - | -------- | ----- | ---------- |
+| 1 | Should `New` accept `io.Writer` for testability? | — | Yes — add an optional writer parameter to avoid capturing stdout in tests. |
 
 ---
 
 ## 9. Change Log
 
-| Date       | Author | Change                        |
-| ---------- | ------ | ----------------------------- |
-| 2026-03-07 | —      | Task created from roadmap 1.1.2 |
+| Date | Author | Change |
+| ---- | ------ | ------ |
+| 2026-03-07 | — | Task completed and verified |
