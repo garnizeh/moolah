@@ -1,7 +1,7 @@
 # Task 1.2.11 — Domain Admin Repository Interfaces
 
 > **Roadmap Ref:** Phase 1 — MVP › 1.2 Domain Layer
-> **Status:** 🔵 `backlog`
+> **Status:** ✅ `done`
 > **Last Updated:** 2026-03-07
 > **Assignee:** —
 > **Estimated Effort:** M
@@ -24,10 +24,10 @@ The sysadmin role needs to manage tenants and users across the entire system, op
 
 ### In scope
 
-- [ ] `AdminTenantRepository` — cross-tenant tenant management (list all, suspend, restore).
-- [ ] `AdminUserRepository` — cross-tenant user management (list all users, force-delete).
-- [ ] `AdminAuditRepository` — global audit log query (no tenant filter).
-- [ ] All interfaces enforce no `tenant_id` filter — callers supply it explicitly when needed.
+- [x] `AdminTenantRepository` — cross-tenant tenant management (list all, suspend, restore).
+- [x] `AdminUserRepository` — cross-tenant user management (list all users, force-delete).
+- [x] `AdminAuditRepository` — global audit log query (no tenant filter).
+- [x] All interfaces enforce no `tenant_id` filter — callers supply it explicitly when needed.
 
 ### Out of scope
 
@@ -103,13 +103,13 @@ N/A — endpoints are registered in Task 1.5.9.
 
 ## 5. Acceptance Criteria
 
-- [ ] All exported types and functions have Go doc comments.
-- [ ] `AdminTenantRepository`, `AdminUserRepository`, and `AdminAuditRepository` are defined in `internal/domain/admin.go`.
-- [ ] No regular (tenant-scoped) repository methods are duplicated — only admin-specific overrides.
-- [ ] `HardDelete` carries a doc comment warning that it is irreversible.
-- [ ] `golangci-lint run ./...` passes with zero issues.
-- [ ] `gosec ./...` passes with zero issues.
-- [ ] `docs/ROADMAP.md` row updated to ✅ `done`.
+- [x] All exported types and functions have Go doc comments.
+- [x] `AdminTenantRepository`, `AdminUserRepository`, and `AdminAuditRepository` are defined in `internal/domain/admin.go`.
+- [x] No regular (tenant-scoped) repository methods are duplicated — only admin-specific overrides.
+- [x] `HardDelete` carries a doc comment warning that it is irreversible.
+- [x] `golangci-lint run ./...` passes with zero issues.
+- [x] `gosec ./...` passes with zero issues.
+- [x] `docs/ROADMAP.md` row updated to ✅ `done`.
 
 ---
 
@@ -117,10 +117,10 @@ N/A — endpoints are registered in Task 1.5.9.
 
 | Dependency                        | Type     | Status     |
 | --------------------------------- | -------- | ---------- |
-| Task 1.2.1 — `domain/errors.go`   | Upstream | 🔵 backlog |
-| Task 1.2.3 — `domain/tenant.go`   | Upstream | 🔵 backlog |
-| Task 1.2.4 — `domain/user.go`     | Upstream | 🔵 backlog |
-| Task 1.2.10 — `domain/audit.go`   | Upstream | 🔵 backlog |
+| Task 1.2.1 — `domain/errors.go`   | Upstream | ✅ done    |
+| Task 1.2.3 — `domain/tenant.go`   | Upstream | ✅ done    |
+| Task 1.2.4 — `domain/user.go`     | Upstream | ✅ done    |
+| Task 1.2.10 — `domain/audit.go`   | Upstream | ✅ done    |
 
 ---
 
@@ -150,3 +150,4 @@ Covered by Task 1.3.8 admin repository integration tests.
 | Date       | Author | Change                    |
 | ---------- | ------ | ------------------------- |
 | 2026-03-07 | —      | Task created from roadmap |
+| 2026-03-07 | —      | Admin interfaces implemented |
