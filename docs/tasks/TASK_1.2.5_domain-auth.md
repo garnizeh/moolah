@@ -1,7 +1,7 @@
 # Task 1.2.5 — Domain Auth Entity & Repository Interface
 
 > **Roadmap Ref:** Phase 1 — MVP › 1.2 Domain Layer
-> **Status:** 🔵 `backlog`
+> **Status:** ✅ `done`
 > **Last Updated:** 2026-03-07
 > **Assignee:** —
 > **Estimated Effort:** M
@@ -24,10 +24,10 @@ The authentication flow (Task 1.4.1) is OTP-only. When a user requests a login c
 
 ### In scope
 
-- [ ] `OTPRequest` struct.
-- [ ] `CreateOTPRequestInput` value object.
-- [ ] `AuthRepository` interface: `CreateOTPRequest`, `GetActiveOTPRequest`, `MarkOTPUsed`.
-- [ ] `Claims` struct for PASETO token payload (user_id, tenant_id, role, expiry).
+- [x] `OTPRequest` struct.
+- [x] `CreateOTPRequestInput` value object.
+- [x] `AuthRepository` interface: `CreateOTPRequest`, `GetActiveOTPRequest`, `MarkOTPUsed`.
+- [x] `Claims` struct for PASETO token payload (user_id, tenant_id, role, expiry).
 
 ### Out of scope
 
@@ -50,18 +50,18 @@ The authentication flow (Task 1.4.1) is OTP-only. When a user requests a login c
 ```go
 // OTPRequest represents a pending or consumed OTP challenge.
 type OTPRequest struct {
-    ID        string
-    Email     string
-    CodeHash  string    // bcrypt hash of the 6-digit code
-    Used      bool
-    ExpiresAt time.Time
-    CreatedAt time.Time
+ ExpiresAt time.Time `json:"expires_at"`
+ CreatedAt time.Time `json:"created_at"`
+ ID        string    `json:"id"`
+ Email     string    `json:"email"`
+ CodeHash  string    `json:"-"` // bcrypt hash of the 6-digit code, never serialized
+ Used      bool      `json:"used"`
 }
 
 type CreateOTPRequestInput struct {
-    Email     string `validate:"required,email"`
-    CodeHash  string `validate:"required"`
-    ExpiresAt time.Time
+ ExpiresAt time.Time `validate:"required"`
+ Email     string    `validate:"required,email"`
+ CodeHash  string    `validate:"required"`
 }
 
 // AuthRepository defines persistence operations for OTP challenges.
@@ -78,11 +78,11 @@ type AuthRepository interface {
 
 // Claims holds the data encoded in a PASETO token.
 type Claims struct {
-    UserID   string
-    TenantID string
-    Role     Role
-    IssuedAt time.Time
-    ExpireAt time.Time
+ IssuedAt  time.Time `json:"issued_at"`
+ ExpiresAt time.Time `json:"expires_at"`
+ UserID    string    `json:"user_id"`
+ TenantID  string    `json:"tenant_id"`
+ Role      Role      `json:"role"`
 }
 ```
 
@@ -106,13 +106,13 @@ N/A — endpoints are registered in Task 1.5.4.
 
 ## 5. Acceptance Criteria
 
-- [ ] All exported types and functions have Go doc comments.
-- [ ] `AuthRepository` interface is defined in `internal/domain/auth.go`.
-- [ ] `OTPRequest` does not store the plaintext code — only the `bcrypt` hash.
-- [ ] `Claims` struct is usable by `pkg/paseto` without importing domain (or vice versa — decide direction).
-- [ ] `golangci-lint run ./...` passes with zero issues.
-- [ ] `gosec ./...` passes with zero issues.
-- [ ] `docs/ROADMAP.md` row updated to ✅ `done`.
+- [x] All exported types and functions have Go doc comments.
+- [x] `AuthRepository` interface is defined in `internal/domain/auth.go`.
+- [x] `OTPRequest` does not store the plaintext code — only the `bcrypt` hash.
+- [x] `Claims` struct is usable by `pkg/paseto` without importing domain (or vice versa — decide direction).
+- [x] `golangci-lint run ./...` passes with zero issues.
+- [x] `gosec ./...` passes with zero issues.
+- [x] `docs/ROADMAP.md` row updated to ✅ `done`.
 
 ---
 
@@ -143,8 +143,8 @@ Covered by Task 1.3.3 repository integration tests.
 
 | # | Question                                                                        | Owner | Resolution |
 | - | ------------------------------------------------------------------------------- | ----- | ---------- |
-| 1 | Should `Claims` live in `domain` or `pkg/paseto`? (circular import risk)         | —     | — |
-| 2 | Should `DeleteExpiredOTPRequests` be triggered by a background goroutine or cron? | —     | — |
+| 1 | Should `Claims` live in `domain` or `pkg/paseto`? (circular import risk)         | —     | Lives in domain. |
+| 2 | Should `DeleteExpiredOTPRequests` be triggered by a background goroutine or cron? | —     | Cleanup job. |
 
 ---
 
@@ -153,3 +153,4 @@ Covered by Task 1.3.3 repository integration tests.
 | Date       | Author | Change                    |
 | ---------- | ------ | ------------------------- |
 | 2026-03-07 | —      | Task created from roadmap |
+| 2026-03-07 | —      | Task completed |
