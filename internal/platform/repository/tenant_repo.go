@@ -14,11 +14,11 @@ import (
 )
 
 type tenantRepo struct {
-	q *sqlc.Queries
+	q sqlc.Querier
 }
 
 // NewTenantRepository creates a new concrete implementation of domain.TenantRepository.
-func NewTenantRepository(q *sqlc.Queries) domain.TenantRepository {
+func NewTenantRepository(q sqlc.Querier) domain.TenantRepository {
 	return &tenantRepo{q: q}
 }
 
