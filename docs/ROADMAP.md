@@ -59,6 +59,8 @@
 | 1.1.11 | `platform/middleware/logger.go` — request logging middleware | ✅ `done` | 2026-03-07 | tenant_id, user_id, latency |
 | 1.1.12 | `platform/mailer/smtp_mailer.go` — implements `domain.Mailer` | ✅ `done` | 2026-03-07 | |
 | 1.1.13 | `platform/mailer/smtp_mailer_integration_test.go` — Testcontainers + Mailhog | ✅ `done` | 2026-03-07 | |
+| 1.1.14 | `platform/middleware/idempotency.go` — Redis-backed `Idempotency-Key` middleware | 🔵 `backlog` | 2026-03-07 | 24 h TTL; scoped per `userID`; `IdempotencyStore` interface for mockability |
+| 1.1.15 | `platform/idempotency/redis_store.go` — `IdempotencyStore` Redis implementation | 🔵 `backlog` | 2026-03-07 | `SETNX` lock + `SET` response; requires `github.com/redis/go-redis/v9` |
 
 ### 1.2 Domain Layer
 
@@ -82,7 +84,7 @@
 | --- | --- | --- | --- | --- |
 | 1.3.1 | `repository/tenant_repo.go` | ✅ `done` | 2026-03-07 | 100% coverage, shared mock |
 | 1.3.2 | `repository/user_repo.go` | ✅ `done` | 2026-03-07 | 100% coverage, auth-flow exception |
-| 1.3.3 | `repository/auth_repo.go` | 🔵 `backlog` | 2026-03-06 | |
+| 1.3.3 | `repository/auth_repo.go` | ✅ `done` | 2026-03-07 | 100% coverage, OTP lifecycle |
 | 1.3.4 | `repository/account_repo.go` | 🔵 `backlog` | 2026-03-06 | |
 | 1.3.5 | `repository/category_repo.go` | 🔵 `backlog` | 2026-03-06 | |
 | 1.3.6 | `repository/transaction_repo.go` | 🔵 `backlog` | 2026-03-06 | |
@@ -115,6 +117,7 @@
 | 1.5.8 | `handler/transaction_handler.go` — full CRUD + list with filters | 🔵 `backlog` | 2026-03-06 | |
 | 1.5.9 | `handler/admin_handler.go` — sysadmin routes | 🔵 `backlog` | 2026-03-06 | |
 | 1.5.10 | Swaggo annotations on all handlers; `swag init` verified in CI | 🔵 `backlog` | 2026-03-06 | `docs/swagger/` |
+| 1.5.11 | Wire `Idempotency` middleware on all mutating `POST` routes | 🔵 `backlog` | 2026-03-07 | Depends on 1.1.14 + 1.1.15; apply after `RequireAuth` in the chain |
 
 ### 1.6 Quality Gate
 

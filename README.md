@@ -1,9 +1,12 @@
 # Moolah — Household Finance & Investment SaaS
 
 [![Go Version](https://img.shields.io/badge/Go-1.26.1-00ADD8?logo=go&logoColor=white)](https://go.dev/dl/)
-[![Coverage](https://codecov.io/gh/garnizeh/moolah/branch/main/graph/badge.svg)](https://codecov.io/gh/garnizeh/moolah)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/garnizeh/moolah/ci.yml?branch=main&label=build&logo=github)](https://github.com/garnizeh/moolah/actions)
+[![Coverage](https://img.shields.io/codecov/gh/garnizeh/moolah/branch/main/graph/badge.svg)](https://codecov.io/gh/garnizeh/moolah)
+[![Go Report Card](https://goreportcard.com/badge/github.com/garnizeh/moolah)](https://goreportcard.com/report/github.com/garnizeh/moolah)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Moolah is a multi-tenant personal finance application built with Go, focusing on simplicity, scalability, and financial integrity. It helps households manage their accounts payable, cash flow, credit card installments, and investment portfolios.
+Moolah is a multi-tenant personal finance application built with **Go**, focusing on simplicity, scalability, and financial integrity. It helps households manage their accounts payable, cash flow, credit card installments, and investment portfolios.
 
 ## 🚀 Technical Stack
 

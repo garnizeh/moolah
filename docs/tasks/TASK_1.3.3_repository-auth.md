@@ -1,9 +1,9 @@
 # Task 1.3.3 — Repository: Auth (OTP)
 
 > **Roadmap Ref:** Phase 1 — MVP › 1.3 Repository Layer
-> **Status:** 🔵 `backlog`
+> **Status:** ✅ `done`
 > **Last Updated:** 2026-03-07
-> **Assignee:** —
+> **Assignee:** GitHub Copilot
 > **Estimated Effort:** M
 
 ---
@@ -24,10 +24,10 @@ The `AuthRepository` interface is defined in `internal/domain/auth.go` (Task 1.2
 
 ### In scope
 
-- [ ] Concrete `authRepo` struct implementing `domain.AuthRepository`.
-- [ ] Constructor `NewAuthRepository(q *sqlc.Queries) domain.AuthRepository`.
-- [ ] Mapping functions between `sqlc.OtpRequest` and `domain.OTPRequest`.
-- [ ] Error translation: `pgx.ErrNoRows` on active OTP lookup → `domain.ErrInvalidOTP`.
+- [x] Concrete `authRepo` struct implementing `domain.AuthRepository`.
+- [x] Constructor `NewAuthRepository(q *sqlc.Queries) domain.AuthRepository`.
+- [x] Mapping functions between `sqlc.OtpRequest` and `domain.OTPRequest`.
+- [x] Error translation: `pgx.ErrNoRows` on active OTP lookup → `domain.ErrInvalidOTP`.
 
 ### Out of scope
 
@@ -43,7 +43,7 @@ The `AuthRepository` interface is defined in `internal/domain/auth.go` (Task 1.2
 
 | Action | Path                                         | Purpose                        |
 | ------ | -------------------------------------------- | ------------------------------ |
-| CREATE | `internal/platform/repository/auth_repo.go` | Concrete AuthRepository impl   |
+| CREATE | `internal/platform/repository/auth_repo.go`  | Concrete AuthRepository impl   |
 
 ### Key interfaces / types
 
@@ -78,14 +78,14 @@ All queries already exist in `internal/platform/db/queries/auth.sql` (Task 1.1.7
 
 ## 5. Acceptance Criteria
 
-- [ ] All exported types and functions have Go doc comments.
-- [ ] Struct implements `domain.AuthRepository` (verified by compiler).
-- [ ] `GetActiveOTPRequest` returns `domain.ErrInvalidOTP` (not `ErrNotFound`) when no active OTP exists.
-- [ ] `DeleteExpiredOTPRequests` deletes all rows where `expires_at < NOW() OR used = true`.
-- [ ] All pgx errors are translated to domain sentinel errors.
-- [ ] `golangci-lint run ./...` passes with zero issues.
-- [ ] `gosec ./...` passes with zero issues.
-- [ ] `docs/ROADMAP.md` row updated to ✅ `done`.
+- [x] All exported types and functions have Go doc comments.
+- [x] Struct implements `domain.AuthRepository` (verified by compiler).
+- [x] `GetActiveOTPRequest` returns `domain.ErrInvalidOTP` (not `ErrNotFound`) when no active OTP exists.
+- [x] `DeleteExpiredOTPRequests` deletes all rows where `expires_at < NOW() OR used = true`.
+- [x] All pgx errors are translated to domain sentinel errors.
+- [x] `golangci-lint run ./...` passes with zero issues.
+- [x] `gosec ./...` passes with zero issues.
+- [x] `docs/ROADMAP.md` row updated to ✅ `done`.
 
 ---
 
@@ -127,6 +127,7 @@ Covered by Task 1.3.9 — specifically:
 
 ## 9. Change Log
 
-| Date       | Author | Change                    |
-| ---------- | ------ | ------------------------- |
-| 2026-03-07 | —      | Task created from roadmap |
+| Date       | Author         | Change                        |
+| ---------- | -------------- | ----------------------------- |
+| 2026-03-07 | —              | Task created from roadmap     |
+| 2026-03-07 | GitHub Copilot | Implemented AuthRepository and tests |
