@@ -2,13 +2,11 @@ package repository
 
 import (
 	"context"
-	"errors"
+	"fmt"
 
 	"github.com/garnizeh/moolah/internal/domain"
 	"github.com/garnizeh/moolah/internal/platform/db/sqlc"
 	"github.com/garnizeh/moolah/pkg/ulid"
-	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -42,7 +40,7 @@ func (r *transactionRepo) Create(ctx context.Context, tenantID string, input dom
 
 	row, err := r.q.CreateTransaction(ctx, arg)
 	if err != nil {
-		return nil, r.translateError(err)
+		return nil, fmt.Errorf("failed to create transaction: %w", TranslateError(err))
 	}
 
 	return r.mapToDomain(row), nil
@@ -54,7 +52,7 @@ func (r *transactionRepo) GetByID(ctx context.Context, tenantID, id string) (*do
 		ID:       id,
 	})
 	if err != nil {
-		return nil, r.translateError(err)
+		return nil, fmt.Errorf("failed to get transaction: %w", TranslateError(err))
 	}
 
 	return r.mapToDomain(row), nil
@@ -87,7 +85,7 @@ func (r *transactionRepo) List(ctx context.Context, tenantID string, filter doma
 
 	rows, err := r.q.ListTransactionsByTenant(ctx, arg)
 	if err != nil {
-		return nil, r.translateError(err)
+		return nil, fmt.Errorf("failed to list transactions: %w", TranslateError(err))
 	}
 
 	transactions := make([]domain.Transaction, 0, len(rows))
@@ -104,7 +102,7 @@ func (r *transactionRepo) Update(ctx context.Context, tenantID, id string, input
 		ID:       id,
 	})
 	if err != nil {
-		return nil, r.translateError(err)
+		return nil, fmt.Errorf("failed to get transaction for update: %w", TranslateError(err))
 	}
 
 	arg := sqlc.UpdateTransactionParams{
@@ -133,7 +131,7 @@ func (r *transactionRepo) Update(ctx context.Context, tenantID, id string, input
 
 	row, err := r.q.UpdateTransaction(ctx, arg)
 	if err != nil {
-		return nil, r.translateError(err)
+		return nil, fmt.Errorf("failed to update transaction: %w", TranslateError(err))
 	}
 
 	return r.mapToDomain(row), nil
@@ -145,27 +143,9 @@ func (r *transactionRepo) Delete(ctx context.Context, tenantID, id string) error
 		ID:       id,
 	})
 	if err != nil {
-		return r.translateError(err)
+		return fmt.Errorf("failed to delete transaction: %w", TranslateError(err))
 	}
 	return nil
-}
-
-func (r *transactionRepo) translateError(err error) error {
-	if errors.Is(err, pgx.ErrNoRows) {
-		return domain.ErrNotFound
-	}
-
-	if pgErr, ok := errors.AsType[*pgconn.PgError](err); ok {
-		// 23505: unique_violation
-		if pgErr.Code == "23505" {
-			return domain.ErrConflict
-		}
-		// 23503: foreign_key_violation
-		if pgErr.Code == "23503" {
-			return domain.ErrNotFound
-		}
-	}
-	return err
 }
 
 func (r *transactionRepo) mapToDomain(row sqlc.Transaction) *domain.Transaction {

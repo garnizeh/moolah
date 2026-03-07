@@ -8,7 +8,6 @@ import (
 	"github.com/garnizeh/moolah/internal/domain"
 	"github.com/garnizeh/moolah/internal/platform/db/sqlc"
 	"github.com/garnizeh/moolah/pkg/ulid"
-	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -36,7 +35,7 @@ func (r *authRepo) CreateOTPRequest(ctx context.Context, input domain.CreateOTPR
 
 	o, err := r.q.CreateOTPRequest(ctx, arg)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create otp request: %w", err)
+		return nil, fmt.Errorf("failed to create otp request: %w", TranslateError(err))
 	}
 
 	return r.mapOTPRequest(o), nil
@@ -46,7 +45,8 @@ func (r *authRepo) CreateOTPRequest(ctx context.Context, input domain.CreateOTPR
 func (r *authRepo) GetActiveOTPRequest(ctx context.Context, email string) (*domain.OTPRequest, error) {
 	o, err := r.q.GetActiveOTPByEmail(ctx, email)
 	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
+		err = TranslateError(err)
+		if errors.Is(err, domain.ErrNotFound) {
 			return nil, domain.ErrInvalidOTP
 		}
 		return nil, fmt.Errorf("failed to get active otp request: %w", err)
@@ -59,7 +59,8 @@ func (r *authRepo) GetActiveOTPRequest(ctx context.Context, email string) (*doma
 func (r *authRepo) MarkOTPUsed(ctx context.Context, id string) error {
 	err := r.q.MarkOTPUsed(ctx, id)
 	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
+		err = TranslateError(err)
+		if errors.Is(err, domain.ErrNotFound) {
 			return domain.ErrInvalidOTP
 		}
 		return fmt.Errorf("failed to mark otp as used: %w", err)
@@ -71,7 +72,7 @@ func (r *authRepo) MarkOTPUsed(ctx context.Context, id string) error {
 func (r *authRepo) DeleteExpiredOTPRequests(ctx context.Context) error {
 	err := r.q.DeleteExpiredOTPs(ctx)
 	if err != nil {
-		return fmt.Errorf("failed to delete expired otp requests: %w", err)
+		return fmt.Errorf("failed to delete expired otp requests: %w", TranslateError(err))
 	}
 	return nil
 }

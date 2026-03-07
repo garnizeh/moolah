@@ -2,15 +2,12 @@ package repository
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"time"
 
 	"github.com/garnizeh/moolah/internal/domain"
 	"github.com/garnizeh/moolah/internal/platform/db/sqlc"
 	"github.com/garnizeh/moolah/pkg/ulid"
-	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgconn"
 )
 
 type tenantRepo struct {
@@ -32,11 +29,7 @@ func (r *tenantRepo) Create(ctx context.Context, input domain.CreateTenantInput)
 
 	t, err := r.q.CreateTenant(ctx, arg)
 	if err != nil {
-		var pgErr *pgconn.PgError
-		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
-			return nil, fmt.Errorf("%w: tenant name already exists", domain.ErrConflict)
-		}
-		return nil, fmt.Errorf("failed to create tenant: %w", err)
+		return nil, fmt.Errorf("failed to create tenant: %w", TranslateError(err))
 	}
 
 	return r.mapTenant(t), nil
@@ -46,10 +39,7 @@ func (r *tenantRepo) Create(ctx context.Context, input domain.CreateTenantInput)
 func (r *tenantRepo) GetByID(ctx context.Context, id string) (*domain.Tenant, error) {
 	t, err := r.q.GetTenantByID(ctx, id)
 	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, domain.ErrNotFound
-		}
-		return nil, fmt.Errorf("failed to get tenant by id: %w", err)
+		return nil, fmt.Errorf("failed to get tenant by id: %w", TranslateError(err))
 	}
 
 	return r.mapTenant(t), nil
@@ -59,7 +49,7 @@ func (r *tenantRepo) GetByID(ctx context.Context, id string) (*domain.Tenant, er
 func (r *tenantRepo) List(ctx context.Context) ([]domain.Tenant, error) {
 	tenants, err := r.q.ListTenants(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("failed to list tenants: %w", err)
+		return nil, fmt.Errorf("failed to list tenants: %w", TranslateError(err))
 	}
 
 	result := make([]domain.Tenant, len(tenants))
@@ -75,10 +65,7 @@ func (r *tenantRepo) Update(ctx context.Context, id string, input domain.UpdateT
 	// First get current state to handle partial updates
 	current, err := r.q.GetTenantByID(ctx, id)
 	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, domain.ErrNotFound
-		}
-		return nil, fmt.Errorf("failed to get tenant for update: %w", err)
+		return nil, fmt.Errorf("failed to get tenant for update: %w", TranslateError(err))
 	}
 
 	arg := sqlc.UpdateTenantParams{
@@ -96,11 +83,7 @@ func (r *tenantRepo) Update(ctx context.Context, id string, input domain.UpdateT
 
 	t, err := r.q.UpdateTenant(ctx, arg)
 	if err != nil {
-		var pgErr *pgconn.PgError
-		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
-			return nil, fmt.Errorf("%w: tenant name already exists", domain.ErrConflict)
-		}
-		return nil, fmt.Errorf("failed to update tenant: %w", err)
+		return nil, fmt.Errorf("failed to update tenant: %w", TranslateError(err))
 	}
 
 	return r.mapTenant(t), nil
@@ -110,7 +93,7 @@ func (r *tenantRepo) Update(ctx context.Context, id string, input domain.UpdateT
 func (r *tenantRepo) Delete(ctx context.Context, id string) error {
 	err := r.q.SoftDeleteTenant(ctx, id)
 	if err != nil {
-		return fmt.Errorf("failed to soft delete tenant: %w", err)
+		return fmt.Errorf("failed to soft delete tenant: %w", TranslateError(err))
 	}
 
 	return nil

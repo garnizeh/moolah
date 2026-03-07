@@ -2,14 +2,11 @@ package repository
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	"github.com/garnizeh/moolah/internal/domain"
 	"github.com/garnizeh/moolah/internal/platform/db/sqlc"
 	"github.com/garnizeh/moolah/pkg/ulid"
-	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgconn"
 )
 
 type accountRepo struct {
@@ -33,11 +30,7 @@ func (r *accountRepo) Create(ctx context.Context, tenantID string, input domain.
 		BalanceCents: input.InitialCents,
 	})
 	if err != nil {
-		var pgErr *pgconn.PgError
-		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
-			return nil, fmt.Errorf("%w: account name already exists", domain.ErrConflict)
-		}
-		return nil, fmt.Errorf("failed to create account: %w", err)
+		return nil, fmt.Errorf("failed to create account: %w", TranslateError(err))
 	}
 
 	return mapAccount(row), nil
@@ -50,10 +43,7 @@ func (r *accountRepo) GetByID(ctx context.Context, tenantID, id string) (*domain
 		ID:       id,
 	})
 	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, domain.ErrNotFound
-		}
-		return nil, fmt.Errorf("failed to get account: %w", err)
+		return nil, fmt.Errorf("failed to get account: %w", TranslateError(err))
 	}
 
 	return mapAccount(row), nil
@@ -63,7 +53,7 @@ func (r *accountRepo) GetByID(ctx context.Context, tenantID, id string) (*domain
 func (r *accountRepo) ListByTenant(ctx context.Context, tenantID string) ([]domain.Account, error) {
 	rows, err := r.q.ListAccountsByTenant(ctx, tenantID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to list accounts: %w", err)
+		return nil, fmt.Errorf("failed to list accounts: %w", TranslateError(err))
 	}
 
 	accounts := make([]domain.Account, 0, len(rows))
@@ -81,7 +71,7 @@ func (r *accountRepo) ListByUser(ctx context.Context, tenantID, userID string) (
 		UserID:   userID,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("failed to list user accounts: %w", err)
+		return nil, fmt.Errorf("failed to list user accounts: %w", TranslateError(err))
 	}
 
 	accounts := make([]domain.Account, 0, len(rows))
@@ -100,10 +90,7 @@ func (r *accountRepo) Update(ctx context.Context, tenantID, id string, input dom
 		ID:       id,
 	})
 	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, domain.ErrNotFound
-		}
-		return nil, fmt.Errorf("failed to get account for update: %w", err)
+		return nil, fmt.Errorf("failed to get account for update: %w", TranslateError(err))
 	}
 
 	name := current.Name
@@ -130,11 +117,7 @@ func (r *accountRepo) Update(ctx context.Context, tenantID, id string, input dom
 		Currency: currency,
 	})
 	if err != nil {
-		var pgErr *pgconn.PgError
-		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
-			return nil, fmt.Errorf("%w: account name already exists", domain.ErrConflict)
-		}
-		return nil, fmt.Errorf("failed to update account: %w", err)
+		return nil, fmt.Errorf("failed to update account: %w", TranslateError(err))
 	}
 
 	return mapAccount(row), nil
@@ -148,10 +131,7 @@ func (r *accountRepo) UpdateBalance(ctx context.Context, tenantID, id string, ne
 		BalanceCents: newBalanceCents,
 	})
 	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return domain.ErrNotFound
-		}
-		return fmt.Errorf("failed to update account balance: %w", err)
+		return fmt.Errorf("failed to update account balance: %w", TranslateError(err))
 	}
 
 	return nil
@@ -164,7 +144,7 @@ func (r *accountRepo) Delete(ctx context.Context, tenantID, id string) error {
 		ID:       id,
 	})
 	if err != nil {
-		return fmt.Errorf("failed to delete account: %w", err)
+		return fmt.Errorf("failed to delete account: %w", TranslateError(err))
 	}
 
 	return nil

@@ -2,13 +2,11 @@ package repository
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"time"
 
 	"github.com/garnizeh/moolah/internal/domain"
 	"github.com/garnizeh/moolah/internal/platform/db/sqlc"
-	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -24,7 +22,7 @@ func NewAdminTenantRepository(q sqlc.Querier) domain.AdminTenantRepository {
 func (r *adminTenantRepo) ListAll(ctx context.Context, withDeleted bool) ([]domain.Tenant, error) {
 	tenants, err := r.q.AdminListAllTenants(ctx, withDeleted)
 	if err != nil {
-		return nil, fmt.Errorf("failed to list all tenants: %w", err)
+		return nil, fmt.Errorf("failed to list all tenants: %w", TranslateError(err))
 	}
 
 	result := make([]domain.Tenant, len(tenants))
@@ -37,10 +35,7 @@ func (r *adminTenantRepo) ListAll(ctx context.Context, withDeleted bool) ([]doma
 func (r *adminTenantRepo) GetByID(ctx context.Context, id string) (*domain.Tenant, error) {
 	t, err := r.q.AdminGetTenantByID(ctx, id)
 	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, domain.ErrNotFound
-		}
-		return nil, fmt.Errorf("failed to get tenant by id: %w", err)
+		return nil, fmt.Errorf("failed to get tenant by id: %w", TranslateError(err))
 	}
 	return mapTenant(t), nil
 }
@@ -52,10 +47,7 @@ func (r *adminTenantRepo) UpdatePlan(ctx context.Context, id string, plan domain
 	}
 	t, err := r.q.AdminUpdateTenantPlan(ctx, arg)
 	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, domain.ErrNotFound
-		}
-		return nil, fmt.Errorf("failed to update tenant plan: %w", err)
+		return nil, fmt.Errorf("failed to update tenant plan: %w", TranslateError(err))
 	}
 	return mapTenant(t), nil
 }
@@ -63,7 +55,7 @@ func (r *adminTenantRepo) UpdatePlan(ctx context.Context, id string, plan domain
 func (r *adminTenantRepo) Suspend(ctx context.Context, id string) error {
 	err := r.q.AdminSuspendTenant(ctx, id)
 	if err != nil {
-		return fmt.Errorf("failed to suspend tenant: %w", err)
+		return fmt.Errorf("failed to suspend tenant: %w", TranslateError(err))
 	}
 	return nil
 }
@@ -71,7 +63,7 @@ func (r *adminTenantRepo) Suspend(ctx context.Context, id string) error {
 func (r *adminTenantRepo) Restore(ctx context.Context, id string) error {
 	err := r.q.AdminRestoreTenant(ctx, id)
 	if err != nil {
-		return fmt.Errorf("failed to restore tenant: %w", err)
+		return fmt.Errorf("failed to restore tenant: %w", TranslateError(err))
 	}
 	return nil
 }
@@ -79,7 +71,7 @@ func (r *adminTenantRepo) Restore(ctx context.Context, id string) error {
 func (r *adminTenantRepo) HardDelete(ctx context.Context, id string) error {
 	err := r.q.AdminHardDeleteTenant(ctx, id)
 	if err != nil {
-		return fmt.Errorf("failed to hard delete tenant: %w", err)
+		return fmt.Errorf("failed to hard delete tenant: %w", TranslateError(err))
 	}
 	return nil
 }
@@ -96,7 +88,7 @@ func NewAdminUserRepository(q sqlc.Querier) domain.AdminUserRepository {
 func (r *adminUserRepo) ListAll(ctx context.Context) ([]domain.User, error) {
 	users, err := r.q.AdminListAllUsers(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("failed to list all users: %w", err)
+		return nil, fmt.Errorf("failed to list all users: %w", TranslateError(err))
 	}
 
 	result := make([]domain.User, len(users))
@@ -109,10 +101,7 @@ func (r *adminUserRepo) ListAll(ctx context.Context) ([]domain.User, error) {
 func (r *adminUserRepo) GetByID(ctx context.Context, id string) (*domain.User, error) {
 	u, err := r.q.AdminGetUserByID(ctx, id)
 	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, domain.ErrNotFound
-		}
-		return nil, fmt.Errorf("failed to get user by id: %w", err)
+		return nil, fmt.Errorf("failed to get user by id: %w", TranslateError(err))
 	}
 	return mapUser(u), nil
 }
@@ -120,7 +109,7 @@ func (r *adminUserRepo) GetByID(ctx context.Context, id string) (*domain.User, e
 func (r *adminUserRepo) ForceDelete(ctx context.Context, id string) error {
 	err := r.q.AdminForceDeleteUser(ctx, id)
 	if err != nil {
-		return fmt.Errorf("failed to force delete user: %w", err)
+		return fmt.Errorf("failed to force delete user: %w", TranslateError(err))
 	}
 	return nil
 }
@@ -159,7 +148,7 @@ func (r *adminAuditRepo) ListAll(ctx context.Context, params domain.ListAuditLog
 
 	logs, err := r.q.AdminListAllAuditLogs(ctx, arg)
 	if err != nil {
-		return nil, fmt.Errorf("failed to list all audit logs: %w", err)
+		return nil, fmt.Errorf("failed to list all audit logs: %w", TranslateError(err))
 	}
 
 	result := make([]domain.AuditLog, len(logs))

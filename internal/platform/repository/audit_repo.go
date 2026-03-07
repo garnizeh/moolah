@@ -2,13 +2,12 @@ package repository
 
 import (
 	"context"
-	"errors"
+	"fmt"
 	"net/netip"
 
 	"github.com/garnizeh/moolah/internal/domain"
 	"github.com/garnizeh/moolah/internal/platform/db/sqlc"
 	"github.com/garnizeh/moolah/pkg/ulid"
-	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -53,7 +52,7 @@ func (r *auditRepo) Create(ctx context.Context, input domain.CreateAuditLogInput
 
 	row, err := r.q.CreateAuditLog(ctx, arg)
 	if err != nil {
-		return nil, r.translateError(err)
+		return nil, fmt.Errorf("failed to create audit log: %w", TranslateError(err))
 	}
 
 	return r.mapToDomain(row), nil
@@ -74,7 +73,7 @@ func (r *auditRepo) ListByTenant(ctx context.Context, tenantID string, params do
 
 	rows, err := r.q.ListAuditLogsByTenant(ctx, arg)
 	if err != nil {
-		return nil, r.translateError(err)
+		return nil, fmt.Errorf("failed to list audit logs: %w", TranslateError(err))
 	}
 
 	logs := make([]domain.AuditLog, len(rows))
@@ -95,7 +94,7 @@ func (r *auditRepo) ListByEntity(ctx context.Context, tenantID, entityType, enti
 
 	rows, err := r.q.ListAuditLogsByEntity(ctx, arg)
 	if err != nil {
-		return nil, r.translateError(err)
+		return nil, fmt.Errorf("failed to list audit logs by entity: %w", TranslateError(err))
 	}
 
 	logs := make([]domain.AuditLog, len(rows))
@@ -132,11 +131,4 @@ func (r *auditRepo) mapToDomain(row sqlc.AuditLog) *domain.AuditLog {
 	}
 
 	return log
-}
-
-func (r *auditRepo) translateError(err error) error {
-	if errors.Is(err, pgx.ErrNoRows) {
-		return domain.ErrNotFound
-	}
-	return err
 }

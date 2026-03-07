@@ -2,14 +2,11 @@ package repository
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	"github.com/garnizeh/moolah/internal/domain"
 	"github.com/garnizeh/moolah/internal/platform/db/sqlc"
 	"github.com/garnizeh/moolah/pkg/ulid"
-	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -41,11 +38,7 @@ func (r *categoryRepo) Create(ctx context.Context, tenantID string, input domain
 
 	row, err := r.q.CreateCategory(ctx, arg)
 	if err != nil {
-		var pgErr *pgconn.PgError
-		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
-			return nil, fmt.Errorf("%w: category name already exists", domain.ErrConflict)
-		}
-		return nil, fmt.Errorf("failed to create category: %w", err)
+		return nil, fmt.Errorf("failed to create category: %w", TranslateError(err))
 	}
 
 	return mapCategory(row), nil
@@ -58,10 +51,7 @@ func (r *categoryRepo) GetByID(ctx context.Context, tenantID, id string) (*domai
 		ID:       id,
 	})
 	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, domain.ErrNotFound
-		}
-		return nil, fmt.Errorf("failed to get category: %w", err)
+		return nil, fmt.Errorf("failed to get category: %w", TranslateError(err))
 	}
 
 	return mapCategory(row), nil
@@ -71,7 +61,7 @@ func (r *categoryRepo) GetByID(ctx context.Context, tenantID, id string) (*domai
 func (r *categoryRepo) ListByTenant(ctx context.Context, tenantID string) ([]domain.Category, error) {
 	rows, err := r.q.ListCategoriesByTenant(ctx, tenantID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to list categories: %w", err)
+		return nil, fmt.Errorf("failed to list categories: %w", TranslateError(err))
 	}
 
 	categories := make([]domain.Category, 0, len(rows))
@@ -89,7 +79,7 @@ func (r *categoryRepo) ListChildren(ctx context.Context, tenantID, parentID stri
 		ParentID: pgtype.Text{String: parentID, Valid: true},
 	})
 	if err != nil {
-		return nil, fmt.Errorf("failed to list child categories: %w", err)
+		return nil, fmt.Errorf("failed to list child categories: %w", TranslateError(err))
 	}
 
 	categories := make([]domain.Category, 0, len(rows))
@@ -108,10 +98,7 @@ func (r *categoryRepo) Update(ctx context.Context, tenantID, id string, input do
 		ID:       id,
 	})
 	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, domain.ErrNotFound
-		}
-		return nil, fmt.Errorf("failed to get category for update: %w", err)
+		return nil, fmt.Errorf("failed to get category for update: %w", TranslateError(err))
 	}
 
 	name := current.Name
@@ -139,11 +126,7 @@ func (r *categoryRepo) Update(ctx context.Context, tenantID, id string, input do
 		Type:     current.Type,
 	})
 	if err != nil {
-		var pgErr *pgconn.PgError
-		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
-			return nil, fmt.Errorf("%w: category name already exists", domain.ErrConflict)
-		}
-		return nil, fmt.Errorf("failed to update category: %w", err)
+		return nil, fmt.Errorf("failed to update category: %w", TranslateError(err))
 	}
 
 	return mapCategory(row), nil
@@ -156,7 +139,7 @@ func (r *categoryRepo) Delete(ctx context.Context, tenantID, id string) error {
 		ID:       id,
 	})
 	if err != nil {
-		return fmt.Errorf("failed to delete category: %w", err)
+		return fmt.Errorf("failed to delete category: %w", TranslateError(err))
 	}
 
 	return nil

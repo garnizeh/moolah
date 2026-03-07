@@ -2,14 +2,11 @@ package repository
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	"github.com/garnizeh/moolah/internal/domain"
 	"github.com/garnizeh/moolah/internal/platform/db/sqlc"
 	"github.com/garnizeh/moolah/pkg/ulid"
-	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgconn"
 )
 
 type userRepo struct {
@@ -33,11 +30,7 @@ func (r *userRepo) Create(ctx context.Context, input domain.CreateUserInput) (*d
 
 	u, err := r.q.CreateUser(ctx, arg)
 	if err != nil {
-		var pgErr *pgconn.PgError
-		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
-			return nil, fmt.Errorf("%w: user email already exists", domain.ErrConflict)
-		}
-		return nil, fmt.Errorf("failed to create user: %w", err)
+		return nil, fmt.Errorf("failed to create user: %w", TranslateError(err))
 	}
 
 	return r.mapUser(u), nil
@@ -50,10 +43,7 @@ func (r *userRepo) GetByID(ctx context.Context, tenantID, id string) (*domain.Us
 		ID:       id,
 	})
 	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, domain.ErrNotFound
-		}
-		return nil, fmt.Errorf("failed to get user by id: %w", err)
+		return nil, fmt.Errorf("failed to get user by id: %w", TranslateError(err))
 	}
 
 	return r.mapUser(u), nil
@@ -65,10 +55,7 @@ func (r *userRepo) GetByEmail(ctx context.Context, email string) (*domain.User, 
 		Email: email,
 	})
 	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, domain.ErrNotFound
-		}
-		return nil, fmt.Errorf("failed to get user by email: %w", err)
+		return nil, fmt.Errorf("failed to get user by email: %w", TranslateError(err))
 	}
 
 	return r.mapUser(u), nil
@@ -78,7 +65,7 @@ func (r *userRepo) GetByEmail(ctx context.Context, email string) (*domain.User, 
 func (r *userRepo) ListByTenant(ctx context.Context, tenantID string) ([]domain.User, error) {
 	users, err := r.q.ListUsersByTenant(ctx, tenantID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to list users: %w", err)
+		return nil, fmt.Errorf("failed to list users: %w", TranslateError(err))
 	}
 
 	domainUsers := make([]domain.User, len(users))
@@ -96,10 +83,7 @@ func (r *userRepo) Update(ctx context.Context, tenantID, id string, input domain
 		ID:       id,
 	})
 	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, domain.ErrNotFound
-		}
-		return nil, fmt.Errorf("failed to get user for update: %w", err)
+		return nil, fmt.Errorf("failed to get user for update: %w", TranslateError(err))
 	}
 
 	arg := sqlc.UpdateUserParams{
@@ -118,7 +102,7 @@ func (r *userRepo) Update(ctx context.Context, tenantID, id string, input domain
 
 	u, err := r.q.UpdateUser(ctx, arg)
 	if err != nil {
-		return nil, fmt.Errorf("failed to update user: %w", err)
+		return nil, fmt.Errorf("failed to update user: %w", TranslateError(err))
 	}
 
 	return r.mapUser(u), nil
@@ -130,7 +114,7 @@ func (r *userRepo) UpdateLastLogin(ctx context.Context, id string) error {
 		ID: id,
 	})
 	if err != nil {
-		return fmt.Errorf("failed to update user last login: %w", err)
+		return fmt.Errorf("failed to update user last login: %w", TranslateError(err))
 	}
 	return nil
 }
@@ -142,7 +126,7 @@ func (r *userRepo) Delete(ctx context.Context, tenantID, id string) error {
 		ID:       id,
 	})
 	if err != nil {
-		return fmt.Errorf("failed to soft delete user: %w", err)
+		return fmt.Errorf("failed to soft delete user: %w", TranslateError(err))
 	}
 	return nil
 }
