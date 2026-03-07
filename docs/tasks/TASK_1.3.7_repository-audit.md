@@ -1,7 +1,7 @@
 # Task 1.3.7 — Repository: Audit Log
 
 > **Roadmap Ref:** Phase 1 — MVP › 1.3 Repository Layer
-> **Status:** 🔵 `backlog`
+> **Status:** ✅ `done`
 > **Last Updated:** 2026-03-07
 > **Assignee:** —
 > **Estimated Effort:** M
@@ -79,15 +79,15 @@ All queries already exist in `internal/platform/db/queries/audit_logs.sql` (Task
 
 ## 5. Acceptance Criteria
 
-- [ ] All exported types and functions have Go doc comments.
-- [ ] Struct implements `domain.AuditRepository` (verified by compiler).
-- [ ] No `Update` or `Delete` methods exist on the struct (append-only enforced).
-- [ ] `OldValues` / `NewValues` are correctly mapped: DB `NULL` → Go `nil []byte`.
-- [ ] Every query enforces `tenant_id` isolation.
-- [ ] `ListByTenant` applies all `ListAuditLogsParams` filters.
-- [ ] `golangci-lint run ./...` passes with zero issues.
-- [ ] `gosec ./...` passes with zero issues.
-- [ ] `docs/ROADMAP.md` row updated to ✅ `done`.
+- [x] All exported types and functions have Go doc comments.
+- [x] Struct implements `domain.AuditRepository` (verified by compiler).
+- [x] No `Update` or `Delete` methods exist on the struct (append-only enforced).
+- [x] `OldValues` / `NewValues` are correctly mapped: DB `NULL` → Go `nil []byte`.
+- [x] Every query enforces `tenant_id` isolation.
+- [x] `ListByTenant` applies all `ListAuditLogsParams` filters.
+- [x] `golangci-lint run ./...` passes with zero issues.
+- [x] `gosec ./...` passes with zero issues.
+- [x] `docs/ROADMAP.md` row updated to ✅ `done`.
 
 ---
 
@@ -132,3 +132,4 @@ Covered by Task 1.3.9 — specifically:
 | Date       | Author | Change                    |
 | ---------- | ------ | ------------------------- |
 | 2026-03-07 | —      | Task created from roadmap |
+| 2026-03-07 | Copilot | Task completed             |
