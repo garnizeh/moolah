@@ -64,12 +64,12 @@
 
 | # | Task | Status | Last Updated | Notes |
 | --- | --- | --- | --- | --- |
-| 1.2.1 | `domain/errors.go` — sentinel errors (`ErrNotFound`, `ErrForbidden`, `ErrInvalidOTP`, …) | 🔵 `backlog` | 2026-03-07 | |
+| 1.2.1 | `domain/errors.go` — sentinel errors (`ErrNotFound`, `ErrForbidden`, `ErrInvalidOTP`, …) | ✅ `done` | 2026-03-07 | |
 | 1.2.2 | `domain/role.go` — `Role` type + constants | ✅ `done` | 2026-03-07 | |
 | 1.2.3 | `domain/tenant.go` — entity + `TenantRepository` interface | 🔵 `backlog` | 2026-03-06 | |
 | 1.2.4 | `domain/user.go` — entity + `UserRepository` interface | 🔵 `backlog` | 2026-03-06 | |
 | 1.2.5 | `domain/auth.go` — `OTPRequest` entity + `AuthRepository` interface | 🔵 `backlog` | 2026-03-06 | |
-| 1.2.6 | `domain/mailer.go` — `Mailer` interface | 🔵 `backlog` | 2026-03-06 | |
+| 1.2.6 | `domain/mailer.go` — `Mailer` interface | ✅ `done` | 2026-03-07 | |
 | 1.2.7 | `domain/account.go` — entity + `AccountRepository` interface | 🔵 `backlog` | 2026-03-06 | |
 | 1.2.8 | `domain/category.go` — entity + `CategoryRepository` interface | 🔵 `backlog` | 2026-03-06 | |
 | 1.2.9 | `domain/transaction.go` — entity + `TransactionRepository` interface | 🔵 `backlog` | 2026-03-06 | |
