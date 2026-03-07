@@ -54,7 +54,7 @@
 | 1.1.6 | Goose migration files (enums → tenants → users → accounts → categories → transactions → audit_logs) | ✅ `done` | 2026-03-07 | `embed.FS`; auto-run on startup |
 | 1.1.7 | `sqlc` query files for all Phase 1 entities | ✅ `done` | 2026-03-07 | |
 | 1.1.8 | `sqlc generate` — verified generated code committed | ✅ `done` | 2026-03-07 | Checked in CI |
-| 1.1.9 | `platform/middleware/auth.go` — PASETO validation + context injection | 🔵 `backlog` | 2026-03-06 | `RequireAuth`, `RequireRole` |
+| 1.1.9 | `platform/middleware/auth.go` — PASETO validation + context injection | ✅ `done` | 2026-03-07 | `RequireAuth`, `RequireRole` |
 | 1.1.10 | `platform/middleware/ratelimit.go` — token-bucket OTP limiter | 🔵 `backlog` | 2026-03-06 | `golang.org/x/time/rate`; 5 req/15 min |
 | 1.1.11 | `platform/middleware/logger.go` — request logging middleware | 🔵 `backlog` | 2026-03-06 | tenant_id, user_id, latency |
 | 1.1.12 | `platform/mailer/smtp_mailer.go` — implements `domain.Mailer` | 🔵 `backlog` | 2026-03-06 | |

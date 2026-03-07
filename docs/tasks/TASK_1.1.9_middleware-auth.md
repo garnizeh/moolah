@@ -1,9 +1,9 @@
 # Task 1.1.9 — platform/middleware/auth.go: PASETO Validation + Context Injection
 
 > **Roadmap Ref:** Phase 1 — MVP: Core Finance › 1.1 Infrastructure & Platform
-> **Status:** 🔵 `backlog`
+> **Status:** ✅ `done`
 > **Last Updated:** 2026-03-07
-> **Assignee:** —
+> **Assignee:** GitHub Copilot
 > **Estimated Effort:** M
 
 ---
