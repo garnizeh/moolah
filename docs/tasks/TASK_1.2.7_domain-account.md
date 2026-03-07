@@ -1,7 +1,7 @@
 # Task 1.2.7 — Domain Account Entity & Repository Interface
 
 > **Roadmap Ref:** Phase 1 — MVP › 1.2 Domain Layer
-> **Status:** 🔵 `backlog`
+> **Status:** ✅ `done`
 > **Last Updated:** 2026-03-07
 > **Assignee:** —
 > **Estimated Effort:** M
@@ -24,10 +24,10 @@ Accounts are the foundational finance entities — every Transaction is associat
 
 ### In scope
 
-- [ ] `Account` struct and `AccountType` constants.
-- [ ] `CreateAccountInput` and `UpdateAccountInput` value objects.
-- [ ] `AccountRepository` interface: CRUD + balance recalculation trigger.
-- [ ] Balance must use `int64` (cents) — never `float64`.
+- [x] `Account` struct and `AccountType` constants.
+- [x] `CreateAccountInput` and `UpdateAccountInput` value objects.
+- [x] `AccountRepository` interface: CRUD + balance recalculation trigger.
+- [x] Balance must use `int64` (cents) — never `float64`.
 
 ### Out of scope
 
@@ -49,7 +49,7 @@ Accounts are the foundational finance entities — every Transaction is associat
 ### Key interfaces / types
 
 ```go
-// AccountType mirrors the DB enum.
+// AccountType mirrors the database enum for financial account types.
 type AccountType string
 
 const (
@@ -59,25 +59,27 @@ const (
     AccountTypeInvestment AccountType = "investment"
 )
 
-// Account represents a financial account owned by a user within a household.
+// Account represents a financial account owned by a user within a household (tenant).
+// All balances are stored in cents (int64) to ensure precision.
 type Account struct {
-    ID           string
-    TenantID     string
-    UserID       string
-    Name         string
-    Type         AccountType
-    Currency     string      // ISO 4217, e.g. "BRL", "USD"
-    BalanceCents int64       // Always in cents; never float
-    CreatedAt    time.Time
-    UpdatedAt    time.Time
-    DeletedAt    *time.Time
+    CreatedAt    time.Time   `json:"created_at"`
+    UpdatedAt    time.Time   `json:"updated_at"`
+    DeletedAt    *time.Time  `json:"deleted_at,omitempty"`
+    ID           string      `json:"id"`
+    TenantID     string      `json:"tenant_id"`
+    UserID       string      `json:"user_id"`
+    Name         string      `json:"name"`
+    Type         AccountType `json:"type"`
+    Currency     string      `json:"currency"`     // ISO 4217 code (e.g. "USD")
+    BalanceCents int64       `json:"balance_cents"` // Always in cents; never float
 }
 
 type CreateAccountInput struct {
-    UserID   string      `validate:"required"`
-    Name     string      `validate:"required,min=1,max=100"`
-    Type     AccountType `validate:"required,oneof=checking savings credit_card investment"`
-    Currency string      `validate:"required,len=3"`
+    UserID       string      `validate:"required"`
+    Name         string      `validate:"required,min=1,max=100"`
+    Type         AccountType `validate:"required,oneof=checking savings credit_card investment"`
+    Currency     string      `validate:"required,len=3"`
+    InitialCents int64       `validate:"required"`
 }
 
 type UpdateAccountInput struct {
@@ -118,13 +120,13 @@ N/A — endpoints are registered in Task 1.5.6.
 
 ## 5. Acceptance Criteria
 
-- [ ] All exported types and functions have Go doc comments.
-- [ ] `AccountRepository` interface is defined in `internal/domain/account.go`.
-- [ ] `BalanceCents` is `int64` — no `float` anywhere.
-- [ ] `Account` struct uses `time.Time` / `*time.Time` (not `pgtype`).
-- [ ] `golangci-lint run ./...` passes with zero issues.
-- [ ] `gosec ./...` passes with zero issues.
-- [ ] `docs/ROADMAP.md` row updated to ✅ `done`.
+- [x] All exported types and functions have Go doc comments.
+- [x] `AccountRepository` interface is defined in `internal/domain/account.go`.
+- [x] `BalanceCents` is `int64` — no `float` anywhere.
+- [x] `Account` struct uses `time.Time` / `*time.Time` (not `pgtype`).
+- [x] `golangci-lint run ./...` passes with zero issues.
+- [x] `gosec ./...` passes with zero issues.
+- [x] `docs/ROADMAP.md` row updated to ✅ `done`.
 
 ---
 
@@ -162,3 +164,4 @@ Covered by Task 1.3.4 repository integration tests.
 | Date       | Author | Change                    |
 | ---------- | ------ | ------------------------- |
 | 2026-03-07 | —      | Task created from roadmap |
+| 2026-03-07 | —      | Entity and Repository interface implemented |
