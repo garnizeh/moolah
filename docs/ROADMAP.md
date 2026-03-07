@@ -73,7 +73,7 @@
 | 1.2.7 | `domain/account.go` — entity + `AccountRepository` interface | ✅ `done` | 2026-03-07 | |
 | 1.2.8 | `domain/category.go` — entity + `CategoryRepository` interface | ✅ `done` | 2026-03-07 | |
 | 1.2.9 | `domain/transaction.go` — entity + `TransactionRepository` interface | ✅ `done` | 2026-03-07 | |
-| 1.2.10 | `domain/audit.go` — `AuditLog` entity + `AuditRepository` interface | 🔵 `backlog` | 2026-03-06 | |
+| 1.2.10 | `domain/audit.go` — `AuditLog` entity + `AuditRepository` interface | ✅ `done` | 2026-03-07 | |
 | 1.2.11 | `domain/admin.go` — admin-only repository interfaces | 🔵 `backlog` | 2026-03-06 | |
 
 ### 1.3 Repository Layer

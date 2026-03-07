@@ -1,7 +1,7 @@
 # Task 1.2.10 — Domain AuditLog Entity & Repository Interface
 
 > **Roadmap Ref:** Phase 1 — MVP › 1.2 Domain Layer
-> **Status:** 🔵 `backlog`
+> **Status:** ✅ `done`
 > **Last Updated:** 2026-03-07
 > **Assignee:** —
 > **Estimated Effort:** M
@@ -24,10 +24,10 @@ Financial applications require a tamper-evident audit trail. Every significant a
 
 ### In scope
 
-- [ ] `AuditLog` struct and `AuditAction` constants.
-- [ ] `CreateAuditLogInput` value object.
-- [ ] `AuditRepository` interface: `Create` + `ListByTenant` + `ListByEntity`.
-- [ ] Audit logs are **append-only** — no update or delete methods on the repository.
+- [x] `AuditLog` struct and `AuditAction` constants.
+- [x] `CreateAuditLogInput` value object.
+- [x] `AuditRepository` interface: `Create` + `ListByTenant` + `ListByEntity`.
+- [x] Audit logs are **append-only** — no update or delete methods on the repository.
 
 ### Out of scope
 
@@ -49,7 +49,7 @@ Financial applications require a tamper-evident audit trail. Every significant a
 ### Key interfaces / types
 
 ```go
-// AuditAction mirrors the DB enum.
+// AuditAction mirrors the database enum for audit actions.
 type AuditAction string
 
 const (
@@ -65,31 +65,31 @@ const (
 
 // AuditLog is an immutable record of a significant system event.
 type AuditLog struct {
-    ID         string
-    TenantID   string
-    ActorID    string      // User ULID or "SYSTEM" for automated actions
-    ActorRole  Role
-    Action     AuditAction
-    EntityType string      // e.g. "transaction", "account", "user"
-    EntityID   string      // ULID of the affected entity
-    OldValues  []byte      // JSON snapshot before change (nil for creates)
-    NewValues  []byte      // JSON snapshot after change (nil for deletes)
-    IPAddress  string      // IPv4 or IPv6, empty if not applicable
-    UserAgent  string      // HTTP User-Agent header, empty if not applicable
-    CreatedAt  time.Time
+ CreatedAt  time.Time   `json:"created_at"`
+ ID         string      `json:"id"`
+ TenantID   string      `json:"tenant_id"`
+ ActorID    string      `json:"actor_id"` // User ULID or "SYSTEM" for automated actions
+ EntityType string      `json:"entity_type"`
+ EntityID   string      `json:"entity_id"`
+ IPAddress  string      `json:"ip_address"`
+ UserAgent  string      `json:"user_agent"`
+ ActorRole  Role        `json:"actor_role"`
+ Action     AuditAction `json:"action"`
+ OldValues  []byte      `json:"old_values,omitempty"` // JSON snapshot before change
+ NewValues  []byte      `json:"new_values,omitempty"` // JSON snapshot after change
 }
 
 type CreateAuditLogInput struct {
-    TenantID   string      `validate:"required"`
-    ActorID    string      `validate:"required"`
-    ActorRole  Role        `validate:"required"`
-    Action     AuditAction `validate:"required"`
-    EntityType string      `validate:"required"`
-    EntityID   string      `validate:"omitempty"`
-    OldValues  []byte
-    NewValues  []byte
-    IPAddress  string
-    UserAgent  string
+ TenantID   string      `validate:"required"`
+ ActorID    string      `validate:"required"`
+ Action     AuditAction `validate:"required"`
+ EntityType string      `validate:"required"`
+ EntityID   string      `validate:"omitempty"`
+ IPAddress  string      `validate:"omitempty"`
+ UserAgent  string      `validate:"omitempty"`
+ ActorRole  Role        `validate:"required"`
+ OldValues  []byte      `json:"-"`
+ NewValues  []byte      `json:"-"`
 }
 
 type ListAuditLogsParams struct {
@@ -134,14 +134,14 @@ N/A — endpoints are registered in Task 1.5.9 (admin handler).
 
 ## 5. Acceptance Criteria
 
-- [ ] All exported types and functions have Go doc comments.
-- [ ] `AuditRepository` interface is defined in `internal/domain/audit.go`.
-- [ ] No update or delete methods on `AuditRepository` (append-only).
-- [ ] `AuditLog` has no `DeletedAt` field (audit logs are never soft-deleted).
-- [ ] `AuditLog` struct uses `time.Time` (not `pgtype`).
-- [ ] `golangci-lint run ./...` passes with zero issues.
-- [ ] `gosec ./...` passes with zero issues.
-- [ ] `docs/ROADMAP.md` row updated to ✅ `done`.
+- [x] All exported types and functions have Go doc comments.
+- [x] `AuditRepository` interface is defined in `internal/domain/audit.go`.
+- [x] No update or delete methods on `AuditRepository` (append-only).
+- [x] `AuditLog` has no `DeletedAt` field (audit logs are never soft-deleted).
+- [x] `AuditLog` struct uses `time.Time` (not `pgtype`).
+- [x] `golangci-lint run ./...` passes with zero issues.
+- [x] `gosec ./...` passes with zero issues.
+- [x] `docs/ROADMAP.md` row updated to ✅ `done`.
 
 ---
 
@@ -149,7 +149,7 @@ N/A — endpoints are registered in Task 1.5.9 (admin handler).
 
 | Dependency                       | Type     | Status     |
 | -------------------------------- | -------- | ---------- |
-| Task 1.2.1 — `domain/errors.go`  | Upstream | 🔵 backlog |
+| Task 1.2.1 — `domain/errors.go`  | Upstream | ✅ done    |
 | Task 1.2.2 — `domain/role.go`    | Upstream | ✅ done    |
 
 ---
@@ -180,3 +180,4 @@ Covered by Task 1.3.7 repository integration tests.
 | Date       | Author | Change                    |
 | ---------- | ------ | ------------------------- |
 | 2026-03-07 | —      | Task created from roadmap |
+| 2026-03-07 | —      | Entity and Repository interface implemented |
