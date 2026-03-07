@@ -88,9 +88,9 @@
 | 1.3.1 | `repository/tenant_repo.go` | ✅ `done` | 2026-03-07 | 100% coverage, shared mock |
 | 1.3.2 | `repository/user_repo.go` | ✅ `done` | 2026-03-07 | 100% coverage, auth-flow exception |
 | 1.3.3 | `repository/auth_repo.go` | ✅ `done` | 2026-03-07 | 100% coverage, OTP lifecycle |
-| 1.3.4 | `repository/account_repo.go` | ✅ `done` | 2026-03-07 | |
-| 1.3.5 | `repository/category_repo.go` | 🔵 `backlog` | 2026-03-06 | |
-| 1.3.6 | `repository/transaction_repo.go` | 🔵 `backlog` | 2026-03-06 | |
+| 1.3.4 | `repository/account_repo.go` | ✅ `done` | 2026-03-07 | 100% coverage |
+| 1.3.5 | `repository/category_repo.go` | ✅ `done` | 2026-03-07 | 100% coverage |
+| 1.3.6 | `repository/transaction_repo.go` | ✅ `done` | 2026-03-07 | 100% coverage |
 | 1.3.7 | `repository/audit_repo.go` | 🔵 `backlog` | 2026-03-06 | |
 | 1.3.8 | `repository/admin_repo.go` | 🔵 `backlog` | 2026-03-06 | |
 | 1.3.9 | Integration tests for all repositories (testcontainers-go) | 🔵 `backlog` | 2026-03-06 | `//go:build integration` tag |

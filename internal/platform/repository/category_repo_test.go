@@ -65,7 +65,7 @@ func TestCategoryRepository_Create(t *testing.T) {
 		mockQuerier.On("CreateCategory", ctx, mock.Anything).Return(sqlc.Category{}, &pgconn.PgError{Code: "23505"})
 
 		got, err := repo.Create(ctx, tenantID, input)
-		assert.ErrorIs(t, err, domain.ErrConflict)
+		require.ErrorIs(t, err, domain.ErrConflict)
 		assert.Nil(t, got)
 	})
 }
@@ -105,7 +105,7 @@ func TestCategoryRepository_GetByID(t *testing.T) {
 		mockQuerier.On("GetCategoryByID", ctx, mock.Anything).Return(sqlc.Category{}, pgx.ErrNoRows)
 
 		got, err := repo.GetByID(ctx, tenantID, id)
-		assert.ErrorIs(t, err, domain.ErrNotFound)
+		require.ErrorIs(t, err, domain.ErrNotFound)
 		assert.Nil(t, got)
 	})
 }
@@ -210,7 +210,7 @@ func TestCategoryRepository_Update(t *testing.T) {
 		mockQuerier.On("UpdateCategory", ctx, mock.Anything).Return(sqlc.Category{}, &pgconn.PgError{Code: "23505"})
 
 		got, err := repo.Update(ctx, tenantID, id, input)
-		assert.ErrorIs(t, err, domain.ErrConflict)
+		require.ErrorIs(t, err, domain.ErrConflict)
 		assert.Nil(t, got)
 	})
 }
@@ -244,7 +244,7 @@ func TestCategoryRepository_Delete(t *testing.T) {
 		mockQuerier.On("SoftDeleteCategory", ctx, mock.Anything).Return(errors.New("db error"))
 
 		err := repo.Delete(ctx, tenantID, id)
-		assert.Error(t, err)
+		require.Error(t, err)
 	})
 }
 
@@ -263,7 +263,7 @@ func TestCategoryRepository_GenericErrors(t *testing.T) {
 		mockQuerier.On("CreateCategory", ctx, mock.Anything).Return(sqlc.Category{}, errors.New("db error"))
 
 		got, err := repo.Create(ctx, tenantID, domain.CreateCategoryInput{})
-		assert.Error(t, err)
+		require.Error(t, err)
 		assert.Contains(t, err.Error(), "failed to create category")
 		assert.Nil(t, got)
 	})
@@ -278,7 +278,7 @@ func TestCategoryRepository_GenericErrors(t *testing.T) {
 		})).Return(sqlc.Category{}, errors.New("db error"))
 
 		got, err := repo.GetByID(ctx, tenantID, id)
-		assert.Error(t, err)
+		require.Error(t, err)
 		assert.Contains(t, err.Error(), "failed to get category")
 		assert.Nil(t, got)
 	})
@@ -291,7 +291,7 @@ func TestCategoryRepository_GenericErrors(t *testing.T) {
 		mockQuerier.On("ListCategoriesByTenant", ctx, mock.Anything).Return([]sqlc.Category(nil), errors.New("db error"))
 
 		got, err := repo.ListByTenant(ctx, tenantID)
-		assert.Error(t, err)
+		require.Error(t, err)
 		assert.Contains(t, err.Error(), "failed to list categories")
 		assert.Nil(t, got)
 	})
@@ -304,7 +304,7 @@ func TestCategoryRepository_GenericErrors(t *testing.T) {
 		mockQuerier.On("ListChildCategories", ctx, mock.Anything).Return([]sqlc.Category(nil), errors.New("db error"))
 
 		got, err := repo.ListChildren(ctx, tenantID, "parent_id")
-		assert.Error(t, err)
+		require.Error(t, err)
 		assert.Contains(t, err.Error(), "failed to list child categories")
 		assert.Nil(t, got)
 	})
@@ -317,7 +317,7 @@ func TestCategoryRepository_GenericErrors(t *testing.T) {
 		mockQuerier.On("GetCategoryByID", ctx, mock.Anything).Return(sqlc.Category{}, errors.New("db error"))
 
 		got, err := repo.Update(ctx, tenantID, id, domain.UpdateCategoryInput{})
-		assert.Error(t, err)
+		require.Error(t, err)
 		assert.Contains(t, err.Error(), "failed to get category for update")
 		assert.Nil(t, got)
 	})
@@ -331,7 +331,7 @@ func TestCategoryRepository_GenericErrors(t *testing.T) {
 		mockQuerier.On("UpdateCategory", ctx, mock.Anything).Return(sqlc.Category{}, errors.New("db error"))
 
 		got, err := repo.Update(ctx, tenantID, id, domain.UpdateCategoryInput{})
-		assert.Error(t, err)
+		require.Error(t, err)
 		assert.Contains(t, err.Error(), "failed to update category")
 		assert.Nil(t, got)
 	})
@@ -367,7 +367,7 @@ func TestCategoryRepository_UpdatePartial(t *testing.T) {
 		})).Return(sqlc.Category{ID: id}, nil)
 
 		_, err := repo.Update(ctx, tenantID, id, input)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 	})
 
 	t.Run("update name only", func(t *testing.T) {
@@ -391,7 +391,7 @@ func TestCategoryRepository_UpdatePartial(t *testing.T) {
 		})).Return(sqlc.Category{ID: id}, nil)
 
 		_, err := repo.Update(ctx, tenantID, id, input)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 	})
 
 	t.Run("update icon and name", func(t *testing.T) {
@@ -418,7 +418,7 @@ func TestCategoryRepository_UpdatePartial(t *testing.T) {
 		})).Return(sqlc.Category{ID: id}, nil)
 
 		_, err := repo.Update(ctx, tenantID, id, input)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 	})
 
 	t.Run("not found", func(t *testing.T) {
@@ -429,7 +429,7 @@ func TestCategoryRepository_UpdatePartial(t *testing.T) {
 		mockQuerier.On("GetCategoryByID", ctx, mock.Anything).Return(sqlc.Category{}, pgx.ErrNoRows)
 
 		got, err := repo.Update(ctx, tenantID, id, domain.UpdateCategoryInput{})
-		assert.ErrorIs(t, err, domain.ErrNotFound)
+		require.ErrorIs(t, err, domain.ErrNotFound)
 		assert.Nil(t, got)
 	})
 }

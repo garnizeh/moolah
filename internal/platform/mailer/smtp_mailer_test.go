@@ -156,14 +156,15 @@ func TestSMTPMailer_Validation(t *testing.T) {
 		_, portStr, err := net.SplitHostPort(addr)
 		require.NoError(t, err)
 		var port int
-		fmt.Sscanf(portStr, "%d", &port)
+		_, err = fmt.Sscanf(portStr, "%d", &port)
+		require.NoError(t, err)
 
 		go func() {
 			conn, _ := l.Accept()
 			if conn != nil {
 				bufWriter := bufio.NewWriter(conn)
 				writer := textproto.NewWriter(bufWriter)
-				writer.PrintfLine("554 Transaction failed")
+				_ = writer.PrintfLine("554 Transaction failed")
 				conn.Close()
 			}
 		}()
