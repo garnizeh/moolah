@@ -4,7 +4,7 @@ run:
   timeout: 5m
   modules-download-mode: readonly
   tests: true
-  go: "1.26"
+  go: "1.26.1"
 
 linters:
   disable-all: true
@@ -111,7 +111,12 @@ issues:
 
 output:
   formats:
-    - name: colored-line-number
-  sort-results: true
+    text:
+      path: stdout
+      colors: true
+  show-stats: true
+  sort-order:
+    - linter
+    - file
   print-issued-lines: true
   print-linter-name: true
