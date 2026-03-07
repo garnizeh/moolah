@@ -307,7 +307,7 @@ type AuditLog struct {
 type Category struct {
 	ID        string             `json:"id"`
 	TenantID  string             `json:"tenant_id"`
-	ParentID  string             `json:"parent_id"`
+	ParentID  pgtype.Text        `json:"parent_id"`
 	Name      string             `json:"name"`
 	Icon      pgtype.Text        `json:"icon"`
 	Color     pgtype.Text        `json:"color"`

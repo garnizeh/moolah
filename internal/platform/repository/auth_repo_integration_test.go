@@ -74,19 +74,22 @@ func TestAuthRepo_Integration(t *testing.T) {
 		emailExp := "exp@example.com"
 
 		// One live
-		live, _ := repo.CreateOTPRequest(ctx, domain.CreateOTPRequestInput{
+		live, err := repo.CreateOTPRequest(ctx, domain.CreateOTPRequestInput{
 			Email:     emailLive,
 			CodeHash:  "hash1",
 			ExpiresAt: time.Now().Add(10 * time.Minute),
 		})
+		require.NoError(t, err)
+
 		// One expired
-		_, _ = repo.CreateOTPRequest(ctx, domain.CreateOTPRequestInput{
+		_, err = repo.CreateOTPRequest(ctx, domain.CreateOTPRequestInput{
 			Email:     emailExp,
 			CodeHash:  "hash2",
 			ExpiresAt: time.Now().Add(-10 * time.Minute),
 		})
+		require.NoError(t, err)
 
-		err := repo.DeleteExpiredOTPRequests(ctx)
+		err = repo.DeleteExpiredOTPRequests(ctx)
 		require.NoError(t, err)
 
 		// Live should still be there

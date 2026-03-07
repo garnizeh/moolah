@@ -41,7 +41,7 @@ type Querier interface {
 	ListCategoriesByTenant(ctx context.Context, tenantID string) ([]Category, error)
 	ListChildCategories(ctx context.Context, arg ListChildCategoriesParams) ([]Category, error)
 	ListTenants(ctx context.Context) ([]Tenant, error)
-	ListTransactionsByTenant(ctx context.Context, tenantID string) ([]Transaction, error)
+	ListTransactionsByTenant(ctx context.Context, arg ListTransactionsByTenantParams) ([]Transaction, error)
 	ListUsersByTenant(ctx context.Context, tenantID string) ([]User, error)
 	MarkOTPUsed(ctx context.Context, id string) error
 	SoftDeleteAccount(ctx context.Context, arg SoftDeleteAccountParams) error

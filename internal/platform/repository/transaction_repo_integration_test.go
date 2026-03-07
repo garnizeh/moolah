@@ -12,6 +12,7 @@ import (
 	"github.com/garnizeh/moolah/internal/domain"
 	"github.com/garnizeh/moolah/internal/platform/repository"
 	"github.com/garnizeh/moolah/internal/testutil/containers"
+	"github.com/garnizeh/moolah/pkg/ulid"
 )
 
 func TestTransactionRepo_Integration(t *testing.T) {
@@ -27,24 +28,30 @@ func TestTransactionRepo_Integration(t *testing.T) {
 	repo := repository.NewTransactionRepository(db.Queries)
 
 	// Setup: Create tenant, user, account, category
-	tenant, _ := tenantRepo.Create(ctx, domain.CreateTenantInput{Name: "TX Tenant"})
-	user, _ := userRepo.Create(ctx, domain.CreateUserInput{
+	tenant, err := tenantRepo.Create(ctx, domain.CreateTenantInput{Name: "TX Tenant"})
+	require.NoError(t, err)
+
+	user, err := userRepo.Create(ctx, domain.CreateUserInput{
 		TenantID: tenant.ID,
 		Email:    "txuser@example.com",
 		Name:     "TX User",
 		Role:     domain.RoleMember,
 	})
-	acc, _ := accountRepo.Create(ctx, tenant.ID, domain.CreateAccountInput{
+	require.NoError(t, err)
+
+	acc, err := accountRepo.Create(ctx, tenant.ID, domain.CreateAccountInput{
 		UserID:   user.ID,
 		Name:     "TX Account",
 		Type:     domain.AccountTypeChecking,
 		Currency: "USD",
 	})
+	require.NoError(t, err)
 
-	cat, _ := categoryRepo.Create(ctx, tenant.ID, domain.CreateCategoryInput{
+	cat, err := categoryRepo.Create(ctx, tenant.ID, domain.CreateCategoryInput{
 		Name: "TX Category",
 		Type: domain.CategoryTypeExpense,
 	})
+	require.NoError(t, err)
 
 	t.Run("Create and GetByID", func(t *testing.T) {
 		t.Parallel()
@@ -76,7 +83,20 @@ func TestTransactionRepo_Integration(t *testing.T) {
 
 	t.Run("Create with MasterPurchaseID", func(t *testing.T) {
 		t.Parallel()
-		masterID := "01KK4R6V8NAM0H3AMT18TDAFRX" // Valid ULID format
+		masterID := ulid.New()
+		_, err := db.Pool.Exec(ctx, `
+			INSERT INTO master_purchases (
+				id, tenant_id, account_id, category_id, user_id,
+				description, total_amount_cents, installment_count, installment_cents,
+				first_due_date, created_at, updated_at
+			) VALUES (
+				$1, $2, $3, $4, $5,
+				$6, $7, $8, $9,
+				$10, NOW(), NOW()
+			)
+		`, masterID, tenant.ID, acc.ID, cat.ID, user.ID, "Master Purchase", int64(12000), int16(12), int64(1000), time.Now().UTC())
+		require.NoError(t, err)
+
 		input := domain.CreateTransactionInput{
 			AccountID:        acc.ID,
 			CategoryID:       cat.ID,
@@ -92,24 +112,32 @@ func TestTransactionRepo_Integration(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, masterID, created.MasterPurchaseID)
 
-		got, _ := repo.GetByID(ctx, tenant.ID, created.ID)
+		got, err := repo.GetByID(ctx, tenant.ID, created.ID)
+		require.NoError(t, err)
 		require.Equal(t, masterID, got.MasterPurchaseID)
 	})
 
 	t.Run("List with Filters", func(t *testing.T) {
 		t.Parallel()
-		t2, _ := tenantRepo.Create(ctx, domain.CreateTenantInput{Name: "Filter T"})
-		u2, _ := userRepo.Create(ctx, domain.CreateUserInput{TenantID: t2.ID, Email: "u2@tx.com", Name: "U2", Role: domain.RoleMember})
-		a1, _ := accountRepo.Create(ctx, t2.ID, domain.CreateAccountInput{UserID: u2.ID, Name: "A1", Type: domain.AccountTypeChecking, Currency: "USD"})
-		a2, _ := accountRepo.Create(ctx, t2.ID, domain.CreateAccountInput{UserID: u2.ID, Name: "A2", Type: domain.AccountTypeChecking, Currency: "USD"})
-		c1, _ := categoryRepo.Create(ctx, t2.ID, domain.CreateCategoryInput{Name: "C1", Type: domain.CategoryTypeExpense})
+		t2, err := tenantRepo.Create(ctx, domain.CreateTenantInput{Name: "Filter T"})
+		require.NoError(t, err)
+		u2, err := userRepo.Create(ctx, domain.CreateUserInput{TenantID: t2.ID, Email: "u2@tx.com", Name: "U2", Role: domain.RoleMember})
+		require.NoError(t, err)
+		a1, err := accountRepo.Create(ctx, t2.ID, domain.CreateAccountInput{UserID: u2.ID, Name: "A1", Type: domain.AccountTypeChecking, Currency: "USD"})
+		require.NoError(t, err)
+		a2, err := accountRepo.Create(ctx, t2.ID, domain.CreateAccountInput{UserID: u2.ID, Name: "A2", Type: domain.AccountTypeChecking, Currency: "USD"})
+		require.NoError(t, err)
+		c1, err := categoryRepo.Create(ctx, t2.ID, domain.CreateCategoryInput{Name: "C1", Type: domain.CategoryTypeExpense})
+		require.NoError(t, err)
 
 		// One in A1, yesterday
 		yest := time.Now().AddDate(0, 0, -1).UTC()
-		_, _ = repo.Create(ctx, t2.ID, domain.CreateTransactionInput{AccountID: a1.ID, CategoryID: c1.ID, UserID: u2.ID, Description: "Yest", AmountCents: 10, Type: domain.TransactionTypeExpense, OccurredAt: yest})
+		_, err = repo.Create(ctx, t2.ID, domain.CreateTransactionInput{AccountID: a1.ID, CategoryID: c1.ID, UserID: u2.ID, Description: "Yest", AmountCents: 10, Type: domain.TransactionTypeExpense, OccurredAt: yest})
+		require.NoError(t, err)
 		// One in A2, today
 		today := time.Now().UTC()
-		_, _ = repo.Create(ctx, t2.ID, domain.CreateTransactionInput{AccountID: a2.ID, CategoryID: c1.ID, UserID: u2.ID, Description: "Today", AmountCents: 20, Type: domain.TransactionTypeExpense, OccurredAt: today})
+		_, err = repo.Create(ctx, t2.ID, domain.CreateTransactionInput{AccountID: a2.ID, CategoryID: c1.ID, UserID: u2.ID, Description: "Today", AmountCents: 20, Type: domain.TransactionTypeExpense, OccurredAt: today})
+		require.NoError(t, err)
 
 		// Filter by Account A1
 		res, err := repo.List(ctx, t2.ID, domain.ListTransactionsParams{AccountID: a1.ID})
@@ -127,7 +155,7 @@ func TestTransactionRepo_Integration(t *testing.T) {
 
 	t.Run("Update", func(t *testing.T) {
 		t.Parallel()
-		tx, _ := repo.Create(ctx, tenant.ID, domain.CreateTransactionInput{
+		tx, err := repo.Create(ctx, tenant.ID, domain.CreateTransactionInput{
 			AccountID:   acc.ID,
 			CategoryID:  cat.ID,
 			UserID:      user.ID,
@@ -136,6 +164,7 @@ func TestTransactionRepo_Integration(t *testing.T) {
 			Type:        domain.TransactionTypeExpense,
 			OccurredAt:  time.Now().UTC(),
 		})
+		require.NoError(t, err)
 
 		newDesc := "After Update"
 		newAmount := int64(200)
@@ -151,7 +180,7 @@ func TestTransactionRepo_Integration(t *testing.T) {
 
 	t.Run("SoftDelete", func(t *testing.T) {
 		t.Parallel()
-		tx, _ := repo.Create(ctx, tenant.ID, domain.CreateTransactionInput{
+		tx, err := repo.Create(ctx, tenant.ID, domain.CreateTransactionInput{
 			AccountID:   acc.ID,
 			CategoryID:  cat.ID,
 			UserID:      user.ID,
@@ -160,14 +189,16 @@ func TestTransactionRepo_Integration(t *testing.T) {
 			Type:        domain.TransactionTypeExpense,
 			OccurredAt:  time.Now().UTC(),
 		})
+		require.NoError(t, err)
 
-		err := repo.Delete(ctx, tenant.ID, tx.ID)
+		err = repo.Delete(ctx, tenant.ID, tx.ID)
 		require.NoError(t, err)
 
 		_, err = repo.GetByID(ctx, tenant.ID, tx.ID)
 		require.ErrorIs(t, err, domain.ErrNotFound)
 
-		list, _ := repo.List(ctx, tenant.ID, domain.ListTransactionsParams{})
+		list, err := repo.List(ctx, tenant.ID, domain.ListTransactionsParams{})
+		require.NoError(t, err)
 		for _, row := range list {
 			require.NotEqual(t, tx.ID, row.ID)
 		}

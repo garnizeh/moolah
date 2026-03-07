@@ -23,7 +23,8 @@ func TestCategoryRepo_Integration(t *testing.T) {
 	repo := repository.NewCategoryRepository(db.Queries)
 
 	// Setup: Create a tenant first
-	tenant, _ := tenantRepo.Create(ctx, domain.CreateTenantInput{Name: "Category Tenant"})
+	tenant, err := tenantRepo.Create(ctx, domain.CreateTenantInput{Name: "Category Tenant"})
+	require.NoError(t, err)
 
 	t.Run("Create and GetByID", func(t *testing.T) {
 		t.Parallel()
@@ -48,16 +49,18 @@ func TestCategoryRepo_Integration(t *testing.T) {
 
 	t.Run("Create with Parent and ListChildren", func(t *testing.T) {
 		t.Parallel()
-		parent, _ := repo.Create(ctx, tenant.ID, domain.CreateCategoryInput{
+		parent, err := repo.Create(ctx, tenant.ID, domain.CreateCategoryInput{
 			Name: "Transport",
 			Type: domain.CategoryTypeExpense,
 		})
+		require.NoError(t, err)
 
-		child, _ := repo.Create(ctx, tenant.ID, domain.CreateCategoryInput{
+		child, err := repo.Create(ctx, tenant.ID, domain.CreateCategoryInput{
 			ParentID: parent.ID,
 			Name:     "Fuel",
 			Type:     domain.CategoryTypeExpense,
 		})
+		require.NoError(t, err)
 
 		children, err := repo.ListChildren(ctx, tenant.ID, parent.ID)
 		require.NoError(t, err)
@@ -65,28 +68,32 @@ func TestCategoryRepo_Integration(t *testing.T) {
 		require.Equal(t, child.ID, children[0].ID)
 
 		// ListByTenant should include both
-		all, _ := repo.ListByTenant(ctx, tenant.ID)
+		all, err := repo.ListByTenant(ctx, tenant.ID)
+		require.NoError(t, err)
 		require.GreaterOrEqual(t, len(all), 2)
 	})
 
 	t.Run("Cross-Tenant Isolation", func(t *testing.T) {
 		t.Parallel()
-		otherTenant, _ := tenantRepo.Create(ctx, domain.CreateTenantInput{Name: "Other T"})
-		cat, _ := repo.Create(ctx, tenant.ID, domain.CreateCategoryInput{
+		otherTenant, err := tenantRepo.Create(ctx, domain.CreateTenantInput{Name: "Other T"})
+		require.NoError(t, err)
+		cat, err := repo.Create(ctx, tenant.ID, domain.CreateCategoryInput{
 			Name: "Secret Category",
 			Type: domain.CategoryTypeIncome,
 		})
+		require.NoError(t, err)
 
-		_, err := repo.GetByID(ctx, otherTenant.ID, cat.ID)
+		_, err = repo.GetByID(ctx, otherTenant.ID, cat.ID)
 		require.ErrorIs(t, err, domain.ErrNotFound)
 	})
 
 	t.Run("Update", func(t *testing.T) {
 		t.Parallel()
-		cat, _ := repo.Create(ctx, tenant.ID, domain.CreateCategoryInput{
+		cat, err := repo.Create(ctx, tenant.ID, domain.CreateCategoryInput{
 			Name: "Original",
 			Type: domain.CategoryTypeExpense,
 		})
+		require.NoError(t, err)
 
 		newName := "Modified"
 		newIcon := "star"
@@ -101,12 +108,13 @@ func TestCategoryRepo_Integration(t *testing.T) {
 
 	t.Run("SoftDelete", func(t *testing.T) {
 		t.Parallel()
-		cat, _ := repo.Create(ctx, tenant.ID, domain.CreateCategoryInput{
+		cat, err := repo.Create(ctx, tenant.ID, domain.CreateCategoryInput{
 			Name: "To Delete",
 			Type: domain.CategoryTypeExpense,
 		})
+		require.NoError(t, err)
 
-		err := repo.Delete(ctx, tenant.ID, cat.ID)
+		err = repo.Delete(ctx, tenant.ID, cat.ID)
 		require.NoError(t, err)
 
 		_, err = repo.GetByID(ctx, tenant.ID, cat.ID)

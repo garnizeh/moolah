@@ -29,8 +29,10 @@ func TestAdminRepo_Integration(t *testing.T) {
 	t.Run("AdminTenantRepo", func(t *testing.T) {
 		t.Parallel()
 		// Setup: Create some tenants
-		t1, _ := tenantRepo.Create(ctx, domain.CreateTenantInput{Name: "T1"})
-		t2, _ := tenantRepo.Create(ctx, domain.CreateTenantInput{Name: "T2"})
+		t1, err := tenantRepo.Create(ctx, domain.CreateTenantInput{Name: "T1"})
+		require.NoError(t, err)
+		t2, err := tenantRepo.Create(ctx, domain.CreateTenantInput{Name: "T2"})
+		require.NoError(t, err)
 
 		// 1. ListAll
 		all, err := adminTenantRepo.ListAll(ctx, false)
@@ -71,10 +73,14 @@ func TestAdminRepo_Integration(t *testing.T) {
 
 	t.Run("AdminUserRepo", func(t *testing.T) {
 		t.Parallel()
-		tenant, _ := tenantRepo.Create(ctx, domain.CreateTenantInput{Name: "Admin User T"})
-		u1, _ := userRepo.Create(ctx, domain.CreateUserInput{TenantID: tenant.ID, Email: "adminu1@test.com", Name: "U1", Role: domain.RoleMember})
-		u2Tenant, _ := tenantRepo.Create(ctx, domain.CreateTenantInput{Name: "Admin User T2"})
-		u2, _ := userRepo.Create(ctx, domain.CreateUserInput{TenantID: u2Tenant.ID, Email: "adminu2@test.com", Name: "U2", Role: domain.RoleMember})
+		tenant, err := tenantRepo.Create(ctx, domain.CreateTenantInput{Name: "Admin User T"})
+		require.NoError(t, err)
+		u1, err := userRepo.Create(ctx, domain.CreateUserInput{TenantID: tenant.ID, Email: "adminu1@test.com", Name: "U1", Role: domain.RoleMember})
+		require.NoError(t, err)
+		u2Tenant, err := tenantRepo.Create(ctx, domain.CreateTenantInput{Name: "Admin User T2"})
+		require.NoError(t, err)
+		u2, err := userRepo.Create(ctx, domain.CreateUserInput{TenantID: u2Tenant.ID, Email: "adminu2@test.com", Name: "U2", Role: domain.RoleMember})
+		require.NoError(t, err)
 
 		// 1. ListAll (Should see users from both tenants)
 		all, err := adminUserRepo.ListAll(ctx)
@@ -95,7 +101,8 @@ func TestAdminRepo_Integration(t *testing.T) {
 		require.True(t, foundU1)
 		require.True(t, foundU2)
 
-		allAfter, _ := adminUserRepo.ListAll(ctx)
+		allAfter, err := adminUserRepo.ListAll(ctx)
+		require.NoError(t, err)
 		for _, u := range allAfter {
 			require.NotEqual(t, u2.ID, u.ID)
 		}

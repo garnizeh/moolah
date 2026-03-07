@@ -15,14 +15,22 @@ const createCategory = `-- name: CreateCategory :one
 INSERT INTO categories (
     id, tenant_id, parent_id, name, icon, color, type, created_at, updated_at
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, NOW(), NOW()
+    $1,
+    $2,
+    $3::CHAR(26),
+    $4,
+    $5,
+    $6,
+    $7,
+    NOW(),
+    NOW()
 ) RETURNING id, tenant_id, parent_id, name, icon, color, type, created_at, updated_at, deleted_at
 `
 
 type CreateCategoryParams struct {
 	ID       string       `json:"id"`
 	TenantID string       `json:"tenant_id"`
-	ParentID string       `json:"parent_id"`
+	ParentID pgtype.Text  `json:"parent_id"`
 	Name     string       `json:"name"`
 	Icon     pgtype.Text  `json:"icon"`
 	Color    pgtype.Text  `json:"color"`
@@ -127,8 +135,8 @@ ORDER BY name ASC
 `
 
 type ListChildCategoriesParams struct {
-	TenantID string `json:"tenant_id"`
-	ParentID string `json:"parent_id"`
+	TenantID string      `json:"tenant_id"`
+	ParentID pgtype.Text `json:"parent_id"`
 }
 
 func (q *Queries) ListChildCategories(ctx context.Context, arg ListChildCategoriesParams) ([]Category, error) {
@@ -181,35 +189,35 @@ func (q *Queries) SoftDeleteCategory(ctx context.Context, arg SoftDeleteCategory
 const updateCategory = `-- name: UpdateCategory :one
 UPDATE categories
 SET 
-    parent_id = $3,
-    name = $4,
-    icon = $5,
-    color = $6,
-    type = $7,
+    parent_id = $1::CHAR(26),
+    name = $2,
+    icon = $3,
+    color = $4,
+    type = $5,
     updated_at = NOW()
-WHERE tenant_id = $1 AND id = $2 AND deleted_at IS NULL
+WHERE tenant_id = $6 AND id = $7 AND deleted_at IS NULL
 RETURNING id, tenant_id, parent_id, name, icon, color, type, created_at, updated_at, deleted_at
 `
 
 type UpdateCategoryParams struct {
-	TenantID string       `json:"tenant_id"`
-	ID       string       `json:"id"`
-	ParentID string       `json:"parent_id"`
+	ParentID pgtype.Text  `json:"parent_id"`
 	Name     string       `json:"name"`
 	Icon     pgtype.Text  `json:"icon"`
 	Color    pgtype.Text  `json:"color"`
 	Type     CategoryType `json:"type"`
+	TenantID string       `json:"tenant_id"`
+	ID       string       `json:"id"`
 }
 
 func (q *Queries) UpdateCategory(ctx context.Context, arg UpdateCategoryParams) (Category, error) {
 	row := q.db.QueryRow(ctx, updateCategory,
-		arg.TenantID,
-		arg.ID,
 		arg.ParentID,
 		arg.Name,
 		arg.Icon,
 		arg.Color,
 		arg.Type,
+		arg.TenantID,
+		arg.ID,
 	)
 	var i Category
 	err := row.Scan(

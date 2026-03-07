@@ -27,6 +27,8 @@ sql:
           - column: "*.transaction_id"
             go_type: "string"
           - column: "*.parent_id"
-            go_type: "string"
+            go_type:
+              import: "github.com/jackc/pgx/v5/pgtype"
+              type: "Text"
           - column: "*.actor_id"
             go_type: "string"

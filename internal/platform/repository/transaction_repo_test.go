@@ -149,7 +149,9 @@ func TestTransactionRepository_List(t *testing.T) {
 		mockQuerier := new(mocks.Querier)
 		repo := NewTransactionRepository(mockQuerier)
 
-		mockQuerier.On("ListTransactionsByTenant", ctx, tenantID).Return([]sqlc.Transaction{
+		mockQuerier.On("ListTransactionsByTenant", ctx, mock.MatchedBy(func(p sqlc.ListTransactionsByTenantParams) bool {
+			return p.TenantID == tenantID && p.OffsetCount == 0 && p.LimitCount == params.Limit
+		})).Return([]sqlc.Transaction{
 			{ID: "1", TenantID: tenantID},
 			{ID: "2", TenantID: tenantID},
 		}, nil)
@@ -159,12 +161,42 @@ func TestTransactionRepository_List(t *testing.T) {
 		assert.Len(t, got, 2)
 	})
 
+	t.Run("success with filters", func(t *testing.T) {
+		t.Parallel()
+		mockQuerier := new(mocks.Querier)
+		repo := NewTransactionRepository(mockQuerier)
+
+		startDate := time.Now().Add(-24 * time.Hour)
+		filter := domain.ListTransactionsParams{
+			AccountID:  "account_id",
+			CategoryID: "category_id",
+			Type:       domain.TransactionTypeExpense,
+			StartDate:  &startDate,
+			Limit:      25,
+			Offset:     10,
+		}
+
+		mockQuerier.On("ListTransactionsByTenant", ctx, mock.MatchedBy(func(p sqlc.ListTransactionsByTenantParams) bool {
+			return p.TenantID == tenantID &&
+				p.AccountID.Valid && p.AccountID.String == filter.AccountID &&
+				p.CategoryID.Valid && p.CategoryID.String == filter.CategoryID &&
+				p.Type.Valid && p.Type.TransactionType == sqlc.TransactionType(filter.Type) &&
+				p.StartDate.Valid && p.StartDate.Time.Equal(startDate) &&
+				p.OffsetCount == filter.Offset &&
+				p.LimitCount == filter.Limit
+		})).Return([]sqlc.Transaction{}, nil)
+
+		got, err := repo.List(ctx, tenantID, filter)
+		require.NoError(t, err)
+		assert.Empty(t, got)
+	})
+
 	t.Run("error", func(t *testing.T) {
 		t.Parallel()
 		mockQuerier := new(mocks.Querier)
 		repo := NewTransactionRepository(mockQuerier)
 
-		mockQuerier.On("ListTransactionsByTenant", ctx, mock.Anything).Return(nil, pgx.ErrNoRows)
+		mockQuerier.On("ListTransactionsByTenant", ctx, mock.Anything).Return(([]sqlc.Transaction)(nil), pgx.ErrNoRows)
 
 		got, err := repo.List(ctx, tenantID, params)
 		require.ErrorIs(t, err, domain.ErrNotFound)

@@ -22,7 +22,7 @@ func CreateCategory(t *testing.T, ctx context.Context, q sqlc.Querier, tenantID 
 	row, err := q.CreateCategory(ctx, sqlc.CreateCategoryParams{
 		ID:       ulid.New(),
 		TenantID: tenantID,
-		ParentID: "", // Root category
+		ParentID: pgtype.Text{}, // Root category
 		Name:     "Test Category",
 		Icon:     pgtype.Text{String: "🍔", Valid: true},
 		Color:    pgtype.Text{String: "#FF0000", Valid: true},
@@ -33,7 +33,7 @@ func CreateCategory(t *testing.T, ctx context.Context, q sqlc.Querier, tenantID 
 	return domain.Category{
 		ID:        row.ID,
 		TenantID:  row.TenantID,
-		ParentID:  row.ParentID,
+		ParentID:  row.ParentID.String,
 		Name:      row.Name,
 		Icon:      row.Icon.String,
 		Color:     row.Color.String,

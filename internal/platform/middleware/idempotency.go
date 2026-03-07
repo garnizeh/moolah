@@ -51,19 +51,28 @@ func Idempotency(store domain.IdempotencyStore) func(http.Handler) http.Handler 
 			clientKey := r.Header.Get(idempotencyHeader)
 			if clientKey == "" {
 				w.WriteHeader(http.StatusBadRequest)
-				_ = json.NewEncoder(w).Encode(map[string]string{"error": "missing_idempotency_key"})
+				err := json.NewEncoder(w).Encode(map[string]string{"error": "missing_idempotency_key"})
+				if err != nil {
+					slog.Error("idempotency: failed to write missing key error response", "error", err)
+				}
 				return
 			}
 
 			// Validate key length to prevent ReDoS or memory abuse.
 			if len(clientKey) > 128 {
 				w.WriteHeader(http.StatusBadRequest)
-				_ = json.NewEncoder(w).Encode(map[string]string{"error": "invalid_idempotency_key"})
+				err := json.NewEncoder(w).Encode(map[string]string{"error": "invalid_idempotency_key"})
+				if err != nil {
+					slog.Error("idempotency: failed to write invalid key error response", "error", err)
+				}
 				return
 			}
 
 			// Extract userID from context (provided by Auth middleware).
-			userID, _ := UserIDFromCtx(r.Context())
+			userID, ok := UserIDFromCtx(r.Context())
+			if !ok {
+				slog.Warn("idempotency: failed to extract user ID from context, defaulting to anonymous")
+			}
 			if userID == "" {
 				userID = "anonymous"
 			}
@@ -104,7 +113,7 @@ func Idempotency(store domain.IdempotencyStore) func(http.Handler) http.Handler 
 			}
 
 			// 2. Try to acquire an atomic lock to prevent "in-flight" race conditions.
-			ok, err := store.SetLocked(r.Context(), redisKey, idempotencyTTL)
+			ok, err = store.SetLocked(r.Context(), redisKey, idempotencyTTL)
 			if err != nil {
 				// #nosec G706: redisKey is safe here because slog handles escaping of user-provided data.
 				slog.Error("idempotency: lock acquisition error", "error", err, "key", redisKey)
@@ -114,7 +123,11 @@ func Idempotency(store domain.IdempotencyStore) func(http.Handler) http.Handler 
 
 			if !ok {
 				w.WriteHeader(http.StatusConflict)
-				_ = json.NewEncoder(w).Encode(map[string]string{"error": "idempotency_key_in_flight"})
+				eerr := json.NewEncoder(w).Encode(map[string]string{"error": "idempotency_key_in_flight"})
+				if eerr != nil {
+					// #nosec G706: redisKey is safe here because slog handles escaping of user-provided data.
+					slog.Error("idempotency: failed to write in-flight error response", "error", eerr, "key", redisKey)
+				}
 				return
 			}
 

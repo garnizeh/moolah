@@ -99,12 +99,40 @@ func (q *Queries) GetTransactionByID(ctx context.Context, arg GetTransactionByID
 
 const listTransactionsByTenant = `-- name: ListTransactionsByTenant :many
 SELECT id, tenant_id, account_id, category_id, user_id, master_purchase_id, description, amount_cents, type, occurred_at, created_at, updated_at, deleted_at FROM transactions
-WHERE tenant_id = $1 AND deleted_at IS NULL
+WHERE tenant_id = $1
+    AND deleted_at IS NULL
+    AND (account_id = $2::CHAR(26) OR $2 IS NULL)
+    AND (category_id = $3::CHAR(26) OR $3 IS NULL)
+    AND (type = $4 OR $4 IS NULL)
+    AND (occurred_at >= $5 OR $5 IS NULL)
+    AND (occurred_at <= $6 OR $6 IS NULL)
 ORDER BY occurred_at DESC
+LIMIT NULLIF($8, 0)
+OFFSET $7
 `
 
-func (q *Queries) ListTransactionsByTenant(ctx context.Context, tenantID string) ([]Transaction, error) {
-	rows, err := q.db.Query(ctx, listTransactionsByTenant, tenantID)
+type ListTransactionsByTenantParams struct {
+	TenantID    string              `json:"tenant_id"`
+	AccountID   pgtype.Text         `json:"account_id"`
+	CategoryID  pgtype.Text         `json:"category_id"`
+	Type        NullTransactionType `json:"type"`
+	StartDate   pgtype.Timestamptz  `json:"start_date"`
+	EndDate     pgtype.Timestamptz  `json:"end_date"`
+	OffsetCount int32               `json:"offset_count"`
+	LimitCount  interface{}         `json:"limit_count"`
+}
+
+func (q *Queries) ListTransactionsByTenant(ctx context.Context, arg ListTransactionsByTenantParams) ([]Transaction, error) {
+	rows, err := q.db.Query(ctx, listTransactionsByTenant,
+		arg.TenantID,
+		arg.AccountID,
+		arg.CategoryID,
+		arg.Type,
+		arg.StartDate,
+		arg.EndDate,
+		arg.OffsetCount,
+		arg.LimitCount,
+	)
 	if err != nil {
 		return nil, err
 	}

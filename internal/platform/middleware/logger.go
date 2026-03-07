@@ -49,8 +49,17 @@ func RequestLogger(logger *slog.Logger) func(http.Handler) http.Handler {
 
 			next.ServeHTTP(rw, r)
 
-			tenantID, _ := TenantIDFromCtx(r.Context())
-			userID, _ := UserIDFromCtx(r.Context())
+			tenantID, ok := TenantIDFromCtx(r.Context())
+			if !ok {
+				slog.Warn("logger: failed to extract tenant ID from context, defaulting to unknown")
+				tenantID = "unknown"
+			}
+
+			userID, ok := UserIDFromCtx(r.Context())
+			if !ok {
+				slog.Warn("logger: failed to extract user ID from context, defaulting to anonymous")
+				userID = "anonymous"
+			}
 
 			logger.InfoContext(r.Context(), "request",
 				slog.String("request_id", requestID),

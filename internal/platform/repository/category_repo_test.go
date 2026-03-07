@@ -40,11 +40,11 @@ func TestCategoryRepository_Create(t *testing.T) {
 				p.Icon.String == input.Icon &&
 				p.Color.String == input.Color &&
 				p.Type == sqlc.CategoryType(input.Type) &&
-				p.ParentID == input.ParentID
+				p.ParentID == (pgtype.Text{String: input.ParentID, Valid: true})
 		})).Return(sqlc.Category{
 			ID:       "cat_id",
 			TenantID: tenantID,
-			ParentID: input.ParentID,
+			ParentID: pgtype.Text{String: input.ParentID, Valid: true},
 			Name:     input.Name,
 			Icon:     pgtype.Text{String: input.Icon, Valid: true},
 			Color:    pgtype.Text{String: input.Color, Valid: true},
@@ -146,9 +146,9 @@ func TestCategoryRepository_ListChildren(t *testing.T) {
 
 		mockQuerier.On("ListChildCategories", ctx, sqlc.ListChildCategoriesParams{
 			TenantID: tenantID,
-			ParentID: parentID,
+			ParentID: pgtype.Text{String: parentID, Valid: true},
 		}).Return([]sqlc.Category{
-			{ID: "1", Name: "Sub1", ParentID: parentID},
+			{ID: "1", Name: "Sub1", ParentID: pgtype.Text{String: parentID, Valid: true}},
 		}, nil)
 
 		got, err := repo.ListChildren(ctx, tenantID, parentID)
@@ -189,7 +189,10 @@ func TestCategoryRepository_Update(t *testing.T) {
 		}).Return(current, nil)
 
 		mockQuerier.On("UpdateCategory", ctx, mock.MatchedBy(func(p sqlc.UpdateCategoryParams) bool {
-			return p.ID == id && p.Name == newName && p.Icon.String == "old-icon"
+			return p.ID == id &&
+				p.ParentID == (pgtype.Text{}) &&
+				p.Name == newName &&
+				p.Icon.String == "old-icon"
 		})).Return(sqlc.Category{
 			ID:       id,
 			TenantID: tenantID,

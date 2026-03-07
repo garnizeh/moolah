@@ -2,7 +2,6 @@ package mocks
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/garnizeh/moolah/internal/platform/db/sqlc"
 	"github.com/stretchr/testify/mock"
@@ -14,11 +13,7 @@ type Querier struct {
 
 func (m *Querier) AdminForceDeleteUser(ctx context.Context, id string) error {
 	args := m.Called(ctx, id)
-	err := args.Error(0)
-	if err != nil {
-		return fmt.Errorf("mock error: %w", err)
-	}
-	return nil
+	return args.Error(0) //nolint:wrapcheck
 }
 
 func (m *Querier) AdminGetTenantByID(ctx context.Context, id string) (sqlc.Tenant, error) {
@@ -27,11 +22,7 @@ func (m *Querier) AdminGetTenantByID(ctx context.Context, id string) (sqlc.Tenan
 	if rf, ok := args.Get(0).(sqlc.Tenant); ok {
 		r0 = rf
 	}
-	err := args.Error(1)
-	if err != nil {
-		return r0, fmt.Errorf("mock error: %w", err)
-	}
-	return r0, nil
+	return r0, args.Error(1) //nolint:wrapcheck
 }
 
 func (m *Querier) AdminGetUserByID(ctx context.Context, id string) (sqlc.User, error) {
@@ -40,20 +31,12 @@ func (m *Querier) AdminGetUserByID(ctx context.Context, id string) (sqlc.User, e
 	if rf, ok := args.Get(0).(sqlc.User); ok {
 		r0 = rf
 	}
-	err := args.Error(1)
-	if err != nil {
-		return r0, fmt.Errorf("mock error: %w", err)
-	}
-	return r0, nil
+	return r0, args.Error(1) //nolint:wrapcheck
 }
 
 func (m *Querier) AdminHardDeleteTenant(ctx context.Context, id string) error {
 	args := m.Called(ctx, id)
-	err := args.Error(0)
-	if err != nil {
-		return fmt.Errorf("mock error: %w", err)
-	}
-	return nil
+	return args.Error(0) //nolint:wrapcheck
 }
 
 func (m *Querier) AdminListAllAuditLogs(ctx context.Context, arg sqlc.AdminListAllAuditLogsParams) ([]sqlc.AuditLog, error) {
@@ -62,11 +45,7 @@ func (m *Querier) AdminListAllAuditLogs(ctx context.Context, arg sqlc.AdminListA
 	if rf, ok := args.Get(0).([]sqlc.AuditLog); ok {
 		r0 = rf
 	}
-	err := args.Error(1)
-	if err != nil {
-		return r0, fmt.Errorf("mock error: %w", err)
-	}
-	return r0, nil
+	return r0, args.Error(1) //nolint:wrapcheck
 }
 
 func (m *Querier) AdminListAllTenants(ctx context.Context, withDeleted bool) ([]sqlc.Tenant, error) {
@@ -75,11 +54,7 @@ func (m *Querier) AdminListAllTenants(ctx context.Context, withDeleted bool) ([]
 	if rf, ok := args.Get(0).([]sqlc.Tenant); ok {
 		r0 = rf
 	}
-	err := args.Error(1)
-	if err != nil {
-		return r0, fmt.Errorf("mock error: %w", err)
-	}
-	return r0, nil
+	return r0, args.Error(1) //nolint:wrapcheck
 }
 
 func (m *Querier) AdminListAllUsers(ctx context.Context) ([]sqlc.User, error) {
@@ -88,29 +63,17 @@ func (m *Querier) AdminListAllUsers(ctx context.Context) ([]sqlc.User, error) {
 	if rf, ok := args.Get(0).([]sqlc.User); ok {
 		r0 = rf
 	}
-	err := args.Error(1)
-	if err != nil {
-		return r0, fmt.Errorf("mock error: %w", err)
-	}
-	return r0, nil
+	return r0, args.Error(1) //nolint:wrapcheck
 }
 
 func (m *Querier) AdminRestoreTenant(ctx context.Context, id string) error {
 	args := m.Called(ctx, id)
-	err := args.Error(0)
-	if err != nil {
-		return fmt.Errorf("mock error: %w", err)
-	}
-	return nil
+	return args.Error(0) //nolint:wrapcheck
 }
 
 func (m *Querier) AdminSuspendTenant(ctx context.Context, id string) error {
 	args := m.Called(ctx, id)
-	err := args.Error(0)
-	if err != nil {
-		return fmt.Errorf("mock error: %w", err)
-	}
-	return nil
+	return args.Error(0) //nolint:wrapcheck
 }
 
 func (m *Querier) AdminUpdateTenantPlan(ctx context.Context, arg sqlc.AdminUpdateTenantPlanParams) (sqlc.Tenant, error) {
@@ -119,11 +82,7 @@ func (m *Querier) AdminUpdateTenantPlan(ctx context.Context, arg sqlc.AdminUpdat
 	if rf, ok := args.Get(0).(sqlc.Tenant); ok {
 		r0 = rf
 	}
-	err := args.Error(1)
-	if err != nil {
-		return r0, fmt.Errorf("mock error: %w", err)
-	}
-	return r0, nil
+	return r0, args.Error(1) //nolint:wrapcheck
 }
 
 func (m *Querier) CreateAccount(ctx context.Context, arg sqlc.CreateAccountParams) (sqlc.Account, error) {
@@ -132,11 +91,7 @@ func (m *Querier) CreateAccount(ctx context.Context, arg sqlc.CreateAccountParam
 	if rf, ok := args.Get(0).(sqlc.Account); ok {
 		r0 = rf
 	}
-	err := args.Error(1)
-	if err != nil {
-		return r0, fmt.Errorf("mock error: %w", err)
-	}
-	return r0, nil
+	return r0, args.Error(1) //nolint:wrapcheck
 }
 
 func (m *Querier) CreateAuditLog(ctx context.Context, arg sqlc.CreateAuditLogParams) (sqlc.AuditLog, error) {
@@ -145,11 +100,7 @@ func (m *Querier) CreateAuditLog(ctx context.Context, arg sqlc.CreateAuditLogPar
 	if rf, ok := args.Get(0).(sqlc.AuditLog); ok {
 		r0 = rf
 	}
-	err := args.Error(1)
-	if err != nil {
-		return r0, fmt.Errorf("mock error: %w", err)
-	}
-	return r0, nil
+	return r0, args.Error(1) //nolint:wrapcheck
 }
 
 func (m *Querier) CreateCategory(ctx context.Context, arg sqlc.CreateCategoryParams) (sqlc.Category, error) {
@@ -158,11 +109,7 @@ func (m *Querier) CreateCategory(ctx context.Context, arg sqlc.CreateCategoryPar
 	if rf, ok := args.Get(0).(sqlc.Category); ok {
 		r0 = rf
 	}
-	err := args.Error(1)
-	if err != nil {
-		return r0, fmt.Errorf("mock error: %w", err)
-	}
-	return r0, nil
+	return r0, args.Error(1) //nolint:wrapcheck
 }
 
 func (m *Querier) CreateOTPRequest(ctx context.Context, arg sqlc.CreateOTPRequestParams) (sqlc.OtpRequest, error) {
@@ -171,11 +118,7 @@ func (m *Querier) CreateOTPRequest(ctx context.Context, arg sqlc.CreateOTPReques
 	if rf, ok := args.Get(0).(sqlc.OtpRequest); ok {
 		r0 = rf
 	}
-	err := args.Error(1)
-	if err != nil {
-		return r0, fmt.Errorf("mock error: %w", err)
-	}
-	return r0, nil
+	return r0, args.Error(1) //nolint:wrapcheck
 }
 
 func (m *Querier) CreateTenant(ctx context.Context, arg sqlc.CreateTenantParams) (sqlc.Tenant, error) {
@@ -184,11 +127,7 @@ func (m *Querier) CreateTenant(ctx context.Context, arg sqlc.CreateTenantParams)
 	if rf, ok := args.Get(0).(sqlc.Tenant); ok {
 		r0 = rf
 	}
-	err := args.Error(1)
-	if err != nil {
-		return r0, fmt.Errorf("mock error: %w", err)
-	}
-	return r0, nil
+	return r0, args.Error(1) //nolint:wrapcheck
 }
 
 func (m *Querier) CreateTransaction(ctx context.Context, arg sqlc.CreateTransactionParams) (sqlc.Transaction, error) {
@@ -197,11 +136,7 @@ func (m *Querier) CreateTransaction(ctx context.Context, arg sqlc.CreateTransact
 	if rf, ok := args.Get(0).(sqlc.Transaction); ok {
 		r0 = rf
 	}
-	err := args.Error(1)
-	if err != nil {
-		return r0, fmt.Errorf("mock error: %w", err)
-	}
-	return r0, nil
+	return r0, args.Error(1) //nolint:wrapcheck
 }
 
 func (m *Querier) CreateUser(ctx context.Context, arg sqlc.CreateUserParams) (sqlc.User, error) {
@@ -210,20 +145,12 @@ func (m *Querier) CreateUser(ctx context.Context, arg sqlc.CreateUserParams) (sq
 	if rf, ok := args.Get(0).(sqlc.User); ok {
 		r0 = rf
 	}
-	err := args.Error(1)
-	if err != nil {
-		return r0, fmt.Errorf("mock error: %w", err)
-	}
-	return r0, nil
+	return r0, args.Error(1) //nolint:wrapcheck
 }
 
 func (m *Querier) DeleteExpiredOTPs(ctx context.Context) error {
 	args := m.Called(ctx)
-	err := args.Error(0)
-	if err != nil {
-		return fmt.Errorf("mock error: %w", err)
-	}
-	return nil
+	return args.Error(0) //nolint:wrapcheck
 }
 
 func (m *Querier) GetAccountByID(ctx context.Context, arg sqlc.GetAccountByIDParams) (sqlc.Account, error) {
@@ -232,11 +159,7 @@ func (m *Querier) GetAccountByID(ctx context.Context, arg sqlc.GetAccountByIDPar
 	if rf, ok := args.Get(0).(sqlc.Account); ok {
 		r0 = rf
 	}
-	err := args.Error(1)
-	if err != nil {
-		return r0, fmt.Errorf("mock error: %w", err)
-	}
-	return r0, nil
+	return r0, args.Error(1) //nolint:wrapcheck
 }
 
 func (m *Querier) GetActiveOTPByEmail(ctx context.Context, email string) (sqlc.OtpRequest, error) {
@@ -245,11 +168,7 @@ func (m *Querier) GetActiveOTPByEmail(ctx context.Context, email string) (sqlc.O
 	if rf, ok := args.Get(0).(sqlc.OtpRequest); ok {
 		r0 = rf
 	}
-	err := args.Error(1)
-	if err != nil {
-		return r0, fmt.Errorf("mock error: %w", err)
-	}
-	return r0, nil
+	return r0, args.Error(1) //nolint:wrapcheck
 }
 
 func (m *Querier) GetCategoryByID(ctx context.Context, arg sqlc.GetCategoryByIDParams) (sqlc.Category, error) {
@@ -258,11 +177,7 @@ func (m *Querier) GetCategoryByID(ctx context.Context, arg sqlc.GetCategoryByIDP
 	if rf, ok := args.Get(0).(sqlc.Category); ok {
 		r0 = rf
 	}
-	err := args.Error(1)
-	if err != nil {
-		return r0, fmt.Errorf("mock error: %w", err)
-	}
-	return r0, nil
+	return r0, args.Error(1) //nolint:wrapcheck
 }
 
 func (m *Querier) GetTenantByID(ctx context.Context, id string) (sqlc.Tenant, error) {
@@ -271,11 +186,7 @@ func (m *Querier) GetTenantByID(ctx context.Context, id string) (sqlc.Tenant, er
 	if rf, ok := args.Get(0).(sqlc.Tenant); ok {
 		r0 = rf
 	}
-	err := args.Error(1)
-	if err != nil {
-		return r0, fmt.Errorf("mock error: %w", err)
-	}
-	return r0, nil
+	return r0, args.Error(1) //nolint:wrapcheck
 }
 
 func (m *Querier) GetTransactionByID(ctx context.Context, arg sqlc.GetTransactionByIDParams) (sqlc.Transaction, error) {
@@ -284,11 +195,7 @@ func (m *Querier) GetTransactionByID(ctx context.Context, arg sqlc.GetTransactio
 	if rf, ok := args.Get(0).(sqlc.Transaction); ok {
 		r0 = rf
 	}
-	err := args.Error(1)
-	if err != nil {
-		return r0, fmt.Errorf("mock error: %w", err)
-	}
-	return r0, nil
+	return r0, args.Error(1) //nolint:wrapcheck
 }
 
 func (m *Querier) GetUserByEmail(ctx context.Context, arg sqlc.GetUserByEmailParams) (sqlc.User, error) {
@@ -297,11 +204,7 @@ func (m *Querier) GetUserByEmail(ctx context.Context, arg sqlc.GetUserByEmailPar
 	if rf, ok := args.Get(0).(sqlc.User); ok {
 		r0 = rf
 	}
-	err := args.Error(1)
-	if err != nil {
-		return r0, fmt.Errorf("mock error: %w", err)
-	}
-	return r0, nil
+	return r0, args.Error(1) //nolint:wrapcheck
 }
 
 func (m *Querier) GetUserByID(ctx context.Context, arg sqlc.GetUserByIDParams) (sqlc.User, error) {
@@ -310,11 +213,7 @@ func (m *Querier) GetUserByID(ctx context.Context, arg sqlc.GetUserByIDParams) (
 	if rf, ok := args.Get(0).(sqlc.User); ok {
 		r0 = rf
 	}
-	err := args.Error(1)
-	if err != nil {
-		return r0, fmt.Errorf("mock error: %w", err)
-	}
-	return r0, nil
+	return r0, args.Error(1) //nolint:wrapcheck
 }
 
 func (m *Querier) ListAccountsByTenant(ctx context.Context, tenantID string) ([]sqlc.Account, error) {
@@ -323,11 +222,7 @@ func (m *Querier) ListAccountsByTenant(ctx context.Context, tenantID string) ([]
 	if rf, ok := args.Get(0).([]sqlc.Account); ok {
 		r0 = rf
 	}
-	err := args.Error(1)
-	if err != nil {
-		return r0, fmt.Errorf("mock error: %w", err)
-	}
-	return r0, nil
+	return r0, args.Error(1) //nolint:wrapcheck
 }
 
 func (m *Querier) ListAccountsByUser(ctx context.Context, arg sqlc.ListAccountsByUserParams) ([]sqlc.Account, error) {
@@ -336,11 +231,7 @@ func (m *Querier) ListAccountsByUser(ctx context.Context, arg sqlc.ListAccountsB
 	if rf, ok := args.Get(0).([]sqlc.Account); ok {
 		r0 = rf
 	}
-	err := args.Error(1)
-	if err != nil {
-		return r0, fmt.Errorf("mock error: %w", err)
-	}
-	return r0, nil
+	return r0, args.Error(1) //nolint:wrapcheck
 }
 
 func (m *Querier) ListAuditLogsByEntity(ctx context.Context, arg sqlc.ListAuditLogsByEntityParams) ([]sqlc.AuditLog, error) {
@@ -349,11 +240,7 @@ func (m *Querier) ListAuditLogsByEntity(ctx context.Context, arg sqlc.ListAuditL
 	if rf, ok := args.Get(0).([]sqlc.AuditLog); ok {
 		r0 = rf
 	}
-	err := args.Error(1)
-	if err != nil {
-		return r0, fmt.Errorf("mock error: %w", err)
-	}
-	return r0, nil
+	return r0, args.Error(1) //nolint:wrapcheck
 }
 
 func (m *Querier) ListAuditLogsByTenant(ctx context.Context, arg sqlc.ListAuditLogsByTenantParams) ([]sqlc.AuditLog, error) {
@@ -362,11 +249,7 @@ func (m *Querier) ListAuditLogsByTenant(ctx context.Context, arg sqlc.ListAuditL
 	if rf, ok := args.Get(0).([]sqlc.AuditLog); ok {
 		r0 = rf
 	}
-	err := args.Error(1)
-	if err != nil {
-		return r0, fmt.Errorf("mock error: %w", err)
-	}
-	return r0, nil
+	return r0, args.Error(1) //nolint:wrapcheck
 }
 
 func (m *Querier) ListCategoriesByTenant(ctx context.Context, tenantID string) ([]sqlc.Category, error) {
@@ -375,11 +258,7 @@ func (m *Querier) ListCategoriesByTenant(ctx context.Context, tenantID string) (
 	if rf, ok := args.Get(0).([]sqlc.Category); ok {
 		r0 = rf
 	}
-	err := args.Error(1)
-	if err != nil {
-		return r0, fmt.Errorf("mock error: %w", err)
-	}
-	return r0, nil
+	return r0, args.Error(1) //nolint:wrapcheck
 }
 
 func (m *Querier) ListChildCategories(ctx context.Context, arg sqlc.ListChildCategoriesParams) ([]sqlc.Category, error) {
@@ -388,11 +267,7 @@ func (m *Querier) ListChildCategories(ctx context.Context, arg sqlc.ListChildCat
 	if rf, ok := args.Get(0).([]sqlc.Category); ok {
 		r0 = rf
 	}
-	err := args.Error(1)
-	if err != nil {
-		return r0, fmt.Errorf("mock error: %w", err)
-	}
-	return r0, nil
+	return r0, args.Error(1) //nolint:wrapcheck
 }
 
 func (m *Querier) ListTenants(ctx context.Context) ([]sqlc.Tenant, error) {
@@ -401,24 +276,16 @@ func (m *Querier) ListTenants(ctx context.Context) ([]sqlc.Tenant, error) {
 	if rf, ok := args.Get(0).([]sqlc.Tenant); ok {
 		r0 = rf
 	}
-	err := args.Error(1)
-	if err != nil {
-		return r0, fmt.Errorf("mock error: %w", err)
-	}
-	return r0, nil
+	return r0, args.Error(1) //nolint:wrapcheck
 }
 
-func (m *Querier) ListTransactionsByTenant(ctx context.Context, tenantID string) ([]sqlc.Transaction, error) {
-	args := m.Called(ctx, tenantID)
+func (m *Querier) ListTransactionsByTenant(ctx context.Context, arg sqlc.ListTransactionsByTenantParams) ([]sqlc.Transaction, error) {
+	args := m.Called(ctx, arg)
 	var r0 []sqlc.Transaction
 	if rf, ok := args.Get(0).([]sqlc.Transaction); ok {
 		r0 = rf
 	}
-	err := args.Error(1)
-	if err != nil {
-		return r0, fmt.Errorf("mock error: %w", err)
-	}
-	return r0, nil
+	return r0, args.Error(1) //nolint:wrapcheck
 }
 
 func (m *Querier) ListUsersByTenant(ctx context.Context, tenantID string) ([]sqlc.User, error) {
@@ -427,65 +294,37 @@ func (m *Querier) ListUsersByTenant(ctx context.Context, tenantID string) ([]sql
 	if rf, ok := args.Get(0).([]sqlc.User); ok {
 		r0 = rf
 	}
-	err := args.Error(1)
-	if err != nil {
-		return r0, fmt.Errorf("mock error: %w", err)
-	}
-	return r0, nil
+	return r0, args.Error(1) //nolint:wrapcheck
 }
 
 func (m *Querier) MarkOTPUsed(ctx context.Context, id string) error {
 	args := m.Called(ctx, id)
-	err := args.Error(0)
-	if err != nil {
-		return fmt.Errorf("mock error: %w", err)
-	}
-	return nil
+	return args.Error(0) //nolint:wrapcheck
 }
 
 func (m *Querier) SoftDeleteAccount(ctx context.Context, arg sqlc.SoftDeleteAccountParams) error {
 	args := m.Called(ctx, arg)
-	err := args.Error(0)
-	if err != nil {
-		return fmt.Errorf("mock error: %w", err)
-	}
-	return nil
+	return args.Error(0) //nolint:wrapcheck
 }
 
 func (m *Querier) SoftDeleteCategory(ctx context.Context, arg sqlc.SoftDeleteCategoryParams) error {
 	args := m.Called(ctx, arg)
-	err := args.Error(0)
-	if err != nil {
-		return fmt.Errorf("mock error: %w", err)
-	}
-	return nil
+	return args.Error(0) //nolint:wrapcheck
 }
 
 func (m *Querier) SoftDeleteTenant(ctx context.Context, id string) error {
 	args := m.Called(ctx, id)
-	err := args.Error(0)
-	if err != nil {
-		return fmt.Errorf("mock error: %w", err)
-	}
-	return nil
+	return args.Error(0) //nolint:wrapcheck
 }
 
 func (m *Querier) SoftDeleteTransaction(ctx context.Context, arg sqlc.SoftDeleteTransactionParams) error {
 	args := m.Called(ctx, arg)
-	err := args.Error(0)
-	if err != nil {
-		return fmt.Errorf("mock error: %w", err)
-	}
-	return nil
+	return args.Error(0) //nolint:wrapcheck
 }
 
 func (m *Querier) SoftDeleteUser(ctx context.Context, arg sqlc.SoftDeleteUserParams) error {
 	args := m.Called(ctx, arg)
-	err := args.Error(0)
-	if err != nil {
-		return fmt.Errorf("mock error: %w", err)
-	}
-	return nil
+	return args.Error(0) //nolint:wrapcheck
 }
 
 func (m *Querier) UpdateAccount(ctx context.Context, arg sqlc.UpdateAccountParams) (sqlc.Account, error) {
@@ -494,20 +333,12 @@ func (m *Querier) UpdateAccount(ctx context.Context, arg sqlc.UpdateAccountParam
 	if rf, ok := args.Get(0).(sqlc.Account); ok {
 		r0 = rf
 	}
-	err := args.Error(1)
-	if err != nil {
-		return r0, fmt.Errorf("mock error: %w", err)
-	}
-	return r0, nil
+	return r0, args.Error(1) //nolint:wrapcheck
 }
 
 func (m *Querier) UpdateAccountBalance(ctx context.Context, arg sqlc.UpdateAccountBalanceParams) error {
 	args := m.Called(ctx, arg)
-	err := args.Error(0)
-	if err != nil {
-		return fmt.Errorf("mock error: %w", err)
-	}
-	return nil
+	return args.Error(0) //nolint:wrapcheck
 }
 
 func (m *Querier) UpdateCategory(ctx context.Context, arg sqlc.UpdateCategoryParams) (sqlc.Category, error) {
@@ -516,11 +347,7 @@ func (m *Querier) UpdateCategory(ctx context.Context, arg sqlc.UpdateCategoryPar
 	if rf, ok := args.Get(0).(sqlc.Category); ok {
 		r0 = rf
 	}
-	err := args.Error(1)
-	if err != nil {
-		return r0, fmt.Errorf("mock error: %w", err)
-	}
-	return r0, nil
+	return r0, args.Error(1) //nolint:wrapcheck
 }
 
 func (m *Querier) UpdateTenant(ctx context.Context, arg sqlc.UpdateTenantParams) (sqlc.Tenant, error) {
@@ -529,11 +356,7 @@ func (m *Querier) UpdateTenant(ctx context.Context, arg sqlc.UpdateTenantParams)
 	if rf, ok := args.Get(0).(sqlc.Tenant); ok {
 		r0 = rf
 	}
-	err := args.Error(1)
-	if err != nil {
-		return r0, fmt.Errorf("mock error: %w", err)
-	}
-	return r0, nil
+	return r0, args.Error(1) //nolint:wrapcheck
 }
 
 func (m *Querier) UpdateTransaction(ctx context.Context, arg sqlc.UpdateTransactionParams) (sqlc.Transaction, error) {
@@ -542,11 +365,7 @@ func (m *Querier) UpdateTransaction(ctx context.Context, arg sqlc.UpdateTransact
 	if rf, ok := args.Get(0).(sqlc.Transaction); ok {
 		r0 = rf
 	}
-	err := args.Error(1)
-	if err != nil {
-		return r0, fmt.Errorf("mock error: %w", err)
-	}
-	return r0, nil
+	return r0, args.Error(1) //nolint:wrapcheck
 }
 
 func (m *Querier) UpdateUser(ctx context.Context, arg sqlc.UpdateUserParams) (sqlc.User, error) {
@@ -555,18 +374,10 @@ func (m *Querier) UpdateUser(ctx context.Context, arg sqlc.UpdateUserParams) (sq
 	if rf, ok := args.Get(0).(sqlc.User); ok {
 		r0 = rf
 	}
-	err := args.Error(1)
-	if err != nil {
-		return r0, fmt.Errorf("mock error: %w", err)
-	}
-	return r0, nil
+	return r0, args.Error(1) //nolint:wrapcheck
 }
 
 func (m *Querier) UpdateUserLastLogin(ctx context.Context, arg sqlc.UpdateUserLastLoginParams) error {
 	args := m.Called(ctx, arg)
-	err := args.Error(0)
-	if err != nil {
-		return fmt.Errorf("mock error: %w", err)
-	}
-	return nil
+	return args.Error(0) //nolint:wrapcheck
 }

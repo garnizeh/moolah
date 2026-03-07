@@ -44,7 +44,8 @@ func TestAuditRepo_Create(t *testing.T) {
 			NewValues:  []byte(`{"name":"test"}`),
 		}
 
-		addr, _ := netip.ParseAddr(ip)
+		addr, err := netip.ParseAddr(ip)
+		require.NoError(t, err)
 
 		mockQuerier.On("CreateAuditLog", ctx, mock.MatchedBy(func(arg sqlc.CreateAuditLogParams) bool {
 			return arg.TenantID == tenantID &&

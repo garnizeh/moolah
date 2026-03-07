@@ -59,7 +59,8 @@ func TestTenantRepo_Integration(t *testing.T) {
 
 	t.Run("Update", func(t *testing.T) {
 		t.Parallel()
-		tenant, _ := repo.Create(ctx, domain.CreateTenantInput{Name: "To Update"})
+		tenant, err := repo.Create(ctx, domain.CreateTenantInput{Name: "To Update"})
+		require.NoError(t, err)
 
 		newName := "Updated Name"
 		newPlan := domain.TenantPlanPremium
@@ -72,15 +73,18 @@ func TestTenantRepo_Integration(t *testing.T) {
 		require.Equal(t, newName, updated.Name)
 		require.Equal(t, newPlan, updated.Plan)
 
-		got, _ := repo.GetByID(ctx, tenant.ID)
+		got, err := repo.GetByID(ctx, tenant.ID)
+		require.NoError(t, err)
 		require.Equal(t, newName, got.Name)
 		require.Equal(t, newPlan, got.Plan)
 	})
 
 	t.Run("SoftDelete and List", func(t *testing.T) {
 		t.Parallel()
-		t1, _ := repo.Create(ctx, domain.CreateTenantInput{Name: "Tenant 1"})
-		t2, _ := repo.Create(ctx, domain.CreateTenantInput{Name: "Tenant 2"})
+		t1, err := repo.Create(ctx, domain.CreateTenantInput{Name: "Tenant 1"})
+		require.NoError(t, err)
+		t2, err := repo.Create(ctx, domain.CreateTenantInput{Name: "Tenant 2"})
+		require.NoError(t, err)
 
 		list, err := repo.List(ctx)
 		require.NoError(t, err)
@@ -90,7 +94,8 @@ func TestTenantRepo_Integration(t *testing.T) {
 		err = repo.Delete(ctx, t1.ID)
 		require.NoError(t, err)
 
-		list, _ = repo.List(ctx)
+		list, err = repo.List(ctx)
+		require.NoError(t, err)
 		require.NotContains(t, ids(list), t1.ID)
 		require.Contains(t, ids(list), t2.ID)
 

@@ -29,7 +29,8 @@ func TestOTPRateLimiter(t *testing.T) {
 		t.Parallel()
 		email := "test@example.com"
 		body := map[string]string{"email": email}
-		b, _ := json.Marshal(body)
+		b, err := json.Marshal(body)
+		require.NoError(t, err)
 
 		for range otpRateLimit {
 			req := httptest.NewRequest(http.MethodPost, "/auth/otp/request", bytes.NewReader(b))
@@ -44,7 +45,8 @@ func TestOTPRateLimiter(t *testing.T) {
 		t.Parallel()
 		email := "limit@example.com"
 		body := map[string]string{"email": email}
-		b, _ := json.Marshal(body)
+		b, err := json.Marshal(body)
+		require.NoError(t, err)
 
 		// Fill the bucket
 		for range otpRateLimit {
@@ -73,8 +75,10 @@ func TestOTPRateLimiter(t *testing.T) {
 		email1 := "user1@example.com"
 		email2 := "user2@example.com"
 
-		b1, _ := json.Marshal(map[string]string{"email": email1})
-		b2, _ := json.Marshal(map[string]string{"email": email2})
+		b1, err := json.Marshal(map[string]string{"email": email1})
+		require.NoError(t, err)
+		b2, err := json.Marshal(map[string]string{"email": email2})
+		require.NoError(t, err)
 
 		// Exhaust user1
 		for range otpRateLimit {

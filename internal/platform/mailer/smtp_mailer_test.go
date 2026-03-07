@@ -119,7 +119,8 @@ func TestNoopMailer(t *testing.T) {
 
 func TestSMTPMailer_Validation(t *testing.T) {
 	t.Parallel()
-	m, _ := NewSMTPMailer("localhost", 1025, "", "", "no-reply@moolah.io")
+	m, err := NewSMTPMailer("localhost", 1025, "", "", "no-reply@moolah.io")
+	require.NoError(t, err)
 
 	t.Run("missing recipient", func(t *testing.T) {
 		t.Parallel()
@@ -160,16 +161,24 @@ func TestSMTPMailer_Validation(t *testing.T) {
 		require.NoError(t, err)
 
 		go func() {
-			conn, _ := l.Accept()
+			conn, cerr := l.Accept()
+			// Use assert here. If this fails, the test fails,
+			// but the goroutine won't try to "exit" the whole test process.
+			if !assert.NoError(t, cerr) {
+				return
+			}
+
 			if conn != nil {
+				defer conn.Close()
 				bufWriter := bufio.NewWriter(conn)
 				writer := textproto.NewWriter(bufWriter)
-				_ = writer.PrintfLine("554 Transaction failed")
-				conn.Close()
+				perr := writer.PrintfLine("554 Transaction failed")
+				assert.NoError(t, perr)
 			}
 		}()
 
-		m2, _ := NewSMTPMailer("127.0.0.1", port, "", "", "no-reply@moolah.io")
+		m2, err := NewSMTPMailer("127.0.0.1", port, "", "", "no-reply@moolah.io")
+		require.NoError(t, err)
 		err = m2.SendOTP(context.Background(), "user@example.com", "123456")
 		require.Error(t, err)
 		assert.Contains(t, err.Error(), "failed to send email")
@@ -181,10 +190,12 @@ func TestSMTPMailer_Validation(t *testing.T) {
 		// but we can provide username/password to reach that branch.
 		// Since we can't easily mock net/smtp without refactoring to use an interface,
 		// we'll at least hit the initialization branch.
-		m3, _ := NewSMTPMailer("127.0.0.1", 2525, "user", "pass", "no-reply@moolah.io")
+		m3, err := NewSMTPMailer("127.0.0.1", 2525, "user", "pass", "no-reply@moolah.io")
+		require.NoError(t, err)
 		// This will likely fail to connect but it's okay for coverage of the auth branch.
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Millisecond)
 		defer cancel()
-		_ = m3.SendOTP(ctx, "user@example.com", "123456")
+		err = m3.SendOTP(ctx, "user@example.com", "123456")
+		require.Error(t, err)
 	})
 }

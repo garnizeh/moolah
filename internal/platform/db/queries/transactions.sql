@@ -4,8 +4,16 @@ WHERE tenant_id = $1 AND id = $2 AND deleted_at IS NULL;
 
 -- name: ListTransactionsByTenant :many
 SELECT * FROM transactions
-WHERE tenant_id = $1 AND deleted_at IS NULL
-ORDER BY occurred_at DESC;
+WHERE tenant_id = sqlc.arg('tenant_id')
+    AND deleted_at IS NULL
+    AND (account_id = sqlc.narg('account_id')::CHAR(26) OR sqlc.narg('account_id') IS NULL)
+    AND (category_id = sqlc.narg('category_id')::CHAR(26) OR sqlc.narg('category_id') IS NULL)
+    AND (type = sqlc.narg('type') OR sqlc.narg('type') IS NULL)
+    AND (occurred_at >= sqlc.narg('start_date') OR sqlc.narg('start_date') IS NULL)
+    AND (occurred_at <= sqlc.narg('end_date') OR sqlc.narg('end_date') IS NULL)
+ORDER BY occurred_at DESC
+LIMIT NULLIF(sqlc.arg('limit_count'), 0)
+OFFSET sqlc.arg('offset_count');
 
 -- name: CreateTransaction :one
 INSERT INTO transactions (

@@ -24,13 +24,15 @@ func TestAccountRepo_Integration(t *testing.T) {
 	repo := repository.NewAccountRepository(db.Queries)
 
 	// Setup: Create tenant and user
-	tenant, _ := tenantRepo.Create(ctx, domain.CreateTenantInput{Name: "Account Tenant"})
-	user, _ := userRepo.Create(ctx, domain.CreateUserInput{
+	tenant, err := tenantRepo.Create(ctx, domain.CreateTenantInput{Name: "Account Tenant"})
+	require.NoError(t, err)
+	user, err := userRepo.Create(ctx, domain.CreateUserInput{
 		TenantID: tenant.ID,
 		Email:    "accuser@example.com",
 		Name:     "Account User",
 		Role:     domain.RoleMember,
 	})
+	require.NoError(t, err)
 
 	t.Run("Create and GetByID", func(t *testing.T) {
 		t.Parallel()
@@ -56,27 +58,34 @@ func TestAccountRepo_Integration(t *testing.T) {
 
 	t.Run("Cross-Tenant GetByID", func(t *testing.T) {
 		t.Parallel()
-		otherTenant, _ := tenantRepo.Create(ctx, domain.CreateTenantInput{Name: "Other T"})
-		acc, _ := repo.Create(ctx, tenant.ID, domain.CreateAccountInput{
+		otherTenant, err := tenantRepo.Create(ctx, domain.CreateTenantInput{Name: "Other T"})
+		require.NoError(t, err)
+		acc, err := repo.Create(ctx, tenant.ID, domain.CreateAccountInput{
 			UserID:       user.ID,
 			Name:         "Tenant 1 Account",
 			Type:         domain.AccountTypeSavings,
 			Currency:     "USD",
 			InitialCents: 0,
 		})
+		require.NoError(t, err)
 
-		_, err := repo.GetByID(ctx, otherTenant.ID, acc.ID)
+		_, err = repo.GetByID(ctx, otherTenant.ID, acc.ID)
 		require.ErrorIs(t, err, domain.ErrNotFound)
 	})
 
 	t.Run("List Methods", func(t *testing.T) {
 		t.Parallel()
-		t2, _ := tenantRepo.Create(ctx, domain.CreateTenantInput{Name: "List T"})
-		u21, _ := userRepo.Create(ctx, domain.CreateUserInput{TenantID: t2.ID, Email: "u21@t2.com", Name: "U1", Role: domain.RoleMember})
-		u2_2, _ := userRepo.Create(ctx, domain.CreateUserInput{TenantID: t2.ID, Email: "u22@t2.com", Name: "U2", Role: domain.RoleMember})
+		t2, err := tenantRepo.Create(ctx, domain.CreateTenantInput{Name: "List T"})
+		require.NoError(t, err)
+		u21, err := userRepo.Create(ctx, domain.CreateUserInput{TenantID: t2.ID, Email: "u21@t2.com", Name: "U1", Role: domain.RoleMember})
+		require.NoError(t, err)
+		u22, err := userRepo.Create(ctx, domain.CreateUserInput{TenantID: t2.ID, Email: "u22@t2.com", Name: "U2", Role: domain.RoleMember})
+		require.NoError(t, err)
 
-		a1, _ := repo.Create(ctx, t2.ID, domain.CreateAccountInput{UserID: u21.ID, Name: "A1", Type: domain.AccountTypeSavings, Currency: "USD"})
-		_, _ = repo.Create(ctx, t2.ID, domain.CreateAccountInput{UserID: u2_2.ID, Name: "A2", Type: domain.AccountTypeSavings, Currency: "USD"})
+		a1, err := repo.Create(ctx, t2.ID, domain.CreateAccountInput{UserID: u21.ID, Name: "A1", Type: domain.AccountTypeSavings, Currency: "USD"})
+		require.NoError(t, err)
+		_, err = repo.Create(ctx, t2.ID, domain.CreateAccountInput{UserID: u22.ID, Name: "A2", Type: domain.AccountTypeSavings, Currency: "USD"})
+		require.NoError(t, err)
 
 		// ListByTenant
 		all, err := repo.ListByTenant(ctx, t2.ID)
@@ -92,13 +101,14 @@ func TestAccountRepo_Integration(t *testing.T) {
 
 	t.Run("Update", func(t *testing.T) {
 		t.Parallel()
-		acc, _ := repo.Create(ctx, tenant.ID, domain.CreateAccountInput{
+		acc, err := repo.Create(ctx, tenant.ID, domain.CreateAccountInput{
 			UserID:       user.ID,
 			Name:         "Before Update",
 			Type:         domain.AccountTypeSavings,
 			Currency:     "USD",
 			InitialCents: 500,
 		})
+		require.NoError(t, err)
 
 		newName := "Updated Name"
 		newCurrency := "EUR"
@@ -114,37 +124,41 @@ func TestAccountRepo_Integration(t *testing.T) {
 
 	t.Run("UpdateBalance", func(t *testing.T) {
 		t.Parallel()
-		acc, _ := repo.Create(ctx, tenant.ID, domain.CreateAccountInput{
+		acc, err := repo.Create(ctx, tenant.ID, domain.CreateAccountInput{
 			UserID:       user.ID,
 			Name:         "Balance Test",
 			Type:         domain.AccountTypeSavings,
 			Currency:     "USD",
 			InitialCents: 100,
 		})
-
-		err := repo.UpdateBalance(ctx, tenant.ID, acc.ID, 500)
 		require.NoError(t, err)
 
-		got, _ := repo.GetByID(ctx, tenant.ID, acc.ID)
+		err = repo.UpdateBalance(ctx, tenant.ID, acc.ID, 500)
+		require.NoError(t, err)
+
+		got, err := repo.GetByID(ctx, tenant.ID, acc.ID)
+		require.NoError(t, err)
 		require.Equal(t, int64(500), got.BalanceCents)
 	})
 
 	t.Run("SoftDelete", func(t *testing.T) {
 		t.Parallel()
-		acc, _ := repo.Create(ctx, tenant.ID, domain.CreateAccountInput{
+		acc, err := repo.Create(ctx, tenant.ID, domain.CreateAccountInput{
 			UserID:   user.ID,
 			Name:     "For Deletion",
 			Type:     domain.AccountTypeSavings,
 			Currency: "USD",
 		})
+		require.NoError(t, err)
 
-		err := repo.Delete(ctx, tenant.ID, acc.ID)
+		err = repo.Delete(ctx, tenant.ID, acc.ID)
 		require.NoError(t, err)
 
 		_, err = repo.GetByID(ctx, tenant.ID, acc.ID)
 		require.ErrorIs(t, err, domain.ErrNotFound)
 
-		list, _ := repo.ListByTenant(ctx, tenant.ID)
+		list, err := repo.ListByTenant(ctx, tenant.ID)
+		require.NoError(t, err)
 		for _, a := range list {
 			require.NotEqual(t, acc.ID, a.ID)
 		}

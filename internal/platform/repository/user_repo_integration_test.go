@@ -51,13 +51,15 @@ func TestUserRepo_Integration(t *testing.T) {
 	t.Run("GetByID Cross-Tenant or Not Found", func(t *testing.T) {
 		t.Parallel()
 		// Another tenant
-		otherTenant, _ := tenantRepo.Create(ctx, domain.CreateTenantInput{Name: "Other Tenant"})
-		user, _ := userRepo.Create(ctx, domain.CreateUserInput{
+		otherTenant, err := tenantRepo.Create(ctx, domain.CreateTenantInput{Name: "Other Tenant"})
+		require.NoError(t, err)
+		user, err := userRepo.Create(ctx, domain.CreateUserInput{
 			TenantID: tenant.ID,
 			Email:    "cross@example.com",
 			Name:     "Cross User",
 			Role:     domain.RoleMember,
 		})
+		require.NoError(t, err)
 
 		// Try to fetch from wrong tenant
 		got, err := userRepo.GetByID(ctx, otherTenant.ID, user.ID)
@@ -73,12 +75,13 @@ func TestUserRepo_Integration(t *testing.T) {
 	t.Run("GetByEmail", func(t *testing.T) {
 		t.Parallel()
 		email := "byemail@example.com"
-		user, _ := userRepo.Create(ctx, domain.CreateUserInput{
+		user, err := userRepo.Create(ctx, domain.CreateUserInput{
 			TenantID: tenant.ID,
 			Email:    email,
 			Name:     "Email User",
 			Role:     domain.RoleMember,
 		})
+		require.NoError(t, err)
 
 		got, err := userRepo.GetByEmail(ctx, email)
 		require.NoError(t, err)
@@ -113,9 +116,12 @@ func TestUserRepo_Integration(t *testing.T) {
 
 	t.Run("ListByTenant", func(t *testing.T) {
 		t.Parallel()
-		t3, _ := tenantRepo.Create(ctx, domain.CreateTenantInput{Name: "List Tenant"})
-		u1, _ := userRepo.Create(ctx, domain.CreateUserInput{TenantID: t3.ID, Email: "u1@t3.com", Name: "U1", Role: domain.RoleMember})
-		u2, _ := userRepo.Create(ctx, domain.CreateUserInput{TenantID: t3.ID, Email: "u2@t3.com", Name: "U2", Role: domain.RoleMember})
+		t3, err := tenantRepo.Create(ctx, domain.CreateTenantInput{Name: "List Tenant"})
+		require.NoError(t, err)
+		u1, err := userRepo.Create(ctx, domain.CreateUserInput{TenantID: t3.ID, Email: "u1@t3.com", Name: "U1", Role: domain.RoleMember})
+		require.NoError(t, err)
+		u2, err := userRepo.Create(ctx, domain.CreateUserInput{TenantID: t3.ID, Email: "u2@t3.com", Name: "U2", Role: domain.RoleMember})
+		require.NoError(t, err)
 
 		list, err := userRepo.ListByTenant(ctx, t3.ID)
 		require.NoError(t, err)
@@ -131,12 +137,13 @@ func TestUserRepo_Integration(t *testing.T) {
 
 	t.Run("Update", func(t *testing.T) {
 		t.Parallel()
-		user, _ := userRepo.Create(ctx, domain.CreateUserInput{
+		user, err := userRepo.Create(ctx, domain.CreateUserInput{
 			TenantID: tenant.ID,
 			Email:    "update@example.com",
 			Name:     "Original Name",
 			Role:     domain.RoleMember,
 		})
+		require.NoError(t, err)
 
 		newName := "Updated Name"
 		newRole := domain.RoleAdmin
@@ -148,44 +155,49 @@ func TestUserRepo_Integration(t *testing.T) {
 		require.Equal(t, newName, updated.Name)
 		require.Equal(t, newRole, updated.Role)
 
-		got, _ := userRepo.GetByID(ctx, tenant.ID, user.ID)
+		got, err := userRepo.GetByID(ctx, tenant.ID, user.ID)
+		require.NoError(t, err)
 		require.Equal(t, newName, got.Name)
 	})
 
 	t.Run("UpdateLastLogin", func(t *testing.T) {
 		t.Parallel()
-		user, _ := userRepo.Create(ctx, domain.CreateUserInput{
+		user, err := userRepo.Create(ctx, domain.CreateUserInput{
 			TenantID: tenant.ID,
 			Email:    "login@example.com",
 			Name:     "Login User",
 			Role:     domain.RoleMember,
 		})
+		require.NoError(t, err)
 
 		require.Nil(t, user.LastLoginAt)
 
-		err := userRepo.UpdateLastLogin(ctx, user.ID)
+		err = userRepo.UpdateLastLogin(ctx, user.ID)
 		require.NoError(t, err)
 
-		got, _ := userRepo.GetByEmail(ctx, user.Email)
+		got, err := userRepo.GetByEmail(ctx, user.Email)
+		require.NoError(t, err)
 		require.NotNil(t, got.LastLoginAt)
 	})
 
 	t.Run("SoftDelete", func(t *testing.T) {
 		t.Parallel()
-		user, _ := userRepo.Create(ctx, domain.CreateUserInput{
+		user, err := userRepo.Create(ctx, domain.CreateUserInput{
 			TenantID: tenant.ID,
 			Email:    "delete@example.com",
 			Name:     "Going Away",
 			Role:     domain.RoleMember,
 		})
+		require.NoError(t, err)
 
-		err := userRepo.Delete(ctx, tenant.ID, user.ID)
+		err = userRepo.Delete(ctx, tenant.ID, user.ID)
 		require.NoError(t, err)
 
 		_, err = userRepo.GetByID(ctx, tenant.ID, user.ID)
 		require.ErrorIs(t, err, domain.ErrNotFound)
 
-		list, _ := userRepo.ListByTenant(ctx, tenant.ID)
+		list, err := userRepo.ListByTenant(ctx, tenant.ID)
+		require.NoError(t, err)
 		for _, u := range list {
 			require.NotEqual(t, user.ID, u.ID)
 		}

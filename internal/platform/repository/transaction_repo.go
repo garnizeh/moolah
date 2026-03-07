@@ -61,7 +61,31 @@ func (r *transactionRepo) GetByID(ctx context.Context, tenantID, id string) (*do
 }
 
 func (r *transactionRepo) List(ctx context.Context, tenantID string, filter domain.ListTransactionsParams) ([]domain.Transaction, error) {
-	rows, err := r.q.ListTransactionsByTenant(ctx, tenantID)
+	arg := sqlc.ListTransactionsByTenantParams{
+		TenantID:    tenantID,
+		OffsetCount: filter.Offset,
+	}
+
+	if filter.AccountID != "" {
+		arg.AccountID = pgtype.Text{String: filter.AccountID, Valid: true}
+	}
+	if filter.CategoryID != "" {
+		arg.CategoryID = pgtype.Text{String: filter.CategoryID, Valid: true}
+	}
+	if filter.Type != "" {
+		arg.Type = sqlc.NullTransactionType{TransactionType: sqlc.TransactionType(filter.Type), Valid: true}
+	}
+	if filter.StartDate != nil {
+		arg.StartDate = pgtype.Timestamptz{Time: *filter.StartDate, Valid: true}
+	}
+	if filter.EndDate != nil {
+		arg.EndDate = pgtype.Timestamptz{Time: *filter.EndDate, Valid: true}
+	}
+	if filter.Limit > 0 {
+		arg.LimitCount = filter.Limit
+	}
+
+	rows, err := r.q.ListTransactionsByTenant(ctx, arg)
 	if err != nil {
 		return nil, r.translateError(err)
 	}
@@ -130,10 +154,15 @@ func (r *transactionRepo) translateError(err error) error {
 	if errors.Is(err, pgx.ErrNoRows) {
 		return domain.ErrNotFound
 	}
-	var pgErr *pgconn.PgError
-	if errors.As(err, &pgErr) {
+
+	if pgErr, ok := errors.AsType[*pgconn.PgError](err); ok {
+		// 23505: unique_violation
 		if pgErr.Code == "23505" {
 			return domain.ErrConflict
+		}
+		// 23503: foreign_key_violation
+		if pgErr.Code == "23503" {
+			return domain.ErrNotFound
 		}
 	}
 	return err

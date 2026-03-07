@@ -24,10 +24,15 @@ func NewCategoryRepository(q sqlc.Querier) domain.CategoryRepository {
 
 // Create persists a new category for the specified tenant.
 func (r *categoryRepo) Create(ctx context.Context, tenantID string, input domain.CreateCategoryInput) (*domain.Category, error) {
+	parentID := pgtype.Text{}
+	if input.ParentID != "" {
+		parentID = pgtype.Text{String: input.ParentID, Valid: true}
+	}
+
 	arg := sqlc.CreateCategoryParams{
 		ID:       ulid.New(),
 		TenantID: tenantID,
-		ParentID: input.ParentID,
+		ParentID: parentID,
 		Name:     input.Name,
 		Icon:     pgtype.Text{String: input.Icon, Valid: input.Icon != ""},
 		Color:    pgtype.Text{String: input.Color, Valid: input.Color != ""},
@@ -81,7 +86,7 @@ func (r *categoryRepo) ListByTenant(ctx context.Context, tenantID string) ([]dom
 func (r *categoryRepo) ListChildren(ctx context.Context, tenantID, parentID string) ([]domain.Category, error) {
 	rows, err := r.q.ListChildCategories(ctx, sqlc.ListChildCategoriesParams{
 		TenantID: tenantID,
-		ParentID: parentID,
+		ParentID: pgtype.Text{String: parentID, Valid: true},
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to list child categories: %w", err)
@@ -127,6 +132,7 @@ func (r *categoryRepo) Update(ctx context.Context, tenantID, id string, input do
 	row, err := r.q.UpdateCategory(ctx, sqlc.UpdateCategoryParams{
 		TenantID: tenantID,
 		ID:       id,
+		ParentID: current.ParentID,
 		Name:     name,
 		Icon:     pgtype.Text{String: icon, Valid: icon != ""},
 		Color:    pgtype.Text{String: color, Valid: color != ""},
@@ -157,10 +163,15 @@ func (r *categoryRepo) Delete(ctx context.Context, tenantID, id string) error {
 }
 
 func mapCategory(row sqlc.Category) *domain.Category {
+	parentID := ""
+	if row.ParentID.Valid {
+		parentID = row.ParentID.String
+	}
+
 	return &domain.Category{
 		ID:        row.ID,
 		TenantID:  row.TenantID,
-		ParentID:  row.ParentID,
+		ParentID:  parentID,
 		Name:      row.Name,
 		Icon:      row.Icon.String,
 		Color:     row.Color.String,

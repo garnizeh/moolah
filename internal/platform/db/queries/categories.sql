@@ -16,19 +16,27 @@ ORDER BY name ASC;
 INSERT INTO categories (
     id, tenant_id, parent_id, name, icon, color, type, created_at, updated_at
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, NOW(), NOW()
+    sqlc.arg('id'),
+    sqlc.arg('tenant_id'),
+    sqlc.narg('parent_id')::CHAR(26),
+    sqlc.arg('name'),
+    sqlc.arg('icon'),
+    sqlc.arg('color'),
+    sqlc.arg('type'),
+    NOW(),
+    NOW()
 ) RETURNING *;
 
 -- name: UpdateCategory :one
 UPDATE categories
 SET 
-    parent_id = $3,
-    name = $4,
-    icon = $5,
-    color = $6,
-    type = $7,
+    parent_id = sqlc.narg('parent_id')::CHAR(26),
+    name = sqlc.arg('name'),
+    icon = sqlc.arg('icon'),
+    color = sqlc.arg('color'),
+    type = sqlc.arg('type'),
     updated_at = NOW()
-WHERE tenant_id = $1 AND id = $2 AND deleted_at IS NULL
+WHERE tenant_id = sqlc.arg('tenant_id') AND id = sqlc.arg('id') AND deleted_at IS NULL
 RETURNING *;
 
 -- name: SoftDeleteCategory :exec
