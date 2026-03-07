@@ -55,16 +55,16 @@
 | 1.1.7 | `sqlc` query files for all Phase 1 entities | ✅ `done` | 2026-03-07 | |
 | 1.1.8 | `sqlc generate` — verified generated code committed | ✅ `done` | 2026-03-07 | Checked in CI |
 | 1.1.9 | `platform/middleware/auth.go` — PASETO validation + context injection | ✅ `done` | 2026-03-07 | `RequireAuth`, `RequireRole` |
-| 1.1.10 | `platform/middleware/ratelimit.go` — token-bucket OTP limiter | 🔵 `backlog` | 2026-03-06 | `golang.org/x/time/rate`; 5 req/15 min |
-| 1.1.11 | `platform/middleware/logger.go` — request logging middleware | 🔵 `backlog` | 2026-03-06 | tenant_id, user_id, latency |
-| 1.1.12 | `platform/mailer/smtp_mailer.go` — implements `domain.Mailer` | 🔵 `backlog` | 2026-03-06 | |
+| 1.1.10 | `platform/middleware/ratelimit.go` — token-bucket OTP limiter | ✅ `done` | 2026-03-07 | `golang.org/x/time/rate`; 5 req/15 min |
+| 1.1.11 | `platform/middleware/logger.go` — request logging middleware | 🔵 `backlog` | 2026-03-07 | tenant_id, user_id, latency |
+| 1.1.12 | `platform/mailer/smtp_mailer.go` — implements `domain.Mailer` | 🔵 `backlog` | 2026-03-07 | |
 
 ### 1.2 Domain Layer
 
 | # | Task | Status | Last Updated | Notes |
 | --- | --- | --- | --- | --- |
-| 1.2.1 | `domain/errors.go` — sentinel errors (`ErrNotFound`, `ErrForbidden`, `ErrInvalidOTP`, …) | 🔵 `backlog` | 2026-03-06 | |
-| 1.2.2 | `domain/role.go` — `Role` type + constants | 🔵 `backlog` | 2026-03-06 | |
+| 1.2.1 | `domain/errors.go` — sentinel errors (`ErrNotFound`, `ErrForbidden`, `ErrInvalidOTP`, …) | 🔵 `backlog` | 2026-03-07 | |
+| 1.2.2 | `domain/role.go` — `Role` type + constants | ✅ `done` | 2026-03-07 | |
 | 1.2.3 | `domain/tenant.go` — entity + `TenantRepository` interface | 🔵 `backlog` | 2026-03-06 | |
 | 1.2.4 | `domain/user.go` — entity + `UserRepository` interface | 🔵 `backlog` | 2026-03-06 | |
 | 1.2.5 | `domain/auth.go` — `OTPRequest` entity + `AuthRepository` interface | 🔵 `backlog` | 2026-03-06 | |

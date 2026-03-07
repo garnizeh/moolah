@@ -28,11 +28,11 @@ Without rate limiting, the OTP endpoint is vulnerable to email bombing (flooding
 
 ### In scope
 
-- [ ] `internal/platform/middleware/ratelimit.go` — `OTPRateLimiter(next http.Handler) http.Handler`
-- [ ] Per-email limiter map, protected by `sync.RWMutex`
-- [ ] Background goroutine that prunes stale limiters every 15 minutes
-- [ ] `Retry-After` response header (seconds until next token is available)
-- [ ] `internal/platform/middleware/ratelimit_test.go` — unit tests
+- [x] `internal/platform/middleware/ratelimit.go` — `OTPRateLimiter(next http.Handler) http.Handler`
+- [x] Per-email limiter map, protected by `sync.RWMutex`
+- [x] Background goroutine that prunes stale limiters every 15 minutes
+- [x] `Retry-After` response header (seconds until next token is available)
+- [x] `internal/platform/middleware/ratelimit_test.go` — unit tests
 
 ### Out of scope
 
@@ -111,16 +111,16 @@ N/A — middleware applied to `POST /auth/otp/request`.
 
 ## 5. Acceptance Criteria
 
-- [ ] 5 requests in < 15 minutes from the same email: all pass.
-- [ ] 6th request from the same email within the window: returns `429`.
-- [ ] `Retry-After` header is present and is a positive integer (seconds).
-- [ ] After the window expires (time.Sleep or mocked clock), the 6th request passes.
-- [ ] Different emails are limited independently.
-- [ ] Background cleanup removes entries unseen for > 15 minutes.
-- [ ] Test coverage for `ratelimit.go` ≥ 90%.
-- [ ] `golangci-lint run ./internal/platform/middleware/...` passes with zero issues.
-- [ ] `gosec ./internal/platform/middleware/...` passes with zero issues.
-- [ ] `docs/ROADMAP.md` row 1.1.10 updated to ✅ `done`.
+- [x] 5 requests in < 15 minutes from the same email: all pass.
+- [x] 6th request from the same email within the window: returns `429`.
+- [x] `Retry-After` header is present and is a positive integer (seconds).
+- [x] After the window expires (time.Sleep or mocked clock), the 6th request passes.
+- [x] Different emails are limited independently.
+- [x] Background cleanup removes entries unseen for > 15 minutes.
+- [x] Test coverage for `ratelimit.go` ≥ 90%.
+- [x] `golangci-lint run ./internal/platform/middleware/...` passes with zero issues.
+- [x] `gosec ./internal/platform/middleware/...` passes with zero issues.
+- [x] `docs/ROADMAP.md` row 1.1.10 updated to ✅ `done`.
 
 ---
 
@@ -128,7 +128,7 @@ N/A — middleware applied to `POST /auth/otp/request`.
 
 | Dependency                                      | Type     | Status     |
 | ----------------------------------------------- | -------- | ---------- |
-| `golang.org/x/time/rate` added to `go.mod`      | External | 🔵 backlog |
+| `golang.org/x/time/rate` added to `go.mod`      | External | ✅ done |
 | Phase 0 complete (module scaffolded)            | Upstream | ✅ done   |
 
 ---
@@ -165,3 +165,4 @@ N/A — fully testable in-process.
 | Date       | Author | Change                         |
 | ---------- | ------ | ------------------------------ |
 | 2026-03-07 | —      | Task created from roadmap 1.1.10 |
+| 2026-03-07 | GitHub Copilot | Implementation of Token-Bucket Rate Limiter with cleanup test |
