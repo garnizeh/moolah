@@ -105,7 +105,7 @@ Follow this directory layout strictly when suggesting new files:
 ---
 
 ## 8. Coding Style & Best Practices
-- **Error Handling:** Use `errors.Is` and `errors.As`. Return wrapped errors with clear context.
+- **Error Handling:** Use `errors.Is` and `errors.As`. Return wrapped errors with clear context. **NEVER ignore errors** (no `_ = ...` for functions that return errors unless it's a documented exception). Always add meaningful context when wrapping/returning errors (e.g., `fmt.Errorf("failed to [action]: %w", err)`).
 - **Dependency Injection:** Use constructor functions (e.g., `func NewService(repo Repository) *Service`).
 - **SQLC Naming:** Use descriptive names for queries (e.g., `-- name: GetTransactionByID :one`).
 - **Validation:** Use `go-playground/validator` for incoming request payloads.

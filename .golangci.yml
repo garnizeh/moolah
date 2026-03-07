@@ -26,6 +26,7 @@ linters:
     - bodyclose
     - contextcheck
     - copyloopvar
+    - errcheck
     - errorlint
     - gocritic
     - gosec
@@ -44,6 +45,7 @@ linters:
     - unparam
     - usestdlibvars
     - wastedassign
+    - wrapcheck
     - whitespace
   settings:
     govet:
