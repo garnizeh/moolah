@@ -1,0 +1,183 @@
+# golangci-lint configuration file based on version 2 reference
+# Reference: https://github.com/golangci/golangci-lint/blob/HEAD/.golangci.reference.yml
+
+version: "2"
+
+run:
+  # Management of parameters for the analysis run.
+  # The default concurrency value is the number of available CPUs.
+  concurrency: 4
+
+  # Timeout for analysis, e.g. 30s, 5m.
+  # Default: 1m
+  timeout: 5m
+
+  # Exit code when at least one issue was found.
+  # Default: 1
+  issues-exit-code: 1
+
+  # Include test files or not.
+  # Default: true
+  tests: true
+
+  # List of build tags, all linters use it.
+  # Default: []
+  # build-tags:
+  #   - mytag
+
+  # Which dirs to skip.
+  # Default: [vendor$, third_party$, testdata$, examples$, Godeps$, builtin$]
+  # skip-dirs:
+  #   - test/testdata_etc
+
+  # Which files to skip.
+  # Default: []
+  # skip-files:
+  #   - ".*\.pb\.go$"
+  #   - ".*\.gen\.go$"
+
+  # If set, we pass it to "go list -mod={option}".
+  # Allowed values: readonly|vendor|mod
+  # Default: ""
+  modules-download-mode: readonly
+
+  # Allow multiple parallel golangci-lint instances running.
+  # Default: false
+  allow-parallel-runners: true
+
+  # Define the Go version limit.
+  # Default: use Go version from the go.mod file, fallback on the env var `GOVERSION`, fallback on 1.22.
+  go: '1.26'
+
+output:
+  # The formats used to render issues.
+  formats:
+    - format: colored-line-number
+  
+  # Print lines of code with issue.
+  # Default: true
+  print-issued-lines: true
+
+  # Print linter name in the end of issue text.
+  # Default: true
+  print-linter-name: true
+
+  # Make issues output unique by line.
+  # Default: true
+  uniq-by-line: true
+
+  # Order to use when sorting results.
+  # Default: ["linter", "file"]
+  sort-order:
+    - linter
+    - severity
+    - file
+
+linters:
+  # Disable all linters.
+  # Default: false
+  disable-all: true
+
+  # Enable specific linters.
+  # https://golangci-lint.run/docs/linters/
+  enable:
+    - errcheck     # checking for unchecked errors in go programs
+    - gosimple     # Linter for Go source code that specializes in simplifying code
+    - govet        # Vet examines Go source code and reports suspicious constructs
+    - ineffassign  # Detects when assignments to existing variables are not used
+    - staticcheck  # Staticcheck is a go vet on steroids, applying a ton of static analysis checks
+    - typecheck    # Like the front-end of a Go compiler, parses and type-checks Go code
+    - unused       # Checks Go code for unused constants, variables, functions and types
+    - bodyclose    # checks whether HTTP response body is closed successfully
+    - gofmt        # Gofmt checks whether code was gofmt-ed
+    - goimports    # Check import statements are formatted according to the 'goimports' command
+    - gocyclo      # Computes and checks the cyclomatic complexity of functions
+    - misspell     # Finds commonly misspelled English words in comments
+    - revive       # Fast, configurable, extensible, flexible, and beautiful linter for Go
+    - unconvert    # Remove unnecessary type conversions
+    - unparam      # Reports unused function parameters
+    - whitespace   # Tool for detection of leading and trailing whitespace
+    - goconst      # Finds repeated strings that could be replaced by a constant
+    - asciicheck   # Checks that your code does not contain non-ASCII identifiers
+    - loggercheck  # Checks the usage of logger (slog, zap, zerolog)
+    - copyloopvar  # Checks for pointers to enclosing loop variables
+    - errorlint    # Finds code that will cause problems with the error wrapping scheme
+    - gosec        # Inspects source code for security problems
+    - sqlclosecheck # Checks that sql.Rows and sql.Stmt are closed
+    - testifylint  # Checks usage of testify
+
+linters-settings:
+  govet:
+    enable-all: true
+    disable:
+      - fieldalignment # too noisy
+  
+  revive:
+    # see https://github.com/mgechev/revive#available-rules for details.
+    ignore-generated-header: true
+    severity: warning
+    rules:
+      - name: blank-imports
+      - name: context-as-first-argument
+      - name: dot-imports
+      - name: error-return
+      - name: error-strings
+      - name: error-naming
+      - name: exported
+      - name: if-return
+      - name: increment-decrement
+      - name: var-naming
+      - name: var-declaration
+      - name: package-comments
+      - name: range
+      - name: receiver-naming
+      - name: time-naming
+      - name: unexported-return
+      - name: indent-error-flow
+      - name: errorf
+      - name: empty-block
+      - name: superfluous-else
+      - name: unused-parameter
+      - name: unreachable-code
+      - name: redefines-builtin-id
+
+  gocyclo:
+    min-complexity: 15
+
+  goconst:
+    min-len: 3
+    min-occurrences: 3
+
+  misspell:
+    locale: US
+
+issues:
+  # Maximum issues count per one linter.
+  # Set to 0 to disable.
+  # Default: 50
+  max-issues-per-linter: 0
+
+  # Maximum count of issues with the same text.
+  # Set to 0 to disable.
+  # Default: 3
+  max-same-issues: 0
+
+  # Excluding configuration per-path, per-linter, per-text and per-source
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - gocyclo
+        - errcheck
+        - dupl
+        - gosec
+    - path: internal/platform/db/sqlc/
+      linters:
+        - typecheck
+        - unused
+        - revive
+        - goconst
+
+severity:
+  # Set the default severity for issues.
+  # Default: ""
+  default: error

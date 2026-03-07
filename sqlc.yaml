@@ -1,0 +1,32 @@
+version: "2"
+sql:
+  - schema: "docs/schema.sql"
+    queries: "internal/platform/db/queries/"
+    engine: "postgresql"
+    gen:
+      go:
+        package: "sqlc"
+        out: "internal/platform/db/sqlc"
+        sql_package: "pgx/v5"
+        emit_json_tags: true
+        emit_prepared_queries: false
+        emit_interface: true
+        emit_exact_table_names: false
+        emit_empty_slices: true
+        overrides:
+          - column: "*.tenant_id"
+            go_type: "github.com/garnizeh/moolah/pkg/ulidutil.ULID"
+          - column: "*.id"
+            go_type: "github.com/garnizeh/moolah/pkg/ulidutil.ULID"
+          - column: "*.user_id"
+            go_type: "github.com/garnizeh/moolah/pkg/ulidutil.ULID"
+          - column: "*.account_id"
+            go_type: "github.com/garnizeh/moolah/pkg/ulidutil.ULID"
+          - column: "*.category_id"
+            go_type: "github.com/garnizeh/moolah/pkg/ulidutil.ULID"
+          - column: "*.transaction_id"
+            go_type: "github.com/garnizeh/moolah/pkg/ulidutil.ULID"
+          - column: "*.parent_id"
+            go_type: "github.com/garnizeh/moolah/pkg/ulidutil.ULID"
+          - column: "*.actor_id"
+            go_type: "github.com/garnizeh/moolah/pkg/ulidutil.ULID"

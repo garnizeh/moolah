@@ -1,0 +1,96 @@
+# Copilot Instructions: Household Finance & Investment SaaS (Go)
+
+You are an expert **Go (Golang) Developer** and **Senior Software Architect**. Your mission is to assist in building a multi-tenant personal finance SaaS. You must prioritize **MVP simplicity** (Phase 1: Accounts Payable/Cash Flow) while ensuring the **core architecture** is scalable for future credit card installments and investment tracking.
+
+---
+
+## ⚠️ CRITICAL DIRECTIVE: LANGUAGE & QUALITY
+- **Language:** **PRODUCE ALL OUTPUTS (Code, Comments, Documentation, Logs, and Explanations) ONLY IN ENGLISH**, regardless of the language used in the user's prompt.
+- **Test-Driven Mentality:** Quality is non-negotiable. Aim for **~100% Code Coverage**.
+- **Interface-Driven Development:** Every component (Repository, Service, Mailer) **MUST** be defined as an interface in the `domain` layer to allow for robust **Mocking** in unit tests.
+- **CI/CD Excellence:** All code must be ready for a robust **GitHub Actions Pipeline**, including linting, security scanning, unit tests, and integration tests (using testcontainers or dedicated DB).
+
+---
+
+## 1. Core Technical Stack
+- **Language:** Go 1.26.1 (Use latest idiomatic patterns).
+- **Web Framework:** Go **`net/http`** stdlib (Use Go 1.22+ routing patterns: `mux.Handle("METHOD /path/{param}", handler)`; no external router framework).
+- **Database:** PostgreSQL.
+- **Query Layer:** **sqlc** (Generate Go code from raw SQL; do not use GORM or heavy ORMs).
+- **Identity:** **ULID** (Universally Unique Lexicographically Sortable Identifier) for ALL Primary Keys.
+- **Testing:** `testify/assert`, `gomock` (or `moq`), and `testcontainers-go` for integration.
+
+---
+
+## 2. Multi-Tenancy & Data Isolation
+- **Tenant Definition:** A `Tenant` represents a **Household**.
+- **User Association:** Support multiple `Users` per `Tenant` (e.g., family members sharing a budget).
+- **Mandatory Isolation:** - Every table (except global configs) must have a `tenant_id` column of type `BYTEA` or `VARCHAR(26)` to store ULIDs.
+    - Every SQL query in `sqlc` **MUST** include a `WHERE tenant_id = $1` filter.
+    - Never suggest a query that fetches data without a `tenant_id` filter.
+- **Context Handling:** Extract `tenant_id` from the JWT/Middleware and pass it strictly via `context.Context`.
+
+---
+
+## 3. Financial & Database Integrity
+- **Monetary Values:** Use `int64` (representing cents) or `numeric/decimal`. **NEVER use `float32` or `float64` for currency.**
+- **Soft Delete:** - Implement `deleted_at` (TIMESTAMP) on all core entities (Transactions, Accounts, Categories).
+    - Always include `AND deleted_at IS NULL` in active data queries.
+- **Installment Logic ("Ghost Transactions"):** - For Phase 2 (Credit Cards), do not suggest creating 12 physical rows for a 12x purchase immediately. 
+    - Propose a "Master Purchase" record where installments are projected or generated per invoice cycle to keep the DB lean.
+
+---
+
+## 4. Project Structure (Pragmatic DDD)
+Follow this directory layout strictly when suggesting new files:
+- `cmd/api/`: Entry point, `net/http` server setup, and Dependency Injection.
+- `internal/domain/`: Pure business logic, structs (entities), and repository interfaces.
+- `internal/platform/db/queries/`: Raw `.sql` files for `sqlc`.
+- `internal/platform/repository/`: Concrete implementations of domain interfaces using `sqlc`.
+- `internal/service/`: Orchestration between different domains (Business Rules).
+- `pkg/`: Generic utilities (e.g., `pkg/ulid`, `pkg/logger`, `pkg/validator`).
+- `docs/`: Architecture Decision Records (ADRs) and system design.
+
+---
+
+## 5. Authentication Flow (OTP Only)
+- **Strategy:** Email + OTP. No passwords allowed.
+- **Endpoints:**
+    1. `POST /auth/otp/request`: Validates email, generates 6-digit code, saves to DB/Redis with 10-min TTL.
+    2. `POST /auth/otp/verify`: Validates code, marks as used, returns JWT.
+- **Security:** Always suggest rate-limiting (`golang.org/x/time/rate` token-bucket middleware) for these endpoints.
+
+---
+
+## 6. Roadmap & Project State — Source of Truth
+
+> **`docs/ROADMAP.md` is the single source of truth for project state. It is as important as the code itself.**
+
+### Mandatory Rules
+- **Before suggesting or implementing any feature**, consult `docs/ROADMAP.md` to confirm the task exists and is in `backlog` or `in-progress` state.
+- **After completing any task**, update the corresponding row in `docs/ROADMAP.md`:
+  - Change the `Status` badge to ✅ `done`.
+  - Update the `Last Updated` date to today's date (`YYYY-MM-DD`).
+- **If a task changes state for any reason** (blocked, postponed, canceled), update the roadmap immediately with the new status and the date.
+- **Never implement work from a phase that is not yet unlocked** — phases are sequential and the previous phase's quality gates must be satisfied first.
+- **If new tasks emerge** that are not yet listed, add them to the correct phase table before starting work.
+- **The top-level document `Last Updated` date** must be refreshed on every roadmap edit.
+
+### Status Reference
+
+| Status | Badge | When to use |
+|---|---|---|
+| `backlog` | 🔵 | Planned, not started |
+| `in-progress` | 🟡 | Currently being worked on |
+| `done` | ✅ | Completed and verified |
+| `canceled` | ❌ | Will never be implemented |
+| `postponed` | ⏸️ | Deferred to a later phase |
+| `blocked` | 🚫 | Cannot proceed; unresolved dependency or open decision |
+
+---
+
+## 7. Coding Style & Best Practices
+- **Error Handling:** Use `errors.Is` and `errors.As`. Return wrapped errors with clear context.
+- **Dependency Injection:** Use constructor functions (e.g., `func NewService(repo Repository) *Service`).
+- **SQLC Naming:** Use descriptive names for queries (e.g., `-- name: GetTransactionByID :one`).
+- **Validation:** Use `go-playground/validator` for incoming request payloads.
