@@ -1,7 +1,7 @@
 # Task 1.2.9 — Domain Transaction Entity & Repository Interface
 
 > **Roadmap Ref:** Phase 1 — MVP › 1.2 Domain Layer
-> **Status:** 🔵 `backlog`
+> **Status:** ✅ `done`
 > **Last Updated:** 2026-03-07
 > **Assignee:** —
 > **Estimated Effort:** M
@@ -24,10 +24,10 @@ Transactions are the most frequently read and written entity in the system. The 
 
 ### In scope
 
-- [ ] `Transaction` struct and `TransactionType` constants.
-- [ ] `CreateTransactionInput` and `UpdateTransactionInput` value objects.
-- [ ] `ListTransactionsParams` for filter/pagination support.
-- [ ] `TransactionRepository` interface: CRUD + `ListByAccount` with filters.
+- [x] `Transaction` struct and `TransactionType` constants.
+- [x] `CreateTransactionInput` and `UpdateTransactionInput` value objects.
+- [x] `ListTransactionsParams` for filter/pagination support.
+- [x] `TransactionRepository` interface: CRUD + `ListByAccount` with filters.
 
 ### Out of scope
 
@@ -49,7 +49,7 @@ Transactions are the most frequently read and written entity in the system. The 
 ### Key interfaces / types
 
 ```go
-// TransactionType mirrors the DB enum.
+// TransactionType mirrors the database enum for transaction types.
 type TransactionType string
 
 const (
@@ -60,44 +60,44 @@ const (
 
 // Transaction is a single financial event on an account.
 type Transaction struct {
-    ID               string
-    TenantID         string
-    AccountID        string
-    CategoryID       string
-    UserID           string
-    MasterPurchaseID string      // Empty for regular transactions; set in Phase 2
-    Description      string
-    AmountCents      int64       // Always in cents; positive value; type determines direction
-    Type             TransactionType
-    OccurredAt       time.Time
-    CreatedAt        time.Time
-    UpdatedAt        time.Time
-    DeletedAt        *time.Time
+ OccurredAt       time.Time       `json:"occurred_at"`
+ CreatedAt        time.Time       `json:"created_at"`
+ UpdatedAt        time.Time       `json:"updated_at"`
+ DeletedAt        *time.Time      `json:"deleted_at,omitempty"`
+ ID               string          `json:"id"`
+ TenantID         string          `json:"tenant_id"`
+ AccountID        string          `json:"account_id"`
+ CategoryID       string          `json:"category_id"`
+ UserID           string          `json:"user_id"`
+ MasterPurchaseID string          `json:"master_purchase_id,omitempty"` // Empty for regular transactions; set in Phase 2
+ Description      string          `json:"description"`
+ Type             TransactionType `json:"type"`
+ AmountCents      int64           `json:"amount_cents"` // Always in cents; positive value; type determines direction
 }
 
 type CreateTransactionInput struct {
+    OccurredAt       time.Time       `validate:"required"`
     AccountID        string          `validate:"required"`
     CategoryID       string          `validate:"required"`
     Description      string          `validate:"required,min=1,max=255"`
-    AmountCents      int64           `validate:"required,gt=0"`
-    Type             TransactionType `validate:"required,oneof=income expense transfer"`
-    OccurredAt       time.Time       `validate:"required"`
     MasterPurchaseID string          `validate:"omitempty"`
+    Type             TransactionType `validate:"required,oneof=income expense transfer"`
+    AmountCents      int64           `validate:"required,gt=0"`
 }
 
 type UpdateTransactionInput struct {
+    OccurredAt  *time.Time       `validate:"omitempty"`
     CategoryID  *string          `validate:"omitempty"`
     Description *string          `validate:"omitempty,min=1,max=255"`
     AmountCents *int64           `validate:"omitempty,gt=0"`
-    OccurredAt  *time.Time       `validate:"omitempty"`
 }
 
 type ListTransactionsParams struct {
+    StartDate   *time.Time
+    EndDate     *time.Time
     AccountID   string
     CategoryID  string
     Type        TransactionType
-    StartDate   *time.Time
-    EndDate     *time.Time
     Limit       int32
     Offset      int32
 }
@@ -133,13 +133,13 @@ N/A — endpoints are registered in Task 1.5.8.
 
 ## 5. Acceptance Criteria
 
-- [ ] All exported types and functions have Go doc comments.
-- [ ] `TransactionRepository` interface is defined in `internal/domain/transaction.go`.
-- [ ] `AmountCents` is `int64` — no `float` anywhere.
-- [ ] `Transaction` struct uses `time.Time` / `*time.Time` (not `pgtype`).
-- [ ] `golangci-lint run ./...` passes with zero issues.
-- [ ] `gosec ./...` passes with zero issues.
-- [ ] `docs/ROADMAP.md` row updated to ✅ `done`.
+- [x] All exported types and functions have Go doc comments.
+- [x] `TransactionRepository` interface is defined in `internal/domain/transaction.go`.
+- [x] `AmountCents` is `int64` — no `float` anywhere.
+- [x] `Transaction` struct uses `time.Time` / `*time.Time` (not `pgtype`).
+- [x] `golangci-lint run ./...` passes with zero issues.
+- [x] `gosec ./...` passes with zero issues.
+- [x] `docs/ROADMAP.md` row updated to ✅ `done`.
 
 ---
 
@@ -147,9 +147,9 @@ N/A — endpoints are registered in Task 1.5.8.
 
 | Dependency                        | Type     | Status     |
 | --------------------------------- | -------- | ---------- |
-| Task 1.2.1 — `domain/errors.go`   | Upstream | 🔵 backlog |
-| Task 1.2.7 — `domain/account.go`  | Upstream | 🔵 backlog |
-| Task 1.2.8 — `domain/category.go` | Upstream | 🔵 backlog |
+| Task 1.2.1 — `domain/errors.go`   | Upstream | ✅ done    |
+| Task 1.2.7 — `domain/account.go`  | Upstream | ✅ done    |
+| Task 1.2.8 — `domain/category.go` | Upstream | ✅ done    |
 
 ---
 
@@ -179,3 +179,4 @@ Covered by Task 1.3.6 repository integration tests.
 | Date       | Author | Change                    |
 | ---------- | ------ | ------------------------- |
 | 2026-03-07 | —      | Task created from roadmap |
+| 2026-03-07 | —      | Entity and Repository interface implemented |
