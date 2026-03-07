@@ -51,7 +51,7 @@
 | 1.1.3 | `pkg/config` — env-based config with validation | ✅ `done` | 2026-03-07 | Panic on missing required vars |
 | 1.1.4 | `pkg/paseto` — PASETO v4 local seal/parse | ✅ `done` | 2026-03-07 | `aidanwoods.dev/go-paseto` |
 | 1.1.5 | `pkg/otp` — cryptographically secure 6-digit OTP | ✅ `done` | 2026-03-07 | bcrypt hash storage |
-| 1.1.6 | Goose migration files (enums → tenants → users → accounts → categories → transactions → audit_logs) | 🔵 `backlog` | 2026-03-06 | `embed.FS`; auto-run on startup |
+| 1.1.6 | Goose migration files (enums → tenants → users → accounts → categories → transactions → audit_logs) | � `in-progress` | 2026-03-07 | `embed.FS`; auto-run on startup |
 | 1.1.7 | `sqlc` query files for all Phase 1 entities | 🔵 `backlog` | 2026-03-06 | |
 | 1.1.8 | `sqlc generate` — verified generated code committed | 🔵 `backlog` | 2026-03-06 | Checked in CI |
 | 1.1.9 | `platform/middleware/auth.go` — PASETO validation + context injection | 🔵 `backlog` | 2026-03-06 | `RequireAuth`, `RequireRole` |
