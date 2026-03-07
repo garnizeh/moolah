@@ -1,7 +1,7 @@
 # Task 1.2.8 — Domain Category Entity & Repository Interface
 
 > **Roadmap Ref:** Phase 1 — MVP › 1.2 Domain Layer
-> **Status:** 🔵 `backlog`
+> **Status:** ✅ `done`
 > **Last Updated:** 2026-03-07
 > **Assignee:** —
 > **Estimated Effort:** M
@@ -24,10 +24,10 @@ Categories are necessary for all financial reporting. The parent–child hierarc
 
 ### In scope
 
-- [ ] `Category` struct and `CategoryType` constants.
-- [ ] `CreateCategoryInput` and `UpdateCategoryInput` value objects.
-- [ ] `CategoryRepository` interface: CRUD + list with optional parent filter.
-- [ ] Helper method `IsRoot() bool` on `Category` (parent_id is empty).
+- [x] `Category` struct and `CategoryType` constants.
+- [x] `CreateCategoryInput` and `UpdateCategoryInput` value objects.
+- [x] `CategoryRepository` interface: CRUD + list with optional parent filter.
+- [x] Helper method `IsRoot() bool` on `Category` (parent_id is empty).
 
 ### Out of scope
 
@@ -45,11 +45,12 @@ Categories are necessary for all financial reporting. The parent–child hierarc
 | Action | Path                          | Purpose                              |
 | ------ | ----------------------------- | ------------------------------------ |
 | CREATE | `internal/domain/category.go` | Entity, input types, repo interface  |
+| CREATE | `internal/domain/category_test.go` | Unit tests for Category helpers |
 
 ### Key interfaces / types
 
 ```go
-// CategoryType mirrors the DB enum.
+// CategoryType mirrors the database enum for transaction categories.
 type CategoryType string
 
 const (
@@ -60,16 +61,16 @@ const (
 
 // Category is a tenant-scoped label for classifying transactions.
 type Category struct {
-    ID        string
-    TenantID  string
-    ParentID  string       // Empty string means root category
-    Name      string
-    Icon      string       // Optional emoji or icon identifier
-    Color     string       // Optional hex color, e.g. "#FF5733"
-    Type      CategoryType
-    CreatedAt time.Time
-    UpdatedAt time.Time
-    DeletedAt *time.Time
+    CreatedAt time.Time    `json:"created_at"`
+    UpdatedAt time.Time    `json:"updated_at"`
+    DeletedAt *time.Time   `json:"deleted_at,omitempty"`
+    ID        string       `json:"id"`
+    TenantID  string       `json:"tenant_id"`
+    ParentID  string       `json:"parent_id"` // Empty string means root category
+    Name      string       `json:"name"`
+    Icon      string       `json:"icon"`  // Optional emoji or icon identifier
+    Color     string       `json:"color"` // Optional hex color, e.g. "#FF5733"
+    Type      CategoryType `json:"type"`
 }
 
 // IsRoot returns true when the category has no parent.
@@ -122,13 +123,13 @@ N/A — endpoints are registered in Task 1.5.7.
 
 ## 5. Acceptance Criteria
 
-- [ ] All exported types and functions have Go doc comments.
-- [ ] `CategoryRepository` interface is defined in `internal/domain/category.go`.
-- [ ] `IsRoot()` helper works correctly.
-- [ ] `Category` struct uses `time.Time` / `*time.Time` (not `pgtype`).
-- [ ] `golangci-lint run ./...` passes with zero issues.
-- [ ] `gosec ./...` passes with zero issues.
-- [ ] `docs/ROADMAP.md` row updated to ✅ `done`.
+- [x] All exported types and functions have Go doc comments.
+- [x] `CategoryRepository` interface is defined in `internal/domain/category.go`.
+- [x] `IsRoot()` helper works correctly.
+- [x] `Category` struct uses `time.Time` / `*time.Time` (not `pgtype`).
+- [x] `golangci-lint run ./...` passes with zero issues.
+- [x] `gosec ./...` passes with zero issues.
+- [x] `docs/ROADMAP.md` row updated to ✅ `done`.
 
 ---
 
@@ -146,8 +147,8 @@ N/A — endpoints are registered in Task 1.5.7.
 
 - **File:** `internal/domain/category_test.go` (if helpers are added)
 - **Cases:**
-  - `IsRoot()` returns `true` when `ParentID` is empty.
-  - `IsRoot()` returns `false` when `ParentID` is set.
+  - [x] `IsRoot()` returns `true` when `ParentID` is empty.
+  - [x] `IsRoot()` returns `false` when `ParentID` is set.
 
 ### Integration tests (`//go:build integration`)
 
@@ -169,3 +170,4 @@ Covered by Task 1.3.5 repository integration tests.
 | Date       | Author | Change                    |
 | ---------- | ------ | ------------------------- |
 | 2026-03-07 | —      | Task created from roadmap |
+| 2026-03-07 | —      | Entity and Repository interface implemented with unit tests |
