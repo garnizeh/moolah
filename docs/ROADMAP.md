@@ -56,7 +56,7 @@
 | 1.1.8 | `sqlc generate` — verified generated code committed | ✅ `done` | 2026-03-07 | Checked in CI |
 | 1.1.9 | `platform/middleware/auth.go` — PASETO validation + context injection | ✅ `done` | 2026-03-07 | `RequireAuth`, `RequireRole` |
 | 1.1.10 | `platform/middleware/ratelimit.go` — token-bucket OTP limiter | ✅ `done` | 2026-03-07 | `golang.org/x/time/rate`; 5 req/15 min |
-| 1.1.11 | `platform/middleware/logger.go` — request logging middleware | 🔵 `backlog` | 2026-03-07 | tenant_id, user_id, latency |
+| 1.1.11 | `platform/middleware/logger.go` — request logging middleware | ✅ `done` | 2026-03-07 | tenant_id, user_id, latency |
 | 1.1.12 | `platform/mailer/smtp_mailer.go` — implements `domain.Mailer` | 🔵 `backlog` | 2026-03-07 | |
 
 ### 1.2 Domain Layer

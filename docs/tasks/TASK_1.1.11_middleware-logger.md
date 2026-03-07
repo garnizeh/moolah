@@ -28,10 +28,10 @@ Request-level observability is a production requirement. A structured log entry 
 
 ### In scope
 
-- [ ] `internal/platform/middleware/logger.go` — `RequestLogger(logger *slog.Logger) func(http.Handler) http.Handler`
-- [ ] `responseWriter` wrapper that captures the HTTP status code
-- [ ] Log fields: `method`, `path`, `status`, `latency_ms`, `tenant_id`, `user_id`, `request_id`
-- [ ] `internal/platform/middleware/logger_test.go` — unit tests
+- [x] `internal/platform/middleware/logger.go` — `RequestLogger(logger *slog.Logger) func(http.Handler) http.Handler`
+- [x] `responseWriter` wrapper that captures the HTTP status code
+- [x] Log fields: `method`, `path`, `status`, `latency_ms`, `tenant_id`, `user_id`, `request_id`
+- [x] `internal/platform/middleware/logger_test.go` — unit tests
 
 ### Out of scope
 
@@ -122,15 +122,15 @@ N/A — middleware, not a handler.
 
 ## 5. Acceptance Criteria
 
-- [ ] Every request produces exactly one structured log line containing `method`, `path`, `status`, `latency_ms`.
-- [ ] `tenant_id` and `user_id` are populated when `RequireAuth` ran before the logger.
-- [ ] `tenant_id` and `user_id` are empty strings (not omitted) when the route is unauthenticated.
-- [ ] `status` reflects the actual HTTP status code written by the handler, not a hard-coded default.
-- [ ] `responseWriter.WriteHeader` deduplication prevents doubled status captures.
-- [ ] Test coverage for `logger.go` = 100%.
-- [ ] `golangci-lint run ./internal/platform/middleware/...` passes with zero issues.
-- [ ] `gosec ./internal/platform/middleware/...` passes with zero issues.
-- [ ] `docs/ROADMAP.md` row 1.1.11 updated to ✅ `done`.
+- [x] Every request produces exactly one structured log line containing `method`, `path`, `status`, `latency_ms`.
+- [x] `tenant_id` and `user_id` are populated when `RequireAuth` ran before the logger.
+- [x] `tenant_id` and `user_id` are empty strings (not omitted) when the route is unauthenticated.
+- [x] `status` reflects the actual HTTP status code written by the handler, not a hard-coded default.
+- [x] `responseWriter.WriteHeader` deduplication prevents doubled status captures.
+- [x] Test coverage for `logger.go` = 100%.
+- [x] `golangci-lint run ./internal/platform/middleware/...` passes with zero issues.
+- [x] `gosec ./internal/platform/middleware/...` passes with zero issues.
+- [x] `docs/ROADMAP.md` row 1.1.11 updated to ✅ `done`.
 
 ---
 
@@ -138,8 +138,8 @@ N/A — middleware, not a handler.
 
 | Dependency                                       | Type     | Status     |
 | ------------------------------------------------ | -------- | ---------- |
-| Task 1.1.2 `pkg/logger` — `*slog.Logger`        | Upstream | 🔵 backlog |
-| Task 1.1.9 `middleware/auth.go` — context helpers | Upstream | 🔵 backlog |
+| Task 1.1.2 `pkg/logger` — `*slog.Logger`        | Upstream | ✅ done |
+| Task 1.1.9 `middleware/auth.go` — context helpers | Upstream | ✅ done |
 | Go 1.21+ (`log/slog` stdlib)                    | Runtime  | ✅ done   |
 
 ---
@@ -176,3 +176,4 @@ N/A
 | Date       | Author | Change                         |
 | ---------- | ------ | ------------------------------ |
 | 2026-03-07 | —      | Task created from roadmap 1.1.11 |
+| 2026-03-07 | GitHub Copilot | Implementation of Request Logger with context and Request ID |
