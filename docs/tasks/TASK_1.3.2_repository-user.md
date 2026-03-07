@@ -1,7 +1,7 @@
 # Task 1.3.2 — Repository: User
 
 > **Roadmap Ref:** Phase 1 — MVP › 1.3 Repository Layer
-> **Status:** 🔵 `backlog`
+> **Status:** ✅ `done`
 > **Last Updated:** 2026-03-07
 > **Assignee:** —
 > **Estimated Effort:** M
@@ -24,11 +24,11 @@ The `UserRepository` interface is defined in `internal/domain/user.go` (Task 1.2
 
 ### In scope
 
-- [ ] Concrete `userRepo` struct implementing `domain.UserRepository`.
-- [ ] Constructor `NewUserRepository(q *sqlc.Queries) domain.UserRepository`.
-- [ ] Mapping functions between `sqlc.User` and `domain.User`.
-- [ ] Error translation: `pgx.ErrNoRows` → `domain.ErrNotFound`, unique violation → `domain.ErrConflict`.
-- [ ] `GetByEmail` intentionally omits `tenant_id` filter — document this as an auth-flow exception.
+- [x] Concrete `userRepo` struct implementing `domain.UserRepository`.
+- [x] Constructor `NewUserRepository(q sqlc.Querier) domain.UserRepository`.
+- [x] Mapping functions between `sqlc.User` and `domain.User`.
+- [x] Error translation: `pgx.ErrNoRows` → `domain.ErrNotFound`, unique violation → `domain.ErrConflict`.
+- [x] `GetByEmail` intentionally omits `tenant_id` filter — documented as an auth-flow exception.
 
 ### Out of scope
 

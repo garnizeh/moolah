@@ -81,7 +81,7 @@
 | # | Task | Status | Last Updated | Notes |
 | --- | --- | --- | --- | --- |
 | 1.3.1 | `repository/tenant_repo.go` | ✅ `done` | 2026-03-07 | 100% coverage, shared mock |
-| 1.3.2 | `repository/user_repo.go` | 🔵 `backlog` | 2026-03-06 | |
+| 1.3.2 | `repository/user_repo.go` | ✅ `done` | 2026-03-07 | 100% coverage, auth-flow exception |
 | 1.3.3 | `repository/auth_repo.go` | 🔵 `backlog` | 2026-03-06 | |
 | 1.3.4 | `repository/account_repo.go` | 🔵 `backlog` | 2026-03-06 | |
 | 1.3.5 | `repository/category_repo.go` | 🔵 `backlog` | 2026-03-06 | |
