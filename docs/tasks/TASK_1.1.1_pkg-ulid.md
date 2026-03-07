@@ -1,7 +1,7 @@
-# Task 1.1.1 — pkg/ulidutil: Thread-Safe Monotonic ULID Factory
+# Task 1.1.1 — pkg/ulid: Thread-Safe Monotonic ULID Factory
 
 > **Roadmap Ref:** Phase 1 — MVP: Core Finance › 1.1 Infrastructure & Platform
-> **Status:** 🔵 `backlog`
+> **Status:** ✅ `done`
 > **Last Updated:** 2026-03-07
 > **Assignee:** —
 > **Estimated Effort:** S
@@ -26,9 +26,9 @@ The project mandates ULID for all primary keys (see `docs/ARCHITECTURE.md` — I
 
 ### In scope
 
-- [ ] `pkg/ulidutil/ulid.go` — exported `New() string` factory
+- [ ] `pkg/ulid/ulid.go` — exported `New() string` factory
 - [ ] Thread safety via `sync.Mutex` wrapping a single `ulid.MonotonicEntropy` source
-- [ ] `pkg/ulidutil/ulid_test.go` — unit + race-detector tests
+- [ ] `pkg/ulid/ulid_test.go` — unit + race-detector tests
 
 ### Out of scope
 
@@ -43,14 +43,14 @@ The project mandates ULID for all primary keys (see `docs/ARCHITECTURE.md` — I
 
 | Action | Path                       | Purpose                              |
 | ------ | -------------------------- | ------------------------------------ |
-| CREATE | `pkg/ulidutil/ulid.go`     | Thread-safe monotonic ULID generator |
-| CREATE | `pkg/ulidutil/ulid_test.go`| Unit tests + race detector coverage  |
+| CREATE | `pkg/ulid/ulid.go`         | Thread-safe monotonic ULID generator |
+| CREATE | `pkg/ulid/ulid_test.go`    | Unit tests + race detector coverage  |
 
 ### Key interfaces / types
 
 ```go
-// pkg/ulidutil/ulid.go
-package ulidutil
+// pkg/ulid/ulid.go
+package ulid
 
 import (
     "crypto/rand"
@@ -68,8 +68,8 @@ var (
 // New returns a new ULID string. Safe for concurrent use.
 func New() string {
     mu.Lock()
+    defer mu.Unlock()
     id := ulid.MustNew(ulid.Timestamp(time.Now()), entropy)
-    mu.Unlock()
     return id.String()
 }
 ```
@@ -94,10 +94,10 @@ N/A
 
 - [ ] `New()` returns a 26-character uppercase string.
 - [ ] Two consecutive calls within the same millisecond produce strictly increasing strings.
-- [ ] `go test -race ./pkg/ulidutil/...` passes with zero data-race warnings.
-- [ ] Test coverage for `pkg/ulidutil` = 100%.
-- [ ] `golangci-lint run ./pkg/ulidutil/...` passes with zero issues.
-- [ ] `gosec ./pkg/ulidutil/...` passes with zero issues.
+- [ ] `go test -race ./pkg/ulid/...` passes with zero data-race warnings.
+- [ ] Test coverage for `pkg/ulid` = 100%.
+- [ ] `golangci-lint run ./pkg/ulid/...` passes with zero issues.
+- [ ] `gosec ./pkg/ulid/...` passes with zero issues.
 - [ ] `docs/ROADMAP.md` row 1.1.1 updated to ✅ `done`.
 
 ---
@@ -113,7 +113,7 @@ N/A
 
 ## 7. Testing Plan
 
-### Unit tests (`pkg/ulidutil/ulid_test.go`, no build tag)
+### Unit tests (`pkg/ulid/ulid_test.go`, no build tag)
 
 - **Happy path:** `New()` returns a non-empty 26-character string.
 - **Uniqueness:** 10 000 consecutive calls produce 10 000 distinct values.
@@ -128,14 +128,15 @@ N/A — no database interaction.
 
 ## 8. Open Questions
 
-| # | Question                                       | Owner | Resolution |
-| - | ---------------------------------------------- | ----- | ---------- |
-| 1 | Should `New()` return `string` or `ulid.ULID`? | —     | Return `string` — callers never need the binary type; avoids leaking the dependency. |
+| #   | Question                                       | Owner | Resolution                                                                           |
+| --- | ---------------------------------------------- | ----- | ------------------------------------------------------------------------------------ |
+| 1   | Should `New()` return `string` or `ulid.ULID`? | —     | Return `string` — callers never need the binary type; avoids leaking the dependency. |
 
 ---
 
 ## 9. Change Log
 
-| Date       | Author | Change                        |
-| ---------- | ------ | ----------------------------- |
-| 2026-03-07 | —      | Task created from roadmap 1.1.1 |
+| Date       | Author | Change                                           |
+| ---------- | ------ | ------------------------------------------------ |
+| 2026-03-07 | —      | Task created from roadmap 1.1.1                  |
+| 2026-03-07 | —      | Renamed pkg/ulidutil to pkg/ulid and added defer |
