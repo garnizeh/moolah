@@ -1,4 +1,4 @@
-.PHONY: all build run test lint generate migrate-up migrate-down clean help task-check
+.PHONY: all build run test lint generate migrate-up migrate-down clean help task-check deps
 
 # Configuration
 BINARY_NAME=moolah-api
@@ -8,10 +8,17 @@ OUT_DIR=bin
 # Default Go toolchain command
 GO=go
 
-all: lint generate test build
+all: deps lint generate test build
 
 ## task-check: Run all checks required before completing a task (Linter, SQLC, Security, Unit Tests with Coverage)
-task-check: lint-check sqlc-check security-check test-coverage
+task-check: deps lint-check sqlc-check security-check test-coverage
+
+deps:
+	@echo "Installing dependencies..."
+	@go mod tidy
+	@go mod vendor
+	@go fmt ./...
+	@go fix ./...
 
 ## lint-check: Run golangci-lint
 lint-check:

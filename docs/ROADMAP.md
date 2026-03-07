@@ -1,6 +1,6 @@
 # Moolah — Project Roadmap
 
-> **Version:** 1.0.0 | **Last Updated:** 2026-03-06 | **Status:** 🟡 In Progress
+> **Version:** 1.0.0 | **Last Updated:** 2026-03-07 | **Status:** 🟡 In Progress
 
 ---
 
@@ -48,7 +48,7 @@
 | --- | --- | --- | --- | --- |
 | 1.1.1 | `pkg/ulid` — thread-safe monotonic ULID factory | ✅ `done` | 2026-03-07 | |
 | 1.1.2 | `pkg/logger` — structured `slog` JSON logger | ✅ `done` | 2026-03-07 | |
-| 1.1.3 | `pkg/config` — env-based config with validation | 🔵 `backlog` | 2026-03-06 | Panic on missing required vars |
+| 1.1.3 | `pkg/config` — env-based config with validation | ✅ `done` | 2026-03-07 | Panic on missing required vars |
 | 1.1.4 | `pkg/pasetoutils` — PASETO v4 local seal/parse | 🔵 `backlog` | 2026-03-06 | `aidanwoods.dev/go-paseto` |
 | 1.1.5 | `pkg/otputil` — cryptographically secure 6-digit OTP | 🔵 `backlog` | 2026-03-06 | bcrypt hash storage |
 | 1.1.6 | Goose migration files (enums → tenants → users → accounts → categories → transactions → audit_logs) | 🔵 `backlog` | 2026-03-06 | `embed.FS`; auto-run on startup |

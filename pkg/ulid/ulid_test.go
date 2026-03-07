@@ -21,7 +21,7 @@ func TestNew(t *testing.T) {
 		t.Parallel()
 		const count = 1000
 		ids := make(map[string]struct{}, count)
-		for i := 0; i < count; i++ {
+		for range count {
 			id := New()
 			if _, exists := ids[id]; exists {
 				t.Errorf("Duplicate ULID generated: %s", id)
@@ -34,7 +34,7 @@ func TestNew(t *testing.T) {
 		t.Parallel()
 		const count = 100
 		ids := make([]string, count)
-		for i := 0; i < count; i++ {
+		for i := range count {
 			ids[i] = New()
 		}
 
@@ -50,10 +50,10 @@ func TestNew(t *testing.T) {
 
 		results := make(chan string, count*goroutines)
 
-		for i := 0; i < goroutines; i++ {
+		for range goroutines {
 			go func() {
 				defer wg.Done()
-				for j := 0; j < count; j++ {
+				for range count {
 					results <- New()
 				}
 			}()

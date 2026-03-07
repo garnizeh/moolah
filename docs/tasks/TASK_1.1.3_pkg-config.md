@@ -1,7 +1,7 @@
 # Task 1.1.3 — pkg/config: Environment-Based Configuration
 
 > **Roadmap Ref:** Phase 1 — MVP: Core Finance › 1.1 Infrastructure & Platform
-> **Status:** 🔵 `backlog`
+> **Status:** ✅ `done`
 > **Last Updated:** 2026-03-07
 > **Assignee:** —
 > **Estimated Effort:** S
@@ -26,9 +26,9 @@ Twelve-factor app discipline requires all configuration to come from the environ
 
 ### In scope
 
-- [ ] `pkg/config/config.go` — `Load() *Config` (panics on missing required vars)
-- [ ] `Config` struct covering: server, database, Redis, PASETO, SMTP, logging settings
-- [ ] `pkg/config/config_test.go` — table-driven tests using `t.Setenv`
+- [x] `pkg/config/config.go` — `Load() *Config` (panics on missing required vars)
+- [x] `Config` struct covering: server, database, Redis, PASETO, SMTP, logging settings
+- [x] `pkg/config/config_test.go` — table-driven tests using `t.Setenv`
 
 ### Out of scope
 
@@ -132,14 +132,14 @@ N/A
 
 ## 5. Acceptance Criteria
 
-- [ ] `Load()` returns a fully populated `*Config` when all required env vars are set.
-- [ ] `Load()` panics with a clear message naming the missing variable when any required var is absent.
-- [ ] All optional vars use the documented defaults when not set.
-- [ ] No global `Config` variable is exported from the package.
-- [ ] Test coverage for `pkg/config` ≥ 90% (panic paths covered via `recover`).
-- [ ] `golangci-lint run ./pkg/config/...` passes with zero issues.
-- [ ] `gosec ./pkg/config/...` passes with zero issues.
-- [ ] `docs/ROADMAP.md` row 1.1.3 updated to ✅ `done`.
+- [x] `Load()` returns a fully populated `*Config` when all required env vars are set.
+- [x] `Load()` panics with a clear message naming the missing variable when any required var is absent.
+- [x] All optional vars use the documented defaults when not set.
+- [x] No global `Config` variable is exported from the package.
+- [x] Test coverage for `pkg/config` ≥ 90% (panic paths covered via `recover`).
+- [x] `golangci-lint run ./pkg/config/...` passes with zero issues.
+- [x] `gosec ./pkg/config/...` passes with zero issues.
+- [x] `docs/ROADMAP.md` row 1.1.3 updated to ✅ `done`.
 
 ---
 

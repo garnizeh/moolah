@@ -70,6 +70,9 @@ linters:
           - gosec
           - noctx
           - unparam
+      - path: pkg/config/config_test\.go
+        linters:
+          - paralleltest
 
 issues:
   max-issues-per-linter: 0
