@@ -2,121 +2,91 @@ version: "2"
 
 run:
   timeout: 5m
+  relative-path-mode: gomod
   modules-download-mode: readonly
   tests: true
-  go: "1.26.1"
+  enable-build-vcs: true
+  allow-parallel-runners: true
+  allow-serial-runners: true
+  go: "1.26"
 
-linters:
-  disable-all: true
+formatters:
   enable:
-    - asasalint
-    - asciicheck
-    - bidichk
-    - bodyclose
-    - copyloopvar
-    - cyclop
-    - dupl
-    - durationcheck
-    - errcheck
-    - errorlint
-    - exhaustive
-    - forbidigo
-    - goconst
-    - gocritic
-    - gocyclo
-    - godot
-    - gofmt
     - gofumpt
     - goimports
-    - revgrep
+  exclusions:
+    generated: strict
+    warn-unused: true
+    paths:
+      - docs/swagger
+      - internal/platform/db/sqlc
+
+linters:
+  default: standard
+  enable:
+    - bodyclose
+    - contextcheck
+    - copyloopvar
+    - errorlint
+    - gocritic
     - gosec
-    - gosimple
-    - govet
-    - ineffassign
-    - lll
-    - makezero
     - misspell
-    - nakedret
     - nilerr
-    - nilnil
+    - noctx
     - nolintlint
-    - nosprintfhostport
-    - PREALLOC
-    - predeclared
+    - paralleltest
     - revive
-    - staticcheck
-    - stylecheck
-    - tagalign
+    - rowserrcheck
+    - sqlclosecheck
+    - testifylint
     - thelper
     - tparallel
     - unconvert
     - unparam
-    - unused
+    - usestdlibvars
     - wastedassign
     - whitespace
-    - wrapcheck
-
-linters-settings:
-  govet:
-    enable-all: true
-    disable:
-      - fieldalignment
-  cyclop:
-    max-complexity: 15
-  revive:
+  settings:
+    govet:
+      enable-all: true
+    revive:
+      severity: warning
+    staticcheck:
+      checks:
+        - all
+  exclusions:
+    generated: lax
+    warn-unused: true
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    paths:
+      - docs/swagger
+      - internal/platform/db/sqlc
     rules:
-      - name: blank-imports
-      - name: context-as-first-argument
-      - name: dot-imports
-      - name: error-return
-      - name: error-strings
-      - name: error-naming
-      - name: exported
-      - name: if-return
-      - name: increment-decrement
-      - name: var-naming
-      - name: var-declaration
-      - name: package-comments
-      - name: range
-      - name: receiver-naming
-      - name: time-naming
-      - name: unexported-return
-      - name: indent-error-flow
-      - name: errorf
-  lll:
-    line-length: 120
-  goconst:
-    min-len: 2
-    min-occurrences: 3
-  misspell:
-    locale: US
+      - path: _test\.go
+        linters:
+          - gosec
+          - noctx
+          - unparam
 
 issues:
-  exclude-use-default: false
   max-issues-per-linter: 0
   max-same-issues: 0
-  new: false
-  exclude-rules:
-    - path: _test\.go
-      linters:
-        - gocyclo
-        - errcheck
-        - dupl
-        - gosec
-    - path: internal/platform/db/sqlc/
-      linters:
-        - revive
-        - stylecheck
-        - lll
+  uniq-by-line: false
 
 output:
   formats:
     text:
-      path: stdout
-      colors: true
-  show-stats: true
+      print-linter-name: true
+      print-issued-lines: true
   sort-order:
     - linter
+    - severity
     - file
-  print-issued-lines: true
-  print-linter-name: true
+  show-stats: false
+
+severity:
+  default: error

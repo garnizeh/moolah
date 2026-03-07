@@ -28,7 +28,7 @@
 | 0.2 | Define consolidated DDL schema | ✅ `done` | 2026-03-06 | `docs/schema.sql` |
 | 0.3 | Define project roadmap | ✅ `done` | 2026-03-06 | `docs/ROADMAP.md` (this file) |
 | 0.4 | Initialize Go module & directory layout | ✅ `done` | 2026-03-06 | `go mod init`; scaffolded per ADR |
-| 0.5 | Configure `golangci-lint` (`.golangci.yml`) | ✅ `done` | 2026-03-06 | |
+| 0.5 | Configure `golangci-lint` (`.golangci.yml`) | ✅ `done` | 2026-03-06 | v2 config added at repo root; excludes generated sqlc/swagger outputs |
 | 0.6 | Configure `sqlc` (`sqlc.yaml`) | ✅ `done` | 2026-03-06 | Named params (`@name`); `emit_interface: true` |
 | 0.7 | Configure `Makefile` (lint, test, generate, run) | ✅ `done` | 2026-03-06 | |
 | 0.8 | Configure `docker-compose.yml` (Postgres + Redis) | ✅ `done` | 2026-03-06 | Local dev environment |
