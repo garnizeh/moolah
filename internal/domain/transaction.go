@@ -84,3 +84,21 @@ type TransactionRepository interface {
 	// Delete performs a soft delete on the specified transaction.
 	Delete(ctx context.Context, tenantID, id string) error
 }
+
+// TransactionService defines the business-logic contract for transaction management.
+type TransactionService interface {
+	// Create persists a transaction and updates the account balance.
+	Create(ctx context.Context, tenantID string, input CreateTransactionInput) (*Transaction, error)
+
+	// GetByID retrieves a transaction by ID with tenant isolation.
+	GetByID(ctx context.Context, tenantID, id string) (*Transaction, error)
+
+	// List returns transactions matching filters for the household.
+	List(ctx context.Context, tenantID string, params ListTransactionsParams) ([]Transaction, error)
+
+	// Update modifies a transaction and adjusts balance if AmountCents changed.
+	Update(ctx context.Context, tenantID, id string, input UpdateTransactionInput) (*Transaction, error)
+
+	// Delete reverts the balance impact and soft-deletes the transaction.
+	Delete(ctx context.Context, tenantID, id string) error
+}

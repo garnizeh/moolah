@@ -540,3 +540,80 @@ func (m *TenantRepository) Delete(ctx context.Context, id string) error {
 }
 
 var _ domain.TenantRepository = (*TenantRepository)(nil)
+
+// TransactionRepository mock
+type TransactionRepository struct {
+	mock.Mock
+}
+
+func (m *TransactionRepository) Create(ctx context.Context, tenantID string, input domain.CreateTransactionInput) (*domain.Transaction, error) {
+	args := m.Called(ctx, tenantID, input)
+	var err error
+	if e := args.Error(1); e != nil {
+		err = fmt.Errorf("mock TransactionRepository.Create: %w", e)
+	}
+	if args.Get(0) == nil {
+		return nil, err
+	}
+	res, ok := args.Get(0).(*domain.Transaction)
+	if !ok {
+		return nil, fmt.Errorf("mock TransactionRepository.Create: unexpected type %T", args.Get(0))
+	}
+	return res, err
+}
+
+func (m *TransactionRepository) GetByID(ctx context.Context, tenantID, id string) (*domain.Transaction, error) {
+	args := m.Called(ctx, tenantID, id)
+	var err error
+	if e := args.Error(1); e != nil {
+		err = fmt.Errorf("mock TransactionRepository.GetByID: %w", e)
+	}
+	if args.Get(0) == nil {
+		return nil, err
+	}
+	res, ok := args.Get(0).(*domain.Transaction)
+	if !ok {
+		return nil, fmt.Errorf("mock TransactionRepository.GetByID: unexpected type %T", args.Get(0))
+	}
+	return res, err
+}
+
+func (m *TransactionRepository) List(ctx context.Context, tenantID string, params domain.ListTransactionsParams) ([]domain.Transaction, error) {
+	args := m.Called(ctx, tenantID, params)
+	var err error
+	if e := args.Error(1); e != nil {
+		err = fmt.Errorf("mock TransactionRepository.List: %w", e)
+	}
+	if args.Get(0) == nil {
+		return nil, err
+	}
+	res, ok := args.Get(0).([]domain.Transaction)
+	if !ok {
+		return nil, fmt.Errorf("mock TransactionRepository.List: unexpected type %T", args.Get(0))
+	}
+	return res, err
+}
+
+func (m *TransactionRepository) Update(ctx context.Context, tenantID, id string, input domain.UpdateTransactionInput) (*domain.Transaction, error) {
+	args := m.Called(ctx, tenantID, id, input)
+	var err error
+	if e := args.Error(1); e != nil {
+		err = fmt.Errorf("mock TransactionRepository.Update: %w", e)
+	}
+	if args.Get(0) == nil {
+		return nil, err
+	}
+	res, ok := args.Get(0).(*domain.Transaction)
+	if !ok {
+		return nil, fmt.Errorf("mock TransactionRepository.Update: unexpected type %T", args.Get(0))
+	}
+	return res, err
+}
+
+func (m *TransactionRepository) Delete(ctx context.Context, tenantID, id string) error {
+	args := m.Called(ctx, tenantID, id)
+	if e := args.Error(0); e != nil {
+		return fmt.Errorf("mock TransactionRepository.Delete: %w", e)
+	}
+	return nil
+}
