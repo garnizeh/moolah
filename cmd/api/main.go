@@ -10,15 +10,17 @@ import (
 	"syscall"
 
 	"aidanwoods.dev/go-paseto"
+	"github.com/garnizeh/moolah/internal/platform/db"
 	"github.com/garnizeh/moolah/internal/platform/db/migrations"
-	"github.com/garnizeh/moolah/internal/platform/db/sqlc"
 	"github.com/garnizeh/moolah/internal/platform/idempotency"
 	"github.com/garnizeh/moolah/internal/platform/mailer"
+	"github.com/garnizeh/moolah/internal/platform/middleware"
 	"github.com/garnizeh/moolah/internal/platform/repository"
 	"github.com/garnizeh/moolah/internal/server"
 	"github.com/garnizeh/moolah/internal/service"
 	"github.com/garnizeh/moolah/pkg/config"
 	"github.com/garnizeh/moolah/pkg/logger"
+	pkgpaseto "github.com/garnizeh/moolah/pkg/paseto"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jackc/pgx/v5/stdlib"
 	"github.com/pressly/goose/v3"
@@ -28,10 +30,10 @@ import (
 func main() {
 	ctx := context.Background()
 
-	// 1. Load Config
+	// Load Config
 	cfg := config.Load()
 
-	// 2. Init Logger
+	// Init Logger
 	l := logger.New(nil, cfg.LogLevel, cfg.LogFormat)
 	slog.SetDefault(l)
 
@@ -43,7 +45,13 @@ func main() {
 	}
 	defer dbPool.Close()
 
-	// 5. Connect Redis
+	err = runMigrations(dbPool)
+	if err != nil {
+		slog.Error("failed to run database migrations", "err", err)
+		os.Exit(1)
+	}
+
+	// Connect Redis
 	rdb := redis.NewClient(&redis.Options{
 		Addr:     cfg.RedisAddr,
 		Password: cfg.RedisPassword,
@@ -55,9 +63,7 @@ func main() {
 	}
 	defer rdb.Close()
 
-	// 6. Wire Repositories
-	querier := sqlc.New(dbPool)
-
+	// Wire Repositories
 	authRepo := repository.NewAuthRepository(querier)
 	tenantRepo := repository.NewTenantRepository(querier)
 	userRepo := repository.NewUserRepository(querier)
@@ -84,7 +90,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	// 7. Wire Services
+	// Wire Services
 	authSvc := service.NewAuthService(authRepo, userRepo, auditRepo, smtpMailer, pasetoKey)
 	tenantSvc := service.NewTenantService(tenantRepo, userRepo, auditRepo)
 	accountSvc := service.NewAccountService(accountRepo, userRepo, auditRepo)
@@ -92,16 +98,12 @@ func main() {
 	transactionSvc := service.NewTransactionService(transactionRepo, accountRepo, categoryRepo, auditRepo)
 	adminSvc := service.NewAdminService(adminTenantRepo, adminUserRepo, adminAuditRepo, auditRepo, l)
 
-	// Avoid unused variable warnings until 1.5.2/1.5.3 are implemented
-	_ = authSvc
-	_ = tenantSvc
-	_ = accountSvc
-	_ = categorySvc
-	_ = transactionSvc
-	_ = adminSvc
-	_ = idempotencyStore
+	tokenParser := func(token string) (*pkgpaseto.Claims, error) {
+		return pkgpaseto.Parse(token, pasetoKey)
+	}
+	rateLimiterStore := middleware.NewRateLimiterStore(l)
 
-	// 8. Create Server
+	// Create Server
 	srv := server.New(
 		cfg.HTTPPort,
 		authSvc,
@@ -110,9 +112,12 @@ func main() {
 		categorySvc,
 		transactionSvc,
 		adminSvc,
+		idempotencyStore,
+		rateLimiterStore,
+		tokenParser,
 	)
 
-	// 9. Graceful Shutdown
+	// Graceful Shutdown
 	idleConnsClosed := make(chan struct{})
 	go func() {
 		sigint := make(chan os.Signal, 1)
@@ -130,7 +135,7 @@ func main() {
 		close(idleConnsClosed)
 	}()
 
-	// 10. Start Server
+	// Start Server
 	slog.Info("starting server", "port", cfg.HTTPPort)
 	if err := srv.ListenAndServe(ctx, cfg.ReadTimeout, cfg.WriteTimeout); err != http.ErrServerClosed {
 		slog.Error("server failed", "err", err)

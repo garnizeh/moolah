@@ -65,6 +65,16 @@ Following a Pragmatic DDD approach:
 - `make lint`: Run the linter.
 - `make generate`: Generate code from SQL queries using `sqlc`.
 
+## 🧪 API Testing & Collections
+
+Moolah uses **[Bruno](https://usebruno.com/)** for API exploration and testing. You can find the collection in `docs/bruno/moolah`.
+
+To use:
+
+1. Download and install Bruno.
+2. "Open Collection" and select the `docs/bruno/moolah` folder.
+3. Configure your environment variables (e.g., `base_url`).
+
 ## 📈 Roadmap
 
 See [docs/ROADMAP.md](docs/ROADMAP.md) for the detailed project roadmap and current status.

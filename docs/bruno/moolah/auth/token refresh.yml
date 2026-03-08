@@ -5,7 +5,7 @@ info:
 
 http:
   method: POST
-  url: http://localhost:8080/v1/auth/token/refresh
+  url: "{{base_url}}/v1/auth/token/refresh"
   auth:
     type: bearer
     token: "123"

@@ -31,6 +31,11 @@ type Server struct {
 	transactionSvc domain.TransactionService
 	adminSvc       domain.AdminService
 
+	// Middleware dependencies
+	idempotencyStore domain.IdempotencyStore
+	rateLimiterStore *middleware.RateLimiterStore
+	tokenParser      middleware.TokenParser
+
 	addr string
 }
 
@@ -43,6 +48,9 @@ func New(
 	categorySvc domain.CategoryService,
 	transactionSvc domain.TransactionService,
 	adminSvc domain.AdminService,
+	idempotencyStore domain.IdempotencyStore,
+	rateLimiterStore *middleware.RateLimiterStore,
+	tokenParser middleware.TokenParser,
 ) *Server {
 	s := &Server{
 		addr:             ":" + port,

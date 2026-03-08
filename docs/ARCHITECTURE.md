@@ -38,6 +38,7 @@ Moolah is a multi-tenant household budgeting and investment tracking SaaS. Each 
 | Migrations | Goose (auto-run on startup) | Zero-touch schema evolution; embedded FS |
 | Logging | `log/slog` (stdlib, JSON) | No external dependency; structured JSON to stdout |
 | API Docs | Swaggo (annotation-driven) | OpenAPI 2.0 spec generated from handler comments |
+| API Testing | Bruno | Git-friendly, open-source IDE for exploring and testing APIs |
 
 ---
 

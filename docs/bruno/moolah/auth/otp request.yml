@@ -5,7 +5,7 @@ info:
 
 http:
   method: POST
-  url: http://localhost:8080/v1/auth/otp/request
+  url: "{{base_url}}/v1/auth/otp/request"
   body:
     type: json
     data: |-
