@@ -62,6 +62,71 @@ func Test_run(t *testing.T) {
 	}
 }
 
+func Test_run_Errors(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	pg := containers.NewPostgresDB(t)
+	rdb := containers.NewRedisClient(t)
+
+	// Valid dependencies base config
+	baseCfg := &config.Config{
+		DatabaseURL:     pg.Pool.Config().ConnString(),
+		RedisAddr:       rdb.Options().Addr,
+		PasetoSecretKey: "707172737475767778797a7b7c7d7e7f808182838485868788898a8b8c8d8e8f",
+		SMTPHost:        "localhost",
+		SMTPPort:        1025,
+		SMTPUser:        "test",
+		SMTPPassword:    "test",
+		EmailFrom:       "test@test.com",
+		HTTPPort:        "8080",
+		ReadTimeout:     10 * time.Second,
+		WriteTimeout:    10 * time.Second,
+		ShutdownTimeout: 10 * time.Second,
+	}
+
+	tests := []struct {
+		name    string
+		setup   func(cfg *config.Config)
+		wantErr string
+	}{
+		{
+			name: "Database initialization failed",
+			setup: func(cfg *config.Config) {
+				cfg.DatabaseURL = "postgres://invalid:invalid@localhost:5432/invalid"
+			},
+			wantErr: "database initialization failed",
+		},
+		{
+			name: "Redis initialization failed",
+			setup: func(cfg *config.Config) {
+				cfg.RedisAddr = "localhost:1" // Likely closed port
+			},
+			wantErr: "redis initialization failed",
+		},
+		{
+			name: "Failed to parse paseto secret key",
+			setup: func(cfg *config.Config) {
+				cfg.PasetoSecretKey = "invalid-key"
+			},
+			wantErr: "failed to parse paseto secret key",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Copy base config and apply setup
+			cfg := *baseCfg
+			tt.setup(&cfg)
+
+			err := run(context.Background(), &cfg)
+			require.Error(t, err)
+			require.Contains(t, err.Error(), tt.wantErr)
+		})
+	}
+}
+
 func getFreePort(t *testing.T) string {
 	t.Helper()
 	addr, err := net.ResolveTCPAddr("tcp", "localhost:0")
