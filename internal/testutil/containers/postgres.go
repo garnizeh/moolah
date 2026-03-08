@@ -61,24 +61,21 @@ func NewPostgresDB(t *testing.T) *TestPostgresDB {
 	pool, err := pgxpool.NewWithConfig(ctx, config)
 	require.NoError(t, err, "failed to connect to postgres")
 
-	// Convert the pgx config to a standard *sql.DB for goose
-	// We use the ConnConfig from the pool's configuration
-	dbConfig := config.ConnConfig.Copy()
-	sqlDB := stdlib.OpenDB(*dbConfig)
+	// Open the stdlib bridge for goose migrations
+	db := stdlib.OpenDBFromPool(pool)
 
 	// Goose keeps migration configuration in package-level state, so running
 	// setup concurrently across integration suites triggers race detector failures.
 	gooseMigrationMu.Lock()
 	goose.SetBaseFS(migrations.FS)
 	err = goose.SetDialect("postgres")
-	if err == nil {
-		err = goose.Up(sqlDB, ".")
-	}
-	gooseMigrationMu.Unlock()
+	require.NoError(t, err, "failed to set goose dialect")
+	err = goose.Up(db, ".")
 	require.NoError(t, err, "failed to run migrations")
+	gooseMigrationMu.Unlock()
 
 	// Close the stdlib bridge
-	err = sqlDB.Close()
+	err = db.Close()
 	require.NoError(t, err, "failed to close sqlDB")
 
 	// Ensure the pool is closed and container terminated when the test finishes

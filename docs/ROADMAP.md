@@ -110,16 +110,16 @@
 
 | # | Task | Status | Last Updated | Notes |
 | --- | --- | --- | --- | --- |
-| 1.5.1 | `cmd/api/main.go` — DI wiring, Goose migrations, server start | 🔵 `backlog` | 2026-03-06 | |
-| 1.5.2 | `cmd/api/server.go` — `http.Server` factory, middleware chain | 🔵 `backlog` | 2026-03-06 | |
-| 1.5.3 | `cmd/api/routes.go` — all route registrations | 🔵 `backlog` | 2026-03-06 | Go 1.22 `METHOD /path/{param}` syntax |
-| 1.5.4 | `handler/auth_handler.go` — `RequestOTP`, `VerifyOTP`, `RefreshToken` | 🔵 `backlog` | 2026-03-06 | |
-| 1.5.5 | `handler/tenant_handler.go` — `GetMe`, `UpdateMe`, `InviteUser` | 🔵 `backlog` | 2026-03-06 | |
-| 1.5.6 | `handler/account_handler.go` — full CRUD | 🔵 `backlog` | 2026-03-06 | |
-| 1.5.7 | `handler/category_handler.go` — CRUD | 🔵 `backlog` | 2026-03-06 | |
-| 1.5.8 | `handler/transaction_handler.go` — full CRUD + list with filters | 🔵 `backlog` | 2026-03-06 | |
-| 1.5.9 | `handler/admin_handler.go` — sysadmin routes | 🔵 `backlog` | 2026-03-06 | |
-| 1.5.10 | Swaggo annotations on all handlers; `swag init` verified in CI | 🔵 `backlog` | 2026-03-06 | `docs/swagger/` |
+| 1.5.1 | `cmd/api/main.go` — DI wiring, Goose migrations, server start | � `in-progress` | 2026-03-07 | |
+| 1.5.2 | `cmd/api/server.go` — `http.Server` factory, middleware chain | 🟡 `in-progress` | 2026-03-07 | |
+| 1.5.3 | `cmd/api/routes.go` — all route registrations | 🟡 `in-progress` | 2026-03-07 | Go 1.22 `METHOD /path/{param}` syntax |
+| 1.5.4 | `handler/auth_handler.go` — `RequestOTP`, `VerifyOTP`, `RefreshToken` | 🔵 `backlog` | 2026-03-07 | |
+| 1.5.5 | `handler/tenant_handler.go` — `GetMe`, `UpdateMe`, `InviteUser` | 🔵 `backlog` | 2026-03-07 | |
+| 1.5.6 | `handler/account_handler.go` — full CRUD | 🔵 `backlog` | 2026-03-07 | |
+| 1.5.7 | `handler/category_handler.go` — CRUD | 🔵 `backlog` | 2026-03-07 | |
+| 1.5.8 | `handler/transaction_handler.go` — full CRUD + list with filters | 🔵 `backlog` | 2026-03-07 | |
+| 1.5.9 | `handler/admin_handler.go` — sysadmin routes | 🔵 `backlog` | 2026-03-07 | |
+| 1.5.10 | Swaggo annotations on all handlers; `swag init` verified in CI | 🔵 `backlog` | 2026-03-07 | `docs/swagger/` |
 | 1.5.11 | Wire `Idempotency` middleware on all mutating `POST` routes | 🔵 `backlog` | 2026-03-07 | Depends on 1.1.14 + 1.1.15; apply after `RequireAuth` in the chain |
 
 ### 1.6 Quality Gate

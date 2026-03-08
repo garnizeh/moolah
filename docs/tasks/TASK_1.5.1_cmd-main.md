@@ -24,11 +24,11 @@ The project has a fully implemented domain, repository, and service layer, but n
 
 ### In scope
 
-- [ ] `cmd/api/main.go` — entry point: config load, DB connect, Redis connect, migration run, DI, server start.
-- [ ] Graceful shutdown: listen for `SIGINT`/`SIGTERM`; drain in-flight requests before exit.
-- [ ] Run Goose migrations on startup via the embedded migration FS.
-- [ ] Wire all repositories from `internal/platform/repository/`.
-- [ ] Wire all services from `internal/service/`.
+- [x] `cmd/api/main.go` — entry point: config load, DB connect, Redis connect, migration run, DI, server start.
+- [x] Graceful shutdown: listen for `SIGINT`/`SIGTERM`; drain in-flight requests before exit.
+- [x] Run Goose migrations on startup via the embedded migration FS.
+- [x] Wire all repositories from `internal/platform/repository/`.
+- [x] Wire all services from `internal/service/`.
 - [ ] Wire the server defined in Task 1.5.2 (`cmd/api/server.go`).
 
 ### Out of scope
