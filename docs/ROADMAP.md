@@ -100,8 +100,8 @@
 | # | Task | Status | Last Updated | Notes |
 | --- | --- | --- | --- | --- |
 | 1.4.1 | `service/auth_service.go` + unit tests | ✅ `done` | 2026-03-07 | ReqOTP, VerifyOTP, RefreshToken. 81% cov. |
-| 1.4.2 | `service/tenant_service.go` + unit tests | � `in-progress` | 2026-03-07 | CRUD, invite user |
-| 1.4.3 | `service/account_service.go` + unit tests | 🔵 `backlog` | 2026-03-06 | CRUD, balance recalculation |
+| 1.4.2 | `service/tenant_service.go` + unit tests | ✅ `done` | 2026-03-07 | CRUD, invite user |
+| 1.4.3 | `service/account_service.go` + unit tests | ✅ `done` | 2026-03-07 | CRUD, balance recalculation |
 | 1.4.4 | `service/category_service.go` + unit tests | 🔵 `backlog` | 2026-03-06 | CRUD, hierarchy validation |
 | 1.4.5 | `service/transaction_service.go` + unit tests | 🔵 `backlog` | 2026-03-06 | CRUD, audit trail |
 | 1.4.6 | `service/admin_service.go` + unit tests | 🔵 `backlog` | 2026-03-06 | Cross-tenant support ops |

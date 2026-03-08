@@ -74,3 +74,24 @@ type AccountRepository interface {
 	// Delete performs a soft delete on the specified account.
 	Delete(ctx context.Context, tenantID, id string) error
 }
+
+// AccountService defines the business-logic contract for account management.
+type AccountService interface {
+	// Create persists a new account after validating the user belongs to the tenant.
+	Create(ctx context.Context, tenantID string, input CreateAccountInput) (*Account, error)
+
+	// GetByID retrieves an account by ID with a tenant ownership guard.
+	GetByID(ctx context.Context, tenantID, id string) (*Account, error)
+
+	// ListByTenant returns all active accounts for the given household.
+	ListByTenant(ctx context.Context, tenantID string) ([]Account, error)
+
+	// ListByUser returns all accounts associated with a specific user within a tenant.
+	ListByUser(ctx context.Context, tenantID, userID string) ([]Account, error)
+
+	// Update modifies an existing account's metadata and records an audit log.
+	Update(ctx context.Context, tenantID, id string, input UpdateAccountInput) (*Account, error)
+
+	// Delete performs a soft-delete on the account and records an audit log.
+	Delete(ctx context.Context, tenantID, id string) error
+}

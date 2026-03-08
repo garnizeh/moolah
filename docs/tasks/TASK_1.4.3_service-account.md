@@ -1,7 +1,7 @@
 # Task 1.4.3 — `service/account_service.go` + unit tests
 
 > **Roadmap Ref:** Phase 1 — MVP › 1.4 Service Layer
-> **Status:** 🔵 `backlog`
+> **Status:** ✅ `done`
 > **Last Updated:** 2026-03-07
 > **Assignee:** —
 > **Estimated Effort:** M
@@ -24,15 +24,15 @@ Accounts are central to Phase 1 — every transaction belongs to an account and 
 
 ### In scope
 
-- [ ] `internal/service/account_service.go` — concrete `AccountService` struct.
-- [ ] `internal/domain/account.go` — add `AccountService` interface definition.
-- [ ] `Create(ctx, tenantID string, input CreateAccountInput) (*Account, error)` — validate, persist, write audit log `create`.
-- [ ] `GetByID(ctx, tenantID, id string) (*Account, error)` — fetch with tenant guard.
-- [ ] `ListByTenant(ctx, tenantID string) ([]Account, error)` — all accounts for household.
-- [ ] `ListByUser(ctx, tenantID, userID string) ([]Account, error)` — accounts for a specific member.
-- [ ] `Update(ctx, tenantID, id string, input UpdateAccountInput) (*Account, error)` — metadata only (name, currency); audit log `update`.
-- [ ] `Delete(ctx, tenantID, id string) error` — soft-delete; audit log `soft_delete`.
-- [ ] Full unit tests in `internal/service/account_service_test.go`.
+- [x] `internal/service/account_service.go` — concrete `AccountService` struct.
+- [x] `internal/domain/account.go` — add `AccountService` interface definition.
+- [x] `Create(ctx, tenantID string, input CreateAccountInput) (*Account, error)` — validate, persist, write audit log `create`.
+- [x] `GetByID(ctx, tenantID, id string) (*Account, error)` — fetch with tenant guard.
+- [x] `ListByTenant(ctx, tenantID string) ([]Account, error)` — all accounts for household.
+- [x] `ListByUser(ctx, tenantID, userID string) ([]Account, error)` — accounts for a specific member.
+- [x] `Update(ctx, tenantID, id string, input UpdateAccountInput) (*Account, error)` — metadata only (name, currency); audit log `update`.
+- [x] `Delete(ctx, tenantID, id string) error` — soft-delete; audit log `soft_delete`.
+- [x] Full unit tests in `internal/service/account_service_test.go`.
 
 ### Out of scope
 
@@ -85,16 +85,16 @@ type AccountService interface {
 
 ## 5. Acceptance Criteria
 
-- [ ] `AccountService` interface defined in `internal/domain/account.go`.
-- [ ] `NewAccountService` constructor accepts `AccountRepository`, `UserRepository`, and `AuditRepository`.
-- [ ] `Create` validates that the user belongs to the tenant before persisting.
-- [ ] `Update` writes audit log with old and new values.
-- [ ] `Delete` writes audit log `soft_delete`.
-- [ ] `UpdateBalance` is NOT part of `AccountService`; it is an internal method called by `TransactionService`.
-- [ ] Unit tests cover all happy paths and all error branches (≥ 80% coverage).
-- [ ] `golangci-lint run ./...` passes with zero issues.
-- [ ] `gosec ./...` passes with zero issues.
-- [ ] `docs/ROADMAP.md` row updated to ✅ `done`.
+- [x] `AccountService` interface defined in `internal/domain/account.go`.
+- [x] `NewAccountService` constructor accepts `AccountRepository`, `UserRepository`, and `AuditRepository`.
+- [x] `Create` validates that the user belongs to the tenant before persisting.
+- [x] `Update` writes audit log with old and new values.
+- [x] `Delete` writes audit log `soft_delete`.
+- [x] `UpdateBalance` is NOT part of `AccountService`; it is an internal method called by `TransactionService`.
+- [x] Unit tests cover all happy paths and all error branches (≥ 80% coverage).
+- [x] `golangci-lint run ./...` passes with zero issues.
+- [x] `gosec ./...` passes with zero issues.
+- [x] `docs/ROADMAP.md` row updated to ✅ `done`.
 
 ---
 

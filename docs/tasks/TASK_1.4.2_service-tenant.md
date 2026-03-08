@@ -1,7 +1,7 @@
 # Task 1.4.2 — `service/tenant_service.go` + unit tests
 
 > **Roadmap Ref:** Phase 1 — MVP › 1.4 Service Layer
-> **Status:** � `in-progress`
+> **Status:** ✅ `done`
 > **Last Updated:** 2026-03-07
 > **Assignee:** GitHub Copilot
 > **Estimated Effort:** M
@@ -24,15 +24,15 @@ A `Tenant` is the root entity of the multi-tenancy hierarchy — it represents a
 
 ### In scope
 
-- [ ] `internal/service/tenant_service.go` — concrete `TenantService` struct with constructor.
-- [ ] `internal/domain/tenant.go` — add `TenantService` interface definition.
-- [ ] `GetByID(ctx, id string) (*Tenant, error)` — retrieve tenant by ID.
-- [ ] `List(ctx) ([]Tenant, error)` — list all tenants (sysadmin scope).
-- [ ] `Create(ctx, input CreateTenantInput) (*Tenant, error)` — create new tenant; audit log `create`.
-- [ ] `Update(ctx, id string, input UpdateTenantInput) (*Tenant, error)` — update name/plan; audit log `update`.
-- [ ] `Delete(ctx, id string) error` — soft-delete tenant; audit log `soft_delete`.
-- [ ] `InviteUser(ctx, tenantID string, input CreateUserInput) (*User, error)` — create a user within the tenant (role must be `member` or `admin`); audit log `create`.
-- [ ] Full unit tests in `internal/service/tenant_service_test.go`.
+- [x] `internal/service/tenant_service.go` — concrete `TenantService` struct with constructor.
+- [x] `internal/domain/tenant.go` — add `TenantService` interface definition.
+- [x] `GetByID(ctx, id string) (*Tenant, error)` — retrieve tenant by ID.
+- [x] `List(ctx) ([]Tenant, error)` — list all tenants (sysadmin scope).
+- [x] `Create(ctx, input CreateTenantInput) (*Tenant, error)` — create new tenant; audit log `create`.
+- [x] `Update(ctx, id string, input UpdateTenantInput) (*Tenant, error)` — update name/plan; audit log `update`.
+- [x] `Delete(ctx, id string) error` — soft-delete tenant; audit log `soft_delete`.
+- [x] `InviteUser(ctx, tenantID string, input CreateUserInput) (*User, error)` — create a user within the tenant (role must be `member` or `admin`); audit log `create`.
+- [x] Full unit tests in `internal/service/tenant_service_test.go`.
 
 ### Out of scope
 
@@ -85,16 +85,16 @@ type TenantService interface {
 
 ## 5. Acceptance Criteria
 
-- [ ] `TenantService` interface defined in `internal/domain/tenant.go`.
-- [ ] `NewTenantService` constructor accepts `TenantRepository`, `UserRepository`, and `AuditRepository`.
-- [ ] `Create` returns `ErrConflict` on duplicate name and writes no audit log.
-- [ ] `Update` writes audit log with old and new values.
-- [ ] `Delete` writes audit log before delegating.
-- [ ] `InviteUser` delegates to `UserRepository.Create` and writes audit log.
-- [ ] Unit tests cover all happy paths and all error branches (≥ 80% coverage).
-- [ ] `golangci-lint run ./...` passes with zero issues.
-- [ ] `gosec ./...` passes with zero issues.
-- [ ] `docs/ROADMAP.md` row updated to ✅ `done`.
+- [x] `TenantService` interface defined in `internal/domain/tenant.go`.
+- [x] `NewTenantService` constructor accepts `TenantRepository`, `UserRepository`, and `AuditRepository`.
+- [x] `Create` returns `ErrConflict` on duplicate name and writes no audit log.
+- [x] `Update` writes audit log with old and new values.
+- [x] `Delete` writes audit log before delegating.
+- [x] `InviteUser` delegates to `UserRepository.Create` and writes audit log.
+- [x] Unit tests cover all happy paths and all error branches (≥ 80% coverage).
+- [x] `golangci-lint run ./...` passes with zero issues.
+- [x] `gosec ./...` passes with zero issues.
+- [x] `docs/ROADMAP.md` row updated to ✅ `done`.
 
 ---
 
@@ -138,3 +138,4 @@ Key scenarios:
 | Date       | Author | Change                    |
 | ---------- | ------ | ------------------------- |
 | 2026-03-07 | —      | Task created from roadmap |
+| 2026-03-07 | GitHub Copilot | Task completed and verified with `make task-check`. |

@@ -48,12 +48,15 @@ func Idempotency(store domain.IdempotencyStore) func(http.Handler) http.Handler 
 				return
 			}
 
+			ctx := r.Context()
+
+			// Extract and validate Idempotency-Key from headers.
 			clientKey := r.Header.Get(idempotencyHeader)
 			if clientKey == "" {
 				w.WriteHeader(http.StatusBadRequest)
 				err := json.NewEncoder(w).Encode(map[string]string{"error": "missing_idempotency_key"})
 				if err != nil {
-					slog.Error("idempotency: failed to write missing key error response", "error", err)
+					slog.ErrorContext(ctx, "idempotency: failed to write missing key error response", "error", err)
 				}
 				return
 			}
@@ -63,7 +66,7 @@ func Idempotency(store domain.IdempotencyStore) func(http.Handler) http.Handler 
 				w.WriteHeader(http.StatusBadRequest)
 				err := json.NewEncoder(w).Encode(map[string]string{"error": "invalid_idempotency_key"})
 				if err != nil {
-					slog.Error("idempotency: failed to write invalid key error response", "error", err)
+					slog.ErrorContext(ctx, "idempotency: failed to write invalid key error response", "error", err)
 				}
 				return
 			}
@@ -71,7 +74,7 @@ func Idempotency(store domain.IdempotencyStore) func(http.Handler) http.Handler 
 			// Extract userID from context (provided by Auth middleware).
 			userID, ok := UserIDFromCtx(r.Context())
 			if !ok {
-				slog.Warn("idempotency: failed to extract user ID from context, defaulting to anonymous")
+				slog.WarnContext(ctx, "idempotency: failed to extract user ID from context, defaulting to anonymous")
 			}
 			if userID == "" {
 				userID = "anonymous"
@@ -84,7 +87,7 @@ func Idempotency(store domain.IdempotencyStore) func(http.Handler) http.Handler 
 			cached, err := store.Get(r.Context(), redisKey)
 			if err != nil {
 				// #nosec G706: slog is a structured logger that escapes control characters, preventing log injection.
-				slog.Error("idempotency: store get error", "error", err, "key", redisKey)
+				slog.ErrorContext(ctx, "idempotency: store get error", "error", err, "key", redisKey)
 				http.Error(w, "internal_error", http.StatusInternalServerError)
 				return
 			}
@@ -101,7 +104,7 @@ func Idempotency(store domain.IdempotencyStore) func(http.Handler) http.Handler 
 				n, err = w.Write(cached.Body)
 				if err != nil {
 					/* #nosec G706 */
-					slog.Error("idempotency: failed to write cached response body",
+					slog.ErrorContext(ctx, "idempotency: failed to write cached response body",
 						"user_id", userID,
 						"idempotency_key", clientKey,
 						"bytes_written", n,
@@ -116,7 +119,7 @@ func Idempotency(store domain.IdempotencyStore) func(http.Handler) http.Handler 
 			ok, err = store.SetLocked(r.Context(), redisKey, idempotencyTTL)
 			if err != nil {
 				// #nosec G706: redisKey is safe here because slog handles escaping of user-provided data.
-				slog.Error("idempotency: lock acquisition error", "error", err, "key", redisKey)
+				slog.ErrorContext(ctx, "idempotency: lock acquisition error", "error", err, "key", redisKey)
 				http.Error(w, "internal_error", http.StatusInternalServerError)
 				return
 			}
@@ -126,7 +129,7 @@ func Idempotency(store domain.IdempotencyStore) func(http.Handler) http.Handler 
 				eerr := json.NewEncoder(w).Encode(map[string]string{"error": "idempotency_key_in_flight"})
 				if eerr != nil {
 					// #nosec G706: redisKey is safe here because slog handles escaping of user-provided data.
-					slog.Error("idempotency: failed to write in-flight error response", "error", eerr, "key", redisKey)
+					slog.ErrorContext(ctx, "idempotency: failed to write in-flight error response", "error", eerr, "key", redisKey)
 				}
 				return
 			}
@@ -148,7 +151,7 @@ func Idempotency(store domain.IdempotencyStore) func(http.Handler) http.Handler 
 				}, idempotencyTTL)
 				if err != nil {
 					// #nosec G706: Using structured logging to safely record the failure.
-					slog.Warn("idempotency: failed to cache response", "error", err, "key", redisKey)
+					slog.WarnContext(ctx, "idempotency: failed to cache response", "error", err, "key", redisKey)
 				}
 			}
 		})

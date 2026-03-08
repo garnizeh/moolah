@@ -252,6 +252,204 @@ func (m *AuditRepository) ListByEntity(ctx context.Context, tenantID, entityType
 
 var _ domain.AuditRepository = (*AuditRepository)(nil)
 
+// AccountRepository is a testify/mock implementation of domain.AccountRepository.
+type AccountRepository struct {
+	mock.Mock
+}
+
+func (m *AccountRepository) Create(ctx context.Context, tenantID string, input domain.CreateAccountInput) (*domain.Account, error) {
+	args := m.Called(ctx, tenantID, input)
+	var err error
+	if e := args.Error(1); e != nil {
+		err = fmt.Errorf("mock AccountRepository.Create: %w", e)
+	}
+	if args.Get(0) == nil {
+		return nil, err
+	}
+	res, ok := args.Get(0).(*domain.Account)
+	if !ok {
+		return nil, fmt.Errorf("mock AccountRepository.Create: unexpected type %T", args.Get(0))
+	}
+	return res, err
+}
+
+func (m *AccountRepository) GetByID(ctx context.Context, tenantID, id string) (*domain.Account, error) {
+	args := m.Called(ctx, tenantID, id)
+	var err error
+	if e := args.Error(1); e != nil {
+		err = fmt.Errorf("mock AccountRepository.GetByID: %w", e)
+	}
+	if args.Get(0) == nil {
+		return nil, err
+	}
+	res, ok := args.Get(0).(*domain.Account)
+	if !ok {
+		return nil, fmt.Errorf("mock AccountRepository.GetByID: unexpected type %T", args.Get(0))
+	}
+	return res, err
+}
+
+func (m *AccountRepository) ListByTenant(ctx context.Context, tenantID string) ([]domain.Account, error) {
+	args := m.Called(ctx, tenantID)
+	var err error
+	if e := args.Error(1); e != nil {
+		err = fmt.Errorf("mock AccountRepository.ListByTenant: %w", e)
+	}
+	if args.Get(0) == nil {
+		return nil, err
+	}
+	res, ok := args.Get(0).([]domain.Account)
+	if !ok {
+		return nil, fmt.Errorf("mock AccountRepository.ListByTenant: unexpected type %T", args.Get(0))
+	}
+	return res, err
+}
+
+func (m *AccountRepository) ListByUser(ctx context.Context, tenantID, userID string) ([]domain.Account, error) {
+	args := m.Called(ctx, tenantID, userID)
+	var err error
+	if e := args.Error(1); e != nil {
+		err = fmt.Errorf("mock AccountRepository.ListByUser: %w", e)
+	}
+	if args.Get(0) == nil {
+		return nil, err
+	}
+	res, ok := args.Get(0).([]domain.Account)
+	if !ok {
+		return nil, fmt.Errorf("mock AccountRepository.ListByUser: unexpected type %T", args.Get(0))
+	}
+	return res, err
+}
+
+func (m *AccountRepository) Update(ctx context.Context, tenantID, id string, input domain.UpdateAccountInput) (*domain.Account, error) {
+	args := m.Called(ctx, tenantID, id, input)
+	var err error
+	if e := args.Error(1); e != nil {
+		err = fmt.Errorf("mock AccountRepository.Update: %w", e)
+	}
+	if args.Get(0) == nil {
+		return nil, err
+	}
+	res, ok := args.Get(0).(*domain.Account)
+	if !ok {
+		return nil, fmt.Errorf("mock AccountRepository.Update: unexpected type %T", args.Get(0))
+	}
+	return res, err
+}
+
+func (m *AccountRepository) UpdateBalance(ctx context.Context, tenantID, id string, newBalanceCents int64) error {
+	args := m.Called(ctx, tenantID, id, newBalanceCents)
+	if e := args.Error(0); e != nil {
+		return fmt.Errorf("mock AccountRepository.UpdateBalance: %w", e)
+	}
+	return nil
+}
+
+func (m *AccountRepository) Delete(ctx context.Context, tenantID, id string) error {
+	args := m.Called(ctx, tenantID, id)
+	if e := args.Error(0); e != nil {
+		return fmt.Errorf("mock AccountRepository.Delete: %w", e)
+	}
+	return nil
+}
+
+var _ domain.AccountRepository = (*AccountRepository)(nil)
+
+// CategoryRepository is a testify/mock implementation of domain.CategoryRepository.
+type CategoryRepository struct {
+	mock.Mock
+}
+
+func (m *CategoryRepository) Create(ctx context.Context, tenantID string, input domain.CreateCategoryInput) (*domain.Category, error) {
+	args := m.Called(ctx, tenantID, input)
+	var err error
+	if e := args.Error(1); e != nil {
+		err = fmt.Errorf("mock CategoryRepository.Create: %w", e)
+	}
+	if args.Get(0) == nil {
+		return nil, err
+	}
+	res, ok := args.Get(0).(*domain.Category)
+	if !ok {
+		return nil, fmt.Errorf("mock CategoryRepository.Create: unexpected type %T", args.Get(0))
+	}
+	return res, err
+}
+
+func (m *CategoryRepository) GetByID(ctx context.Context, tenantID, id string) (*domain.Category, error) {
+	args := m.Called(ctx, tenantID, id)
+	var err error
+	if e := args.Error(1); e != nil {
+		err = fmt.Errorf("mock CategoryRepository.GetByID: %w", e)
+	}
+	if args.Get(0) == nil {
+		return nil, err
+	}
+	res, ok := args.Get(0).(*domain.Category)
+	if !ok {
+		return nil, fmt.Errorf("mock CategoryRepository.GetByID: unexpected type %T", args.Get(0))
+	}
+	return res, err
+}
+
+func (m *CategoryRepository) ListByTenant(ctx context.Context, tenantID string) ([]domain.Category, error) {
+	args := m.Called(ctx, tenantID)
+	var err error
+	if e := args.Error(1); e != nil {
+		err = fmt.Errorf("mock CategoryRepository.ListByTenant: %w", e)
+	}
+	if args.Get(0) == nil {
+		return nil, err
+	}
+	res, ok := args.Get(0).([]domain.Category)
+	if !ok {
+		return nil, fmt.Errorf("mock CategoryRepository.ListByTenant: unexpected type %T", args.Get(0))
+	}
+	return res, err
+}
+
+func (m *CategoryRepository) ListChildren(ctx context.Context, tenantID, parentID string) ([]domain.Category, error) {
+	args := m.Called(ctx, tenantID, parentID)
+	var err error
+	if e := args.Error(1); e != nil {
+		err = fmt.Errorf("mock CategoryRepository.ListChildren: %w", e)
+	}
+	if args.Get(0) == nil {
+		return nil, err
+	}
+	res, ok := args.Get(0).([]domain.Category)
+	if !ok {
+		return nil, fmt.Errorf("mock CategoryRepository.ListChildren: unexpected type %T", args.Get(0))
+	}
+	return res, err
+}
+
+func (m *CategoryRepository) Update(ctx context.Context, tenantID, id string, input domain.UpdateCategoryInput) (*domain.Category, error) {
+	args := m.Called(ctx, tenantID, id, input)
+	var err error
+	if e := args.Error(1); e != nil {
+		err = fmt.Errorf("mock CategoryRepository.Update: %w", e)
+	}
+	if args.Get(0) == nil {
+		return nil, err
+	}
+	res, ok := args.Get(0).(*domain.Category)
+	if !ok {
+		return nil, fmt.Errorf("mock CategoryRepository.Update: unexpected type %T", args.Get(0))
+	}
+	return res, err
+}
+
+func (m *CategoryRepository) Delete(ctx context.Context, tenantID, id string) error {
+	args := m.Called(ctx, tenantID, id)
+	if e := args.Error(0); e != nil {
+		return fmt.Errorf("mock CategoryRepository.Delete: %w", e)
+	}
+	return nil
+}
+
+var _ domain.CategoryRepository = (*CategoryRepository)(nil)
+
 // TenantRepository is a testify/mock implementation of domain.TenantRepository.
 type TenantRepository struct {
 	mock.Mock

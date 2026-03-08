@@ -78,7 +78,7 @@ func (s *authService) RequestOTP(ctx context.Context, email string) error {
 	})
 	if auditErr != nil {
 		// We don't fail the whole request if audit fails, but we should log it.
-		slog.Error("auth service: failed to create audit log", "error", auditErr)
+		slog.ErrorContext(ctx, "auth service: failed to create audit log", "error", auditErr)
 	}
 
 	return nil
@@ -100,7 +100,7 @@ func (s *authService) VerifyOTP(ctx context.Context, email, code string) (*domai
 					ActorRole:  u.Role,
 				})
 				if errA != nil {
-					slog.Error("auth service: failed to create audit log for invalid OTP", "error", errA)
+					slog.ErrorContext(ctx, "auth service: failed to create audit log for invalid OTP", "error", errA)
 				}
 			}
 			return nil, domain.ErrInvalidOTP
@@ -120,7 +120,7 @@ func (s *authService) VerifyOTP(ctx context.Context, email, code string) (*domai
 				ActorRole:  u.Role,
 			})
 			if errA != nil {
-				slog.Error("auth service: failed to create audit log for invalid OTP", "error", errA)
+				slog.ErrorContext(ctx, "auth service: failed to create audit log for invalid OTP", "error", errA)
 			}
 		}
 		return nil, domain.ErrInvalidOTP
