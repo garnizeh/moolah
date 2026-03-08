@@ -299,6 +299,50 @@ func (m *AdminTenantRepository) UpdatePlan(ctx context.Context, id string, plan 
 	return res, err
 }
 
+// AuthService is a mock implementation of domain.AuthService.
+type AuthService struct {
+	mock.Mock
+}
+
+func (m *AuthService) RequestOTP(ctx context.Context, email string) error {
+	args := m.Called(ctx, email)
+	err := args.Error(0)
+	if err != nil {
+		return fmt.Errorf("mock RequestOTP: %w", err)
+	}
+	return nil
+}
+
+func (m *AuthService) VerifyOTP(ctx context.Context, email, code string) (*domain.TokenPair, error) {
+	args := m.Called(ctx, email, code)
+	var err error
+	if e := args.Error(1); e != nil {
+		err = e
+	}
+
+	res, ok := args.Get(0).(*domain.TokenPair)
+	if !ok && args.Get(0) != nil {
+		return nil, fmt.Errorf("mock VerifyOTP: unexpected type %T", args.Get(0))
+	}
+	return res, err
+}
+
+func (m *AuthService) RefreshToken(ctx context.Context, refreshToken string) (*domain.TokenPair, error) {
+	args := m.Called(ctx, refreshToken)
+	var err error
+	if e := args.Error(1); e != nil {
+		err = e
+	}
+
+	res, ok := args.Get(0).(*domain.TokenPair)
+	if !ok && args.Get(0) != nil {
+		return nil, fmt.Errorf("mock RefreshToken: unexpected type %T", args.Get(0))
+	}
+	return res, err
+}
+
+var _ domain.AuthService = (*AuthService)(nil)
+
 func (m *AdminTenantRepository) Suspend(ctx context.Context, id string) error {
 	args := m.Called(ctx, id)
 	if e := args.Error(0); e != nil {

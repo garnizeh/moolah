@@ -72,7 +72,7 @@ func Idempotency(store domain.IdempotencyStore) func(http.Handler) http.Handler 
 			}
 
 			// Extract userID from context (provided by Auth middleware).
-			userID, ok := UserIDFromCtx(r.Context())
+			userID, ok := UserIDFromCtx(ctx)
 			if !ok {
 				slog.WarnContext(ctx, "idempotency: failed to extract user ID from context, defaulting to anonymous")
 			}
@@ -116,7 +116,7 @@ func Idempotency(store domain.IdempotencyStore) func(http.Handler) http.Handler 
 			}
 
 			// 2. Try to acquire an atomic lock to prevent "in-flight" race conditions.
-			ok, err = store.SetLocked(r.Context(), redisKey, idempotencyTTL)
+			ok, err = store.SetLocked(ctx, redisKey, idempotencyTTL)
 			if err != nil {
 				// #nosec G706: redisKey is safe here because slog handles escaping of user-provided data.
 				slog.ErrorContext(ctx, "idempotency: lock acquisition error", "error", err, "key", redisKey)
@@ -145,7 +145,7 @@ func Idempotency(store domain.IdempotencyStore) func(http.Handler) http.Handler 
 
 			// 4. Cache only successful or client-side error responses (exclude 5xx server errors).
 			if rec.statusCode < http.StatusInternalServerError {
-				err = store.SetResponse(r.Context(), redisKey, domain.CachedResponse{
+				err = store.SetResponse(ctx, redisKey, domain.CachedResponse{
 					StatusCode: rec.statusCode,
 					Body:       rec.body.Bytes(),
 				}, idempotencyTTL)

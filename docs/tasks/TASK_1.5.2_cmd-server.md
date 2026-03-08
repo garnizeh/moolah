@@ -1,9 +1,6 @@
 # Task 1.5.2 — `cmd/api/server.go` — `http.Server` factory, middleware chain
 
 > **Roadmap Ref:** Phase 1 — MVP › 1.5 HTTP Handler Layer
-> **Status:** 🟡 `in-progress`
-> **Last Updated:** 2026-03-07
-> **Roadmap Ref:** Phase 1 — MVP › 1.5 HTTP Handler Layer
 > **Status:** ✅ `done`
 > **Last Updated:** 2026-03-08
 > **Assignee:** —
