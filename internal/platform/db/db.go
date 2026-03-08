@@ -12,20 +12,18 @@ import (
 )
 
 // Querier is a helper function that connects to the database, runs migrations, and returns a sqlc.Querier instance.
-func Querier(ctx context.Context, databaseURL string) (sqlc.Querier, error) {
+func Querier(ctx context.Context, databaseURL string) (*pgxpool.Pool, sqlc.Querier, error) {
 	dbPool, err := pgxpool.New(ctx, databaseURL)
 	if err != nil {
-		return nil, fmt.Errorf("failed to connect to database: %w", err)
+		return nil, nil, fmt.Errorf("failed to connect to database: %w", err)
 	}
-	defer dbPool.Close()
 
 	if err := runMigrations(dbPool); err != nil {
-		return nil, fmt.Errorf("failed to run migrations: %w", err)
+		return nil, nil, fmt.Errorf("failed to run migrations: %w", err)
 	}
 
 	querier := sqlc.New(dbPool)
-
-	return querier, nil
+	return dbPool, querier, nil
 }
 
 func runMigrations(dbPool *pgxpool.Pool) error {
