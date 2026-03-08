@@ -1,8 +1,8 @@
 # Task 1.5.3 — `cmd/api/routes.go` — all route registrations
 
 > **Roadmap Ref:** Phase 1 — MVP › 1.5 HTTP Handler Layer
-> **Status:** 🔵 `backlog`
-> **Last Updated:** 2026-03-07
+> **Status:** ✅ `done`
+> **Last Updated:** 2026-03-08
 > **Assignee:** —
 > **Estimated Effort:** S
 
@@ -10,7 +10,7 @@
 
 ## 1. Summary
 
-Implement `cmd/api/routes.go`, which registers all HTTP routes onto an `http.ServeMux` using Go 1.22+ `METHOD /path/{param}` routing syntax. It wires each handler to its path, applies per-route middleware (auth, rate-limit, idempotency), and returns the populated mux.
+Implement `internal/server/routes.go`, which registers all HTTP routes onto an `http.ServeMux` using Go 1.22+ `METHOD /path/{param}` routing syntax. It wires each handler to its path, applies per-route middleware (auth, rate-limit, idempotency), and returns the populated mux.
 
 ---
 
@@ -24,10 +24,10 @@ Centralising all routes in one file makes the API surface easy to audit and chan
 
 ### In scope
 
-- [ ] `cmd/api/routes.go` — `NewRouter(...)` function returning `*http.ServeMux`.
-- [ ] Register all Phase 1 routes grouped by domain.
-- [ ] Apply per-route middleware using handler wrapping: `RequireAuth`, `RequireRole`, `RateLimit`, `Idempotency`.
-- [ ] Use Go 1.22 pattern syntax: `mux.Handle("POST /v1/auth/otp/request", handler)`.
+- [x] `internal/server/routes.go` — `NewRouter(...)` function returning `*http.ServeMux`. (Implemented as `routes()` method on `Server`)
+- [x] Register all Phase 1 routes grouped by domain.
+- [x] Apply per-route middleware using handler wrapping: `RequireAuth`, `RequireRole`, `RateLimit`, `Idempotency`.
+- [x] Use Go 1.22 pattern syntax: `mux.Handle("POST /v1/auth/otp/request", handler)`.
 
 ### Out of scope
 
@@ -42,7 +42,7 @@ Centralising all routes in one file makes the API surface easy to audit and chan
 
 | Action | Path                 | Purpose                          |
 | ------ | -------------------- | -------------------------------- |
-| CREATE | `cmd/api/routes.go`  | Centralised route registration   |
+| CREATE | `internal/server/routes.go`  | Centralised route registration   |
 
 ### Route table
 
@@ -83,12 +83,12 @@ Centralising all routes in one file makes the API surface easy to audit and chan
 
 ## 5. Acceptance Criteria
 
-- [ ] All routes listed in the route table above are registered.
-- [ ] Go 1.22 `METHOD /path/{param}` syntax is used throughout.
-- [ ] All mutating `POST`/`PATCH`/`DELETE` routes use the appropriate middleware.
-- [ ] `golangci-lint run ./...` passes with zero issues.
-- [ ] `gosec ./...` passes with zero issues.
-- [ ] `docs/ROADMAP.md` row updated to ✅ `done`.
+- [x] All routes listed in the route table above are registered.
+- [x] Go 1.22 `METHOD /path/{param}` syntax is used throughout.
+- [x] All mutating `POST`/`PATCH`/`DELETE` routes use the appropriate middleware.
+- [x] `golangci-lint run ./...` passes with zero issues.
+- [x] `gosec ./...` passes with zero issues.
+- [x] `docs/ROADMAP.md` row updated to ✅ `done`.
 
 ---
 

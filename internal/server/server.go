@@ -27,6 +27,11 @@ type Server struct {
 	transactionSvc domain.TransactionService
 	adminSvc       domain.AdminService
 
+	// Additional providers for middleware
+	idempotencyStore domain.IdempotencyStore
+	rateLimiterStore *middleware.RateLimiterStore
+	tokenParser      middleware.TokenParser
+
 	addr string
 }
 
@@ -39,15 +44,21 @@ func New(
 	categorySvc domain.CategoryService,
 	transactionSvc domain.TransactionService,
 	adminSvc domain.AdminService,
+	idempotencyStore domain.IdempotencyStore,
+	rateLimiterStore *middleware.RateLimiterStore,
+	tokenParser middleware.TokenParser,
 ) *Server {
 	s := &Server{
-		addr:           ":" + port,
-		authSvc:        authSvc,
-		tenantSvc:      tenantSvc,
-		accountSvc:     accountSvc,
-		categorySvc:    categorySvc,
-		transactionSvc: transactionSvc,
-		adminSvc:       adminSvc,
+		addr:             ":" + port,
+		authSvc:          authSvc,
+		tenantSvc:        tenantSvc,
+		accountSvc:       accountSvc,
+		categorySvc:      categorySvc,
+		transactionSvc:   transactionSvc,
+		adminSvc:         adminSvc,
+		idempotencyStore: idempotencyStore,
+		rateLimiterStore: rateLimiterStore,
+		tokenParser:      tokenParser,
 	}
 
 	// routes.go will implement the routes method

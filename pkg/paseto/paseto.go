@@ -95,3 +95,20 @@ func Parse(tokenStr string, key paseto.V4SymmetricKey) (*Claims, error) {
 
 	return claims, nil
 }
+
+// NewTokenParser is a helper that returns a TokenParser function compatible with the auth middleware.
+func NewTokenParser(key paseto.V4SymmetricKey) func(string) (*Claims, error) {
+	return func(tokenStr string) (*Claims, error) {
+		return Parse(tokenStr, key)
+	}
+}
+
+// V4SymmetricKeyFromHex is a helper that parses a hex-encoded string into a paseto.V4SymmetricKey.
+func V4SymmetricKeyFromHex(hexKey string) (paseto.V4SymmetricKey, error) {
+	pasetoKey, err := paseto.V4SymmetricKeyFromHex(hexKey)
+	if err != nil {
+		return paseto.V4SymmetricKey{}, fmt.Errorf("failed to parse paseto secret key: %w", err)
+	}
+
+	return pasetoKey, nil
+}
