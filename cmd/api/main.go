@@ -15,6 +15,7 @@ import (
 	"github.com/garnizeh/moolah/internal/platform/idempotency"
 	"github.com/garnizeh/moolah/internal/platform/mailer"
 	"github.com/garnizeh/moolah/internal/platform/repository"
+	"github.com/garnizeh/moolah/internal/server"
 	"github.com/garnizeh/moolah/internal/service"
 	"github.com/garnizeh/moolah/pkg/config"
 	"github.com/garnizeh/moolah/pkg/logger"
@@ -106,21 +107,16 @@ func main() {
 	_ = adminSvc
 	_ = idempotencyStore
 
-	// 8. Start Server (To be implemented in Task 1.5.2 and 1.5.3)
-	// For now, we stub this to satisfy Task 1.5.1 requirements for wiring and starting.
-	// We'll use a simple placeholder server that we will replace in the next task.
-	mux := http.NewServeMux()
-	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		fmt.Fprintln(w, "OK")
-	})
-
-	srv := &http.Server{
-		Addr:         ":" + cfg.HTTPPort,
-		Handler:      mux,
-		ReadTimeout:  cfg.ReadTimeout,
-		WriteTimeout: cfg.WriteTimeout,
-	}
+	// 8. Create Server
+	srv := server.New(
+		cfg.HTTPPort,
+		authSvc,
+		tenantSvc,
+		accountSvc,
+		categorySvc,
+		transactionSvc,
+		adminSvc,
+	)
 
 	// 9. Graceful Shutdown
 	idleConnsClosed := make(chan struct{})
@@ -140,8 +136,9 @@ func main() {
 		close(idleConnsClosed)
 	}()
 
+	// 10. Start Server
 	slog.Info("starting server", "port", cfg.HTTPPort)
-	if err := srv.ListenAndServe(); err != http.ErrServerClosed {
+	if err := srv.ListenAndServe(ctx, cfg.ReadTimeout, cfg.WriteTimeout); err != http.ErrServerClosed {
 		slog.Error("server failed", "err", err)
 		os.Exit(1)
 	}

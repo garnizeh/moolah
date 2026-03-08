@@ -1,7 +1,7 @@
 # Task 1.5.1 — `cmd/api/main.go` — DI wiring, Goose migrations, server start
 
 > **Roadmap Ref:** Phase 1 — MVP › 1.5 HTTP Handler Layer
-> **Status:** 🔵 `backlog`
+> **Status:** ✅ `done`
 > **Last Updated:** 2026-03-07
 > **Assignee:** —
 > **Estimated Effort:** M
@@ -29,7 +29,7 @@ The project has a fully implemented domain, repository, and service layer, but n
 - [x] Run Goose migrations on startup via the embedded migration FS.
 - [x] Wire all repositories from `internal/platform/repository/`.
 - [x] Wire all services from `internal/service/`.
-- [ ] Wire the server defined in Task 1.5.2 (`cmd/api/server.go`).
+- [x] Wire the server defined in Task 1.5.2 (`cmd/api/server.go`).
 
 ### Out of scope
 
@@ -127,3 +127,4 @@ N/A — `main.go` is the DI root and is not unit-testable in isolation.
 | Date       | Author | Change                    |
 | ---------- | ------ | ------------------------- |
 | 2026-03-07 | —      | Task created from roadmap |
+| 2026-03-07 | CI/Dev | Implemented `cmd/api/main.go`, ran migrations, and created `.env` (marked done)
