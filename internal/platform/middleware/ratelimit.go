@@ -25,8 +25,8 @@ type emailLimiter struct {
 
 // RateLimiterStore holds the state for the in-memory rate limiters.
 type RateLimiterStore struct {
-	mu       sync.RWMutex
 	limiters map[string]*emailLimiter
+	mu       sync.RWMutex
 }
 
 // NewRateLimiterStore creates a new store and starts the cleanup goroutine.

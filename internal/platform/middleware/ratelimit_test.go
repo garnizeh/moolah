@@ -19,7 +19,7 @@ func TestOTPRateLimiter(t *testing.T) {
 	t.Parallel()
 
 	noopHandler := slog.NewTextHandler(io.Discard, nil)
-    slog.SetDefault(slog.New(noopHandler))
+	slog.SetDefault(slog.New(noopHandler))
 
 	store := NewRateLimiterStore()
 
@@ -124,7 +124,7 @@ func TestRateLimiterStore_Cleanup(t *testing.T) {
 	t.Parallel()
 
 	noopHandler := slog.NewTextHandler(io.Discard, nil)
-    slog.SetDefault(slog.New(noopHandler))
+	slog.SetDefault(slog.New(noopHandler))
 
 	// Use a very short interval for testing
 	interval := 50 * time.Millisecond

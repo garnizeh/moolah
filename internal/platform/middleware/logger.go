@@ -41,6 +41,8 @@ func RequestLogger(logger *slog.Logger) func(http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			start := time.Now()
 
+			ctx := r.Context()
+
 			// Generate request ID
 			requestID := ulid.New()
 			w.Header().Set("X-Request-ID", requestID)
@@ -49,19 +51,19 @@ func RequestLogger(logger *slog.Logger) func(http.Handler) http.Handler {
 
 			next.ServeHTTP(rw, r)
 
-			tenantID, ok := TenantIDFromCtx(r.Context())
+			tenantID, ok := TenantIDFromCtx(ctx)
 			if !ok {
-				slog.Warn("logger: failed to extract tenant ID from context, defaulting to unknown")
+				slog.WarnContext(ctx, "logger: failed to extract tenant ID from context, defaulting to unknown")
 				tenantID = "unknown"
 			}
 
-			userID, ok := UserIDFromCtx(r.Context())
+			userID, ok := UserIDFromCtx(ctx)
 			if !ok {
-				slog.Warn("logger: failed to extract user ID from context, defaulting to anonymous")
+				slog.WarnContext(ctx, "logger: failed to extract user ID from context, defaulting to anonymous")
 				userID = "anonymous"
 			}
 
-			logger.InfoContext(r.Context(), "request",
+			logger.InfoContext(ctx, "request",
 				slog.String("request_id", requestID),
 				slog.String("method", r.Method),
 				slog.String("path", r.URL.Path),
