@@ -11,6 +11,10 @@ import (
 func (s *Server) routes() http.Handler {
 	mux := http.NewServeMux()
 
+<<<<<<< Updated upstream
+	// Placeholder routes until Task 1.5.4+ handlers are built
+	mux.HandleFunc("/healthz", s.handleHealthz)
+=======
 	// 1. Auth & Public Routes
 	mux.HandleFunc("GET /healthz", s.handleHealthz)
 
@@ -20,9 +24,9 @@ func (s *Server) routes() http.Handler {
 	idempotency := middleware.Idempotency(s.idempotencyStore)
 
 	// Auth routes (Task 1.5.4)
-	mux.Handle("POST /v1/auth/otp/request", rateLimit(http.HandlerFunc(s.handleRequestOTP)))
-	mux.Handle("POST /v1/auth/otp/verify", rateLimit(http.HandlerFunc(s.handleVerifyOTP)))
-	mux.Handle("POST /v1/auth/token/refresh", requireAuth(http.HandlerFunc(s.handleRefreshToken)))
+	mux.Handle("POST /v1/auth/otp/request", rateLimit(http.HandlerFunc(s.authHandler.RequestOTP)))
+	mux.Handle("POST /v1/auth/otp/verify", rateLimit(http.HandlerFunc(s.authHandler.VerifyOTP)))
+	mux.Handle("POST /v1/auth/token/refresh", requireAuth(http.HandlerFunc(s.authHandler.RefreshToken)))
 
 	// 2. Tenant Routes (Task 1.5.5)
 	mux.Handle("GET /v1/tenants/me", requireAuth(http.HandlerFunc(s.handleGetTenantMe)))
@@ -61,15 +65,15 @@ func (s *Server) routes() http.Handler {
 	mux.Handle("GET /v1/admin/users", requireAuth(sysadminOnly(http.HandlerFunc(s.handleAdminListUsers))))
 	mux.Handle("DELETE /v1/admin/users/{id}", requireAuth(sysadminOnly(http.HandlerFunc(s.handleAdminForceDeleteUser))))
 	mux.Handle("GET /v1/admin/audit-logs", requireAuth(sysadminOnly(http.HandlerFunc(s.handleAdminListAuditLogs))))
+>>>>>>> Stashed changes
 
 	return mux
 }
 
+<<<<<<< Updated upstream
+=======
 // TODO: Implement handlers in Tasks 1.5.4 - 1.5.9
 
-func (s *Server) handleRequestOTP(w http.ResponseWriter, r *http.Request)            {}
-func (s *Server) handleVerifyOTP(w http.ResponseWriter, r *http.Request)             {}
-func (s *Server) handleRefreshToken(w http.ResponseWriter, r *http.Request)          {}
 func (s *Server) handleGetTenantMe(w http.ResponseWriter, r *http.Request)           {}
 func (s *Server) handleUpdateTenantMe(w http.ResponseWriter, r *http.Request)        {}
 func (s *Server) handleInviteUser(w http.ResponseWriter, r *http.Request)            {}
@@ -98,6 +102,7 @@ func (s *Server) handleAdminListUsers(w http.ResponseWriter, r *http.Request)   
 func (s *Server) handleAdminForceDeleteUser(w http.ResponseWriter, r *http.Request)  {}
 func (s *Server) handleAdminListAuditLogs(w http.ResponseWriter, r *http.Request)    {}
 
+>>>>>>> Stashed changes
 func (s *Server) handleHealthz(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		w.WriteHeader(http.StatusMethodNotAllowed)

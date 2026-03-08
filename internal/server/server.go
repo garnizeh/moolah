@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/garnizeh/moolah/internal/domain"
+	"github.com/garnizeh/moolah/internal/handler"
 	"github.com/garnizeh/moolah/internal/platform/middleware"
 )
 
@@ -18,6 +19,9 @@ import (
 type Server struct {
 	// Handler and service interfaces grouped for optimal field alignment
 	handler http.Handler
+
+	// Handlers
+	authHandler *handler.AuthHandler
 
 	// Services passed to routes.go
 	authSvc        domain.AuthService
@@ -50,6 +54,7 @@ func New(
 ) *Server {
 	s := &Server{
 		addr:             ":" + port,
+		authHandler:      handler.NewAuthHandler(authSvc, slog.Default()),
 		authSvc:          authSvc,
 		tenantSvc:        tenantSvc,
 		accountSvc:       accountSvc,

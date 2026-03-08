@@ -15,7 +15,7 @@ import (
 
 const (
 	otpRateLimit  = 5
-	otpRatePeriod = 15 * time.Minute
+	otpRatePeriod = 1 * time.Minute
 )
 
 type emailLimiter struct {
