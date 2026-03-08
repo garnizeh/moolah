@@ -126,9 +126,9 @@ func run(ctx context.Context, cfg *config.Config) error {
 
 	// Start Server
 	slog.Info("starting server", "port", cfg.HTTPPort)
-	if err := srv.ListenAndServe(ctx, cfg.ReadTimeout, cfg.WriteTimeout); err != http.ErrServerClosed {
+	if err := srv.ListenAndServe(ctx, cfg.ReadTimeout, cfg.WriteTimeout); err != nil && err != http.ErrServerClosed {
 		slog.Error("server failed", "err", err)
-		os.Exit(1)
+		return fmt.Errorf("server failed: %w", err)
 	}
 
 	<-idleConnsClosed
