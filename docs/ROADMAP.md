@@ -132,6 +132,8 @@
 | 1.6.2 | `govulncheck` passing in CI | 🔵 `backlog` | 2026-03-06 | |
 | 1.6.3 | `gosec` passing in CI | 🔵 `backlog` | 2026-03-06 | |
 | 1.6.4 | Full Phase 1 API smoke test (Postman / httpie collection) | 🔵 `backlog` | 2026-03-06 | |
+| 1.6.5 | Generate Swagger documentation via Swaggo | 🔵 `backlog` | 2026-03-08 | Includes Makefile rule and CI check |
+| 1.6.6 | Generate Bruno collection for API calls | 🔵 `backlog` | 2026-03-08 | Replacement for Postman in Phase 1 |
 
 ---
 

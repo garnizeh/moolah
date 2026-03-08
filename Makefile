@@ -1,4 +1,4 @@
-.PHONY: all build run test lint generate clean help task-check deps
+.PHONY: all build run test lint generate clean help task-check deps up down
 
 # Configuration
 BINARY_NAME=moolah-api
@@ -113,3 +113,13 @@ help:
 			} \
 		}' # This is a conceptual help command, usually implemented via grep/awk in shell
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-15s\033[0m %s\n", $$1, $$2}'
+
+## up: Start the Docker Compose
+up:
+	@echo "Starting Docker Compose..."
+	@docker compose up -d
+
+## down: Stop the Docker Compose
+down:
+	@echo "Stopping Docker Compose..."
+	@docker compose down

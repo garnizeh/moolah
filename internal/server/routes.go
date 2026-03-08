@@ -8,12 +8,98 @@ import (
 func (s *Server) routes() http.Handler {
 	mux := http.NewServeMux()
 
+<<<<<<< Updated upstream
 	// Placeholder routes until Task 1.5.4+ handlers are built
 	mux.HandleFunc("/healthz", s.handleHealthz)
+=======
+	// 1. Auth & Public Routes
+	mux.HandleFunc("GET /healthz", s.handleHealthz)
+
+	// Inject middleware helpers
+	requireAuth := middleware.RequireAuth(s.tokenParser)
+	rateLimit := s.rateLimiterStore.OTPRateLimiter()
+	idempotency := middleware.Idempotency(s.idempotencyStore)
+
+	// Auth routes (Task 1.5.4)
+	mux.Handle("POST /v1/auth/otp/request", rateLimit(http.HandlerFunc(s.authHandler.RequestOTP)))
+	mux.Handle("POST /v1/auth/otp/verify", rateLimit(http.HandlerFunc(s.authHandler.VerifyOTP)))
+	mux.Handle("POST /v1/auth/token/refresh", requireAuth(http.HandlerFunc(s.authHandler.RefreshToken)))
+
+	// 2. Tenant Routes (Task 1.5.5)
+	mux.Handle("GET /v1/tenants/me", requireAuth(http.HandlerFunc(s.handleGetTenantMe)))
+	mux.Handle("PATCH /v1/tenants/me", requireAuth(idempotency(http.HandlerFunc(s.handleUpdateTenantMe))))
+	mux.Handle("POST /v1/tenants/me/invite", requireAuth(idempotency(http.HandlerFunc(s.handleInviteUser))))
+
+	// 3. Account Routes (Task 1.5.6)
+	mux.Handle("GET /v1/accounts", requireAuth(http.HandlerFunc(s.handleListAccounts)))
+	mux.Handle("POST /v1/accounts", requireAuth(idempotency(http.HandlerFunc(s.handleCreateAccount))))
+	mux.Handle("GET /v1/accounts/{id}", requireAuth(http.HandlerFunc(s.handleGetAccountByID)))
+	mux.Handle("PATCH /v1/accounts/{id}", requireAuth(idempotency(http.HandlerFunc(s.handleUpdateAccount))))
+	mux.Handle("DELETE /v1/accounts/{id}", requireAuth(http.HandlerFunc(s.handleDeleteAccount)))
+
+	// 4. Category Routes (Task 1.5.7)
+	mux.Handle("GET /v1/categories", requireAuth(http.HandlerFunc(s.handleListCategories)))
+	mux.Handle("POST /v1/categories", requireAuth(idempotency(http.HandlerFunc(s.handleCreateCategory))))
+	mux.Handle("GET /v1/categories/{id}", requireAuth(http.HandlerFunc(s.handleGetCategoryByID)))
+	mux.Handle("PATCH /v1/categories/{id}", requireAuth(idempotency(http.HandlerFunc(s.handleUpdateCategory))))
+	mux.Handle("DELETE /v1/categories/{id}", requireAuth(http.HandlerFunc(s.handleDeleteCategory)))
+
+	// 5. Transaction Routes (Task 1.5.8)
+	mux.Handle("GET /v1/transactions", requireAuth(http.HandlerFunc(s.handleListTransactions)))
+	mux.Handle("POST /v1/transactions", requireAuth(idempotency(http.HandlerFunc(s.handleCreateTransaction))))
+	mux.Handle("GET /v1/transactions/{id}", requireAuth(http.HandlerFunc(s.handleGetTransactionByID)))
+	mux.Handle("PATCH /v1/transactions/{id}", requireAuth(idempotency(http.HandlerFunc(s.handleUpdateTransaction))))
+	mux.Handle("DELETE /v1/transactions/{id}", requireAuth(http.HandlerFunc(s.handleDeleteTransaction)))
+
+	// 6. Admin Routes (Task 1.5.9)
+	sysadminOnly := middleware.RequireRole(domain.RoleSysadmin)
+	mux.Handle("GET /v1/admin/tenants", requireAuth(sysadminOnly(http.HandlerFunc(s.handleAdminListTenants))))
+	mux.Handle("GET /v1/admin/tenants/{id}", requireAuth(sysadminOnly(http.HandlerFunc(s.handleAdminGetTenant))))
+	mux.Handle("PATCH /v1/admin/tenants/{id}/plan", requireAuth(sysadminOnly(http.HandlerFunc(s.handleAdminUpdatePlan))))
+	mux.Handle("POST /v1/admin/tenants/{id}/suspend", requireAuth(sysadminOnly(http.HandlerFunc(s.handleAdminSuspendTenant))))
+	mux.Handle("POST /v1/admin/tenants/{id}/restore", requireAuth(sysadminOnly(http.HandlerFunc(s.handleAdminRestoreTenant))))
+	mux.Handle("DELETE /v1/admin/tenants/{id}", requireAuth(sysadminOnly(http.HandlerFunc(s.handleAdminHardDeleteTenant))))
+	mux.Handle("GET /v1/admin/users", requireAuth(sysadminOnly(http.HandlerFunc(s.handleAdminListUsers))))
+	mux.Handle("DELETE /v1/admin/users/{id}", requireAuth(sysadminOnly(http.HandlerFunc(s.handleAdminForceDeleteUser))))
+	mux.Handle("GET /v1/admin/audit-logs", requireAuth(sysadminOnly(http.HandlerFunc(s.handleAdminListAuditLogs))))
+>>>>>>> Stashed changes
 
 	return mux
 }
 
+<<<<<<< Updated upstream
+=======
+// TODO: Implement handlers in Tasks 1.5.4 - 1.5.9
+
+func (s *Server) handleGetTenantMe(w http.ResponseWriter, r *http.Request)           {}
+func (s *Server) handleUpdateTenantMe(w http.ResponseWriter, r *http.Request)        {}
+func (s *Server) handleInviteUser(w http.ResponseWriter, r *http.Request)            {}
+func (s *Server) handleListAccounts(w http.ResponseWriter, r *http.Request)          {}
+func (s *Server) handleCreateAccount(w http.ResponseWriter, r *http.Request)         {}
+func (s *Server) handleGetAccountByID(w http.ResponseWriter, r *http.Request)        {}
+func (s *Server) handleUpdateAccount(w http.ResponseWriter, r *http.Request)         {}
+func (s *Server) handleDeleteAccount(w http.ResponseWriter, r *http.Request)         {}
+func (s *Server) handleListCategories(w http.ResponseWriter, r *http.Request)        {}
+func (s *Server) handleCreateCategory(w http.ResponseWriter, r *http.Request)        {}
+func (s *Server) handleGetCategoryByID(w http.ResponseWriter, r *http.Request)       {}
+func (s *Server) handleUpdateCategory(w http.ResponseWriter, r *http.Request)        {}
+func (s *Server) handleDeleteCategory(w http.ResponseWriter, r *http.Request)        {}
+func (s *Server) handleListTransactions(w http.ResponseWriter, r *http.Request)      {}
+func (s *Server) handleCreateTransaction(w http.ResponseWriter, r *http.Request)     {}
+func (s *Server) handleGetTransactionByID(w http.ResponseWriter, r *http.Request)    {}
+func (s *Server) handleUpdateTransaction(w http.ResponseWriter, r *http.Request)     {}
+func (s *Server) handleDeleteTransaction(w http.ResponseWriter, r *http.Request)     {}
+func (s *Server) handleAdminListTenants(w http.ResponseWriter, r *http.Request)      {}
+func (s *Server) handleAdminGetTenant(w http.ResponseWriter, r *http.Request)        {}
+func (s *Server) handleAdminUpdatePlan(w http.ResponseWriter, r *http.Request)       {}
+func (s *Server) handleAdminSuspendTenant(w http.ResponseWriter, r *http.Request)    {}
+func (s *Server) handleAdminRestoreTenant(w http.ResponseWriter, r *http.Request)    {}
+func (s *Server) handleAdminHardDeleteTenant(w http.ResponseWriter, r *http.Request) {}
+func (s *Server) handleAdminListUsers(w http.ResponseWriter, r *http.Request)        {}
+func (s *Server) handleAdminForceDeleteUser(w http.ResponseWriter, r *http.Request)  {}
+func (s *Server) handleAdminListAuditLogs(w http.ResponseWriter, r *http.Request)    {}
+
+>>>>>>> Stashed changes
 func (s *Server) handleHealthz(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		w.WriteHeader(http.StatusMethodNotAllowed)

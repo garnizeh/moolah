@@ -35,17 +35,10 @@ func main() {
 	l := logger.New(nil, cfg.LogLevel, cfg.LogFormat)
 	slog.SetDefault(l)
 
-	// 3. Connect DB
-	dbPool, err := pgxpool.New(ctx, cfg.DatabaseURL)
+	// Connect DB, run migrations, and create sqlc querier
+	querier, err := db.Querier(ctx, cfg.DatabaseURL)
 	if err != nil {
 		slog.Error("failed to connect to database", "err", err)
-		os.Exit(1)
-	}
-	defer dbPool.Close()
-
-	// 4. Run Migrations
-	if err := runMigrations(dbPool); err != nil {
-		slog.Error("failed to run migrations", "err", err)
 		os.Exit(1)
 	}
 
