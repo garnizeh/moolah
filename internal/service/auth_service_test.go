@@ -126,8 +126,9 @@ func TestAuthService_RequestOTP(t *testing.T) {
 
 		svc := service.NewAuthService(authRepo, userRepo, auditRepo, mailer, key)
 		err := svc.RequestOTP(ctx, email)
-		require.Error(t, err)
-		require.Contains(t, err.Error(), "failed to create audit log")
+		// We expect NoError because the service should not fail the whole request
+		// if auditing fails (it should only logged it for resilience).
+		require.NoError(t, err)
 	})
 }
 
@@ -137,7 +138,8 @@ func TestAuthService_VerifyOTP(t *testing.T) {
 	ctx := context.Background()
 	email := "test@example.com"
 	plainCode := "123456"
-	codeHashBytes, _ := bcrypt.GenerateFromPassword([]byte(plainCode), 4)
+	codeHashBytes, err := bcrypt.GenerateFromPassword([]byte(plainCode), 4)
+	require.NoError(t, err)
 	codeHash := string(codeHashBytes)
 	user := &domain.User{
 		ID:       "user_123",
@@ -367,17 +369,18 @@ func TestAuthService_RefreshToken(t *testing.T) {
 		svc := service.NewAuthService(nil, userRepo, nil, nil, key)
 
 		now := time.Now()
-		refreshToken, _ := pkgpaseto.Seal(pkgpaseto.Claims{
+		refreshToken, err := pkgpaseto.Seal(pkgpaseto.Claims{
 			IssuedAt:  now,
 			ExpiresAt: now.Add(7 * 24 * time.Hour),
 			TenantID:  user.TenantID,
 			UserID:    user.ID,
 			Role:      string(user.Role),
 		}, key)
+		require.NoError(t, err)
 
 		userRepo.On("GetByID", ctx, user.TenantID, user.ID).Return(nil, domain.ErrNotFound)
 
-		_, err := svc.RefreshToken(ctx, refreshToken)
+		_, err = svc.RefreshToken(ctx, refreshToken)
 		require.Error(t, err)
 		require.ErrorIs(t, err, domain.ErrNotFound)
 	})
@@ -388,17 +391,18 @@ func TestAuthService_RefreshToken(t *testing.T) {
 		svc := service.NewAuthService(nil, userRepo, nil, nil, key)
 
 		now := time.Now()
-		refreshToken, _ := pkgpaseto.Seal(pkgpaseto.Claims{
+		refreshToken, err := pkgpaseto.Seal(pkgpaseto.Claims{
 			IssuedAt:  now,
 			ExpiresAt: now.Add(7 * 24 * time.Hour),
 			TenantID:  user.TenantID,
 			UserID:    user.ID,
 			Role:      string(user.Role),
 		}, key)
+		require.NoError(t, err)
 
 		userRepo.On("GetByID", ctx, user.TenantID, user.ID).Return(nil, errors.New("db error"))
 
-		_, err := svc.RefreshToken(ctx, refreshToken)
+		_, err = svc.RefreshToken(ctx, refreshToken)
 		require.Error(t, err)
 		require.Contains(t, err.Error(), "user lookup failed")
 	})

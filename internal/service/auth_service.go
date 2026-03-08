@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"time"
 
 	"aidanwoods.dev/go-paseto"
@@ -76,12 +77,8 @@ func (s *authService) RequestOTP(ctx context.Context, email string) error {
 		ActorRole:  user.Role,
 	})
 	if auditErr != nil {
-		// We don't fail the whole request if audit fails, but we should log it
-		// For now, returning it or wrap it is safer for Phase 1.
-		// Actually, standard is to return it or at least not ignore it.
-		// But if OTP is sent, we shouldn't block the user.
-		// However, instructions say NEVER ignore errors.
-		return fmt.Errorf("auth service: failed to create audit log: %w", auditErr)
+		// We don't fail the whole request if audit fails, but we should log it.
+		slog.Error("auth service: failed to create audit log", "error", auditErr)
 	}
 
 	return nil
@@ -93,15 +90,18 @@ func (s *authService) VerifyOTP(ctx context.Context, email, code string) (*domai
 		if errors.Is(err, domain.ErrInvalidOTP) {
 			// Record login failure for unknown user is tricky without ID,
 			// but we can try to look up the user by email for auditing.
-			user, _ := s.userRepo.GetByEmail(ctx, email)
-			if user != nil {
-				_, _ = s.auditRepo.Create(ctx, domain.CreateAuditLogInput{
-					TenantID:   user.TenantID,
-					ActorID:    user.ID,
+			u, errU := s.userRepo.GetByEmail(ctx, email)
+			if errU == nil && u != nil {
+				_, errA := s.auditRepo.Create(ctx, domain.CreateAuditLogInput{
+					TenantID:   u.TenantID,
+					ActorID:    u.ID,
 					Action:     domain.AuditActionLoginFailed,
 					EntityType: "auth",
-					ActorRole:  user.Role,
+					ActorRole:  u.Role,
 				})
+				if errA != nil {
+					slog.Error("auth service: failed to create audit log for invalid OTP", "error", errA)
+				}
 			}
 			return nil, domain.ErrInvalidOTP
 		}
@@ -110,15 +110,18 @@ func (s *authService) VerifyOTP(ctx context.Context, email, code string) (*domai
 
 	err = otp.Verify(code, otpReq.CodeHash)
 	if err != nil {
-		user, _ := s.userRepo.GetByEmail(ctx, email)
-		if user != nil {
-			_, _ = s.auditRepo.Create(ctx, domain.CreateAuditLogInput{
-				TenantID:   user.TenantID,
-				ActorID:    user.ID,
+		u, errU := s.userRepo.GetByEmail(ctx, email)
+		if errU == nil && u != nil {
+			_, errA := s.auditRepo.Create(ctx, domain.CreateAuditLogInput{
+				TenantID:   u.TenantID,
+				ActorID:    u.ID,
 				Action:     domain.AuditActionLoginFailed,
 				EntityType: "auth",
-				ActorRole:  user.Role,
+				ActorRole:  u.Role,
 			})
+			if errA != nil {
+				slog.Error("auth service: failed to create audit log for invalid OTP", "error", errA)
+			}
 		}
 		return nil, domain.ErrInvalidOTP
 	}

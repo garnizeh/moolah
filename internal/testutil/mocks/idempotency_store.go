@@ -27,7 +27,14 @@ func (m *IdempotencyStore) Get(ctx context.Context, key string) (*domain.CachedR
 	if err := args.Error(1); err != nil {
 		return nil, fmt.Errorf("mock idempotency Get: %w", err)
 	}
-	return args.Get(0).(*domain.CachedResponse), nil
+
+	// Type assertion with error handling to satisfy govet and errcheck
+	res, ok := args.Get(0).(*domain.CachedResponse)
+	if !ok {
+		return nil, fmt.Errorf("mock idempotency Get: unexpected type %T", args.Get(0))
+	}
+
+	return res, nil
 }
 
 func (m *IdempotencyStore) SetLocked(ctx context.Context, key string, ttl time.Duration) (bool, error) {

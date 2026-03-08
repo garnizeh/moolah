@@ -1,9 +1,9 @@
 # Task 1.4.2 — `service/tenant_service.go` + unit tests
 
 > **Roadmap Ref:** Phase 1 — MVP › 1.4 Service Layer
-> **Status:** 🔵 `backlog`
+> **Status:** � `in-progress`
 > **Last Updated:** 2026-03-07
-> **Assignee:** —
+> **Assignee:** GitHub Copilot
 > **Estimated Effort:** M
 
 ---

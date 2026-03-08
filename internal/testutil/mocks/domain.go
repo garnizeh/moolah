@@ -15,6 +15,7 @@ type AuthRepository struct {
 
 func (m *AuthRepository) CreateOTPRequest(ctx context.Context, input domain.CreateOTPRequestInput) (*domain.OTPRequest, error) {
 	args := m.Called(ctx, input)
+
 	var err error
 	if e := args.Error(1); e != nil {
 		err = fmt.Errorf("mock CreateOTPRequest: %w", e)
@@ -22,7 +23,14 @@ func (m *AuthRepository) CreateOTPRequest(ctx context.Context, input domain.Crea
 	if args.Get(0) == nil {
 		return nil, err
 	}
-	return args.Get(0).(*domain.OTPRequest), err
+
+	// Type assertion with error handling to satisfy govet and errcheck
+	res, ok := args.Get(0).(*domain.OTPRequest)
+	if !ok {
+		return nil, fmt.Errorf("mock CreateOTPRequest: unexpected type %T", args.Get(0))
+	}
+
+	return res, err
 }
 
 func (m *AuthRepository) GetActiveOTPRequest(ctx context.Context, email string) (*domain.OTPRequest, error) {
@@ -34,7 +42,14 @@ func (m *AuthRepository) GetActiveOTPRequest(ctx context.Context, email string) 
 	if args.Get(0) == nil {
 		return nil, err
 	}
-	return args.Get(0).(*domain.OTPRequest), err
+
+	// Type assertion with error handling to satisfy govet and errcheck
+	res, ok := args.Get(0).(*domain.OTPRequest)
+	if !ok {
+		return nil, fmt.Errorf("mock GetActiveOTPRequest: unexpected type %T", args.Get(0))
+	}
+
+	return res, err
 }
 
 func (m *AuthRepository) MarkOTPUsed(ctx context.Context, id string) error {
@@ -69,7 +84,14 @@ func (m *UserRepository) Create(ctx context.Context, input domain.CreateUserInpu
 	if args.Get(0) == nil {
 		return nil, err
 	}
-	return args.Get(0).(*domain.User), err
+
+	// Type assertion with error handling to satisfy govet and errcheck
+	res, ok := args.Get(0).(*domain.User)
+	if !ok {
+		return nil, fmt.Errorf("mock UserRepository.Create: unexpected type %T", args.Get(0))
+	}
+
+	return res, err
 }
 
 func (m *UserRepository) GetByID(ctx context.Context, tenantID, id string) (*domain.User, error) {
@@ -81,7 +103,14 @@ func (m *UserRepository) GetByID(ctx context.Context, tenantID, id string) (*dom
 	if args.Get(0) == nil {
 		return nil, err
 	}
-	return args.Get(0).(*domain.User), err
+
+	// Type assertion with error handling to satisfy govet and errcheck
+	res, ok := args.Get(0).(*domain.User)
+	if !ok {
+		return nil, fmt.Errorf("mock UserRepository.GetByID: unexpected type %T", args.Get(0))
+	}
+
+	return res, err
 }
 
 func (m *UserRepository) GetByEmail(ctx context.Context, email string) (*domain.User, error) {
@@ -93,7 +122,14 @@ func (m *UserRepository) GetByEmail(ctx context.Context, email string) (*domain.
 	if args.Get(0) == nil {
 		return nil, err
 	}
-	return args.Get(0).(*domain.User), err
+
+	// Type assertion with error handling to satisfy govet and errcheck
+	res, ok := args.Get(0).(*domain.User)
+	if !ok {
+		return nil, fmt.Errorf("mock UserRepository.GetByEmail: unexpected type %T", args.Get(0))
+	}
+
+	return res, err
 }
 
 func (m *UserRepository) ListByTenant(ctx context.Context, tenantID string) ([]domain.User, error) {
@@ -105,7 +141,14 @@ func (m *UserRepository) ListByTenant(ctx context.Context, tenantID string) ([]d
 	if args.Get(0) == nil {
 		return nil, err
 	}
-	return args.Get(0).([]domain.User), err
+
+	// Type assertion with error handling to satisfy govet and errcheck
+	res, ok := args.Get(0).([]domain.User)
+	if !ok {
+		return nil, fmt.Errorf("mock UserRepository.ListByTenant: unexpected type %T", args.Get(0))
+	}
+
+	return res, err
 }
 
 func (m *UserRepository) Update(ctx context.Context, tenantID, id string, input domain.UpdateUserInput) (*domain.User, error) {
@@ -117,7 +160,14 @@ func (m *UserRepository) Update(ctx context.Context, tenantID, id string, input 
 	if args.Get(0) == nil {
 		return nil, err
 	}
-	return args.Get(0).(*domain.User), err
+
+	// Type assertion with error handling to satisfy govet and errcheck
+	res, ok := args.Get(0).(*domain.User)
+	if !ok {
+		return nil, fmt.Errorf("mock UserRepository.Update: unexpected type %T", args.Get(0))
+	}
+
+	return res, err
 }
 
 func (m *UserRepository) UpdateLastLogin(ctx context.Context, id string) error {
@@ -152,7 +202,14 @@ func (m *AuditRepository) Create(ctx context.Context, input domain.CreateAuditLo
 	if args.Get(0) == nil {
 		return nil, err
 	}
-	return args.Get(0).(*domain.AuditLog), err
+
+	// Type assertion with error handling to satisfy govet and errcheck
+	res, ok := args.Get(0).(*domain.AuditLog)
+	if !ok {
+		return nil, fmt.Errorf("mock AuditRepository.Create: unexpected type %T", args.Get(0))
+	}
+
+	return res, err
 }
 
 func (m *AuditRepository) ListByTenant(ctx context.Context, tenantID string, params domain.ListAuditLogsParams) ([]domain.AuditLog, error) {
@@ -164,7 +221,14 @@ func (m *AuditRepository) ListByTenant(ctx context.Context, tenantID string, par
 	if args.Get(0) == nil {
 		return nil, err
 	}
-	return args.Get(0).([]domain.AuditLog), err
+
+	// Type assertion with error handling to satisfy govet and errcheck
+	res, ok := args.Get(0).([]domain.AuditLog)
+	if !ok {
+		return nil, fmt.Errorf("mock AuditRepository.ListByTenant: unexpected type %T", args.Get(0))
+	}
+
+	return res, err
 }
 
 func (m *AuditRepository) ListByEntity(ctx context.Context, tenantID, entityType, entityID string) ([]domain.AuditLog, error) {
@@ -176,7 +240,105 @@ func (m *AuditRepository) ListByEntity(ctx context.Context, tenantID, entityType
 	if args.Get(0) == nil {
 		return nil, err
 	}
-	return args.Get(0).([]domain.AuditLog), err
+
+	// Type assertion with error handling to satisfy govet and errcheck
+	res, ok := args.Get(0).([]domain.AuditLog)
+	if !ok {
+		return nil, fmt.Errorf("mock AuditRepository.ListByEntity: unexpected type %T", args.Get(0))
+	}
+
+	return res, err
 }
 
 var _ domain.AuditRepository = (*AuditRepository)(nil)
+
+// TenantRepository is a testify/mock implementation of domain.TenantRepository.
+type TenantRepository struct {
+	mock.Mock
+}
+
+func (m *TenantRepository) Create(ctx context.Context, input domain.CreateTenantInput) (*domain.Tenant, error) {
+	args := m.Called(ctx, input)
+	var err error
+	if e := args.Error(1); e != nil {
+		err = fmt.Errorf("mock TenantRepository.Create: %w", e)
+	}
+	if args.Get(0) == nil {
+		return nil, err
+	}
+
+	// Type assertion with error handling to satisfy govet and errcheck
+	res, ok := args.Get(0).(*domain.Tenant)
+	if !ok {
+		return nil, fmt.Errorf("mock TenantRepository.Create: unexpected type %T", args.Get(0))
+	}
+
+	return res, err
+}
+
+func (m *TenantRepository) GetByID(ctx context.Context, id string) (*domain.Tenant, error) {
+	args := m.Called(ctx, id)
+	var err error
+	if e := args.Error(1); e != nil {
+		err = fmt.Errorf("mock TenantRepository.GetByID: %w", e)
+	}
+	if args.Get(0) == nil {
+		return nil, err
+	}
+
+	// Type assertion with error handling to satisfy govet and errcheck
+	res, ok := args.Get(0).(*domain.Tenant)
+	if !ok {
+		return nil, fmt.Errorf("mock TenantRepository.GetByID: unexpected type %T", args.Get(0))
+	}
+
+	return res, err
+}
+
+func (m *TenantRepository) List(ctx context.Context) ([]domain.Tenant, error) {
+	args := m.Called(ctx)
+	var err error
+	if e := args.Error(1); e != nil {
+		err = fmt.Errorf("mock TenantRepository.List: %w", e)
+	}
+	if args.Get(0) == nil {
+		return nil, err
+	}
+
+	// Type assertion with error handling to satisfy govet and errcheck
+	res, ok := args.Get(0).([]domain.Tenant)
+	if !ok {
+		return nil, fmt.Errorf("mock TenantRepository.List: unexpected type %T", args.Get(0))
+	}
+
+	return res, err
+}
+
+func (m *TenantRepository) Update(ctx context.Context, id string, input domain.UpdateTenantInput) (*domain.Tenant, error) {
+	args := m.Called(ctx, id, input)
+	var err error
+	if e := args.Error(1); e != nil {
+		err = fmt.Errorf("mock TenantRepository.Update: %w", e)
+	}
+	if args.Get(0) == nil {
+		return nil, err
+	}
+
+	// Type assertion with error handling to satisfy govet and errcheck
+	res, ok := args.Get(0).(*domain.Tenant)
+	if !ok {
+		return nil, fmt.Errorf("mock TenantRepository.Update: unexpected type %T", args.Get(0))
+	}
+
+	return res, err
+}
+
+func (m *TenantRepository) Delete(ctx context.Context, id string) error {
+	args := m.Called(ctx, id)
+	if e := args.Error(0); e != nil {
+		return fmt.Errorf("mock TenantRepository.Delete: %w", e)
+	}
+	return nil
+}
+
+var _ domain.TenantRepository = (*TenantRepository)(nil)
