@@ -7,21 +7,26 @@ import (
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
+//nolint:paralleltest // These tests mutate the process-wide default slog logger.
 func TestRequestLogger(t *testing.T) {
-	t.Parallel()
-
 	t.Run("logs every request with correct fields", func(t *testing.T) {
-		t.Parallel()
 		var logBuf bytes.Buffer
-		logger := slog.New(slog.NewJSONHandler(&logBuf, nil))
+		previousLogger := slog.Default()
+		t.Cleanup(func() {
+			slog.SetDefault(previousLogger)
+		})
 
-		handler := RequestLogger(logger)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		logger := slog.New(slog.NewJSONHandler(&logBuf, nil))
+		slog.SetDefault(logger)
+
+		handler := RequestLogger()(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusCreated)
 			if _, err := w.Write([]byte("ok")); err != nil {
 				t.Errorf("failed to write response: %v", err)
@@ -47,7 +52,7 @@ func TestRequestLogger(t *testing.T) {
 			Latency   int64  `json:"latency_ms"`
 		}
 
-		err := json.Unmarshal(logBuf.Bytes(), &logEntry)
+		err := json.Unmarshal(lastLogLine(t, &logBuf), &logEntry)
 		require.NoError(t, err)
 
 		assert.Equal(t, "request", logEntry.Msg)
@@ -59,11 +64,16 @@ func TestRequestLogger(t *testing.T) {
 	})
 
 	t.Run("captures authentic identity from context", func(t *testing.T) {
-		t.Parallel()
 		var logBuf bytes.Buffer
-		logger := slog.New(slog.NewJSONHandler(&logBuf, nil))
+		previousLogger := slog.Default()
+		t.Cleanup(func() {
+			slog.SetDefault(previousLogger)
+		})
 
-		handler := RequestLogger(logger)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		logger := slog.New(slog.NewJSONHandler(&logBuf, nil))
+		slog.SetDefault(logger)
+
+		handler := RequestLogger()(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
 		}))
 
@@ -79,7 +89,7 @@ func TestRequestLogger(t *testing.T) {
 		handler.ServeHTTP(rr, req)
 
 		var logEntry map[string]any
-		err := json.Unmarshal(logBuf.Bytes(), &logEntry)
+		err := json.Unmarshal(lastLogLine(t, &logBuf), &logEntry)
 		require.NoError(t, err)
 
 		assert.Equal(t, tenantID, logEntry["tenant_id"])
@@ -87,14 +97,19 @@ func TestRequestLogger(t *testing.T) {
 	})
 
 	t.Run("handles default 200 status correctly", func(t *testing.T) {
-		t.Parallel()
 		var logBuf bytes.Buffer
-		logger := slog.New(slog.NewJSONHandler(&logBuf, nil))
+		previousLogger := slog.Default()
+		t.Cleanup(func() {
+			slog.SetDefault(previousLogger)
+		})
 
-		handler := RequestLogger(logger)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		logger := slog.New(slog.NewJSONHandler(&logBuf, nil))
+		slog.SetDefault(logger)
+
+		handler := RequestLogger()(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			// No WriteHeader called
 			if _, err := w.Write([]byte("ok")); err != nil {
-				panic(err)
+				t.Fatalf("failed to write response: %v", err)
 			}
 		}))
 
@@ -104,9 +119,18 @@ func TestRequestLogger(t *testing.T) {
 		handler.ServeHTTP(rr, req)
 
 		var logEntry map[string]any
-		err := json.Unmarshal(logBuf.Bytes(), &logEntry)
+		err := json.Unmarshal(lastLogLine(t, &logBuf), &logEntry)
 		require.NoError(t, err)
 
 		assert.InDelta(t, float64(http.StatusOK), logEntry["status"], 0.01) // JSON unmarshals ints to float64 for map[string]any
 	})
+}
+
+func lastLogLine(t *testing.T, logBuf *bytes.Buffer) []byte {
+	t.Helper()
+
+	lines := strings.Split(strings.TrimSpace(logBuf.String()), "\n")
+	require.NotEmpty(t, lines)
+
+	return []byte(lines[len(lines)-1])
 }

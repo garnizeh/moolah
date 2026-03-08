@@ -15,7 +15,7 @@ import (
 
 const (
 	otpRateLimit  = 5
-	otpRatePeriod = 15 * time.Minute
+	otpRatePeriod = 1 * time.Minute
 )
 
 type emailLimiter struct {
@@ -25,21 +25,21 @@ type emailLimiter struct {
 
 // RateLimiterStore holds the state for the in-memory rate limiters.
 type RateLimiterStore struct {
-	log      *slog.Logger
 	limiters map[string]*emailLimiter
+	stop     chan struct{}
 	mu       sync.RWMutex
 }
 
 // NewRateLimiterStore creates a new store and starts the cleanup goroutine.
-func NewRateLimiterStore(log *slog.Logger) *RateLimiterStore {
-	return NewRateLimiterStoreWithInterval(log, otpRatePeriod)
+func NewRateLimiterStore() *RateLimiterStore {
+	return NewRateLimiterStoreWithInterval(otpRatePeriod)
 }
 
 // NewRateLimiterStoreWithInterval is for testing cleanup with custom intervals.
-func NewRateLimiterStoreWithInterval(log *slog.Logger, interval time.Duration) *RateLimiterStore {
+func NewRateLimiterStoreWithInterval(interval time.Duration) *RateLimiterStore {
 	store := &RateLimiterStore{
 		limiters: make(map[string]*emailLimiter),
-		log:      log,
+		stop:     make(chan struct{}),
 	}
 
 	go store.cleanup(interval)
@@ -51,15 +51,25 @@ func (s *RateLimiterStore) cleanup(interval time.Duration) {
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
 
-	for range ticker.C {
-		s.mu.Lock()
-		for email, l := range s.limiters {
-			if time.Since(l.lastSeen) > interval {
-				delete(s.limiters, email)
+	for {
+		select {
+		case <-ticker.C:
+			s.mu.Lock()
+			for email, l := range s.limiters {
+				if time.Since(l.lastSeen) > interval {
+					delete(s.limiters, email)
+				}
 			}
+			s.mu.Unlock()
+		case <-s.stop:
+			return
 		}
-		s.mu.Unlock()
 	}
+}
+
+// Close stops the cleanup goroutine.
+func (s *RateLimiterStore) Close() {
+	close(s.stop)
 }
 
 // OTPRateLimiter returns a middleware that enforces per-email OTP rate limiting.
@@ -74,7 +84,7 @@ func (s *RateLimiterStore) OTPRateLimiter() func(http.Handler) http.Handler {
 			// Read and buffer the body
 			body, err := io.ReadAll(r.Body)
 			if err != nil {
-				s.log.Error("failed to read request body in rate limiter", "error", err)
+				slog.Error("failed to read request body in rate limiter", "error", err)
 				next.ServeHTTP(w, r)
 				return
 			}
@@ -130,7 +140,7 @@ func (s *RateLimiterStore) OTPRateLimiter() func(http.Handler) http.Handler {
 					// Fallback if JSON encoding fails
 					_, err = w.Write([]byte(`{"error":{"code":"INTERNAL_ERROR","message":"failed to encode rate limit error"}}`))
 					if err != nil {
-						s.log.Error("failed to write fallback rate limit response", "error", err)
+						slog.Error("failed to write fallback rate limit response", "error", err)
 					}
 				}
 				return

@@ -172,3 +172,44 @@ func TestPaseto(t *testing.T) {
 		})
 	})
 }
+
+func TestNewTokenParser(t *testing.T) {
+	t.Parallel()
+
+	key := paseto.NewV4SymmetricKey()
+	now := time.Now().Truncate(time.Second)
+	claims := Claims{
+		TenantID:  "tenant-1",
+		UserID:    "user-1",
+		Role:      "admin",
+		IssuedAt:  now,
+		ExpiresAt: now.Add(time.Hour),
+	}
+
+	tokenStr, err := Seal(claims, key)
+	require.NoError(t, err)
+
+	parser := NewTokenParser(key)
+	parsed, err := parser(tokenStr)
+	require.NoError(t, err)
+	assert.Equal(t, claims.TenantID, parsed.TenantID)
+}
+
+func TestV4SymmetricKeyFromHex(t *testing.T) {
+	t.Parallel()
+
+	t.Run("success", func(t *testing.T) {
+		t.Parallel()
+		key := paseto.NewV4SymmetricKey()
+		parsed, err := V4SymmetricKeyFromHex(key.ExportHex())
+		require.NoError(t, err)
+		assert.Equal(t, key.ExportHex(), parsed.ExportHex())
+	})
+
+	t.Run("invalid hex", func(t *testing.T) {
+		t.Parallel()
+		_, err := V4SymmetricKeyFromHex("not-hex")
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to parse paseto secret key")
+	})
+}

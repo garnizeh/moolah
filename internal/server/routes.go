@@ -20,9 +20,9 @@ func (s *Server) routes() http.Handler {
 	idempotency := middleware.Idempotency(s.idempotencyStore)
 
 	// Auth routes (Task 1.5.4)
-	mux.Handle("POST /v1/auth/otp/request", rateLimit(http.HandlerFunc(s.handleRequestOTP)))
-	mux.Handle("POST /v1/auth/otp/verify", rateLimit(http.HandlerFunc(s.handleVerifyOTP)))
-	mux.Handle("POST /v1/auth/token/refresh", requireAuth(http.HandlerFunc(s.handleRefreshToken)))
+	mux.Handle("POST /v1/auth/otp/request", rateLimit(http.HandlerFunc(s.authHandler.RequestOTP)))
+	mux.Handle("POST /v1/auth/otp/verify", rateLimit(http.HandlerFunc(s.authHandler.VerifyOTP)))
+	mux.Handle("POST /v1/auth/token/refresh", requireAuth(http.HandlerFunc(s.authHandler.RefreshToken)))
 
 	// 2. Tenant Routes (Task 1.5.5)
 	mux.Handle("GET /v1/tenants/me", requireAuth(http.HandlerFunc(s.handleGetTenantMe)))
@@ -67,9 +67,6 @@ func (s *Server) routes() http.Handler {
 
 // TODO: Implement handlers in Tasks 1.5.4 - 1.5.9
 
-func (s *Server) handleRequestOTP(w http.ResponseWriter, r *http.Request)            {}
-func (s *Server) handleVerifyOTP(w http.ResponseWriter, r *http.Request)             {}
-func (s *Server) handleRefreshToken(w http.ResponseWriter, r *http.Request)          {}
 func (s *Server) handleGetTenantMe(w http.ResponseWriter, r *http.Request)           {}
 func (s *Server) handleUpdateTenantMe(w http.ResponseWriter, r *http.Request)        {}
 func (s *Server) handleInviteUser(w http.ResponseWriter, r *http.Request)            {}

@@ -1,0 +1,17 @@
+info:
+  name: token refresh
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: http://localhost:8080/v1/auth/token/refresh
+  auth:
+    type: bearer
+    token: "123"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

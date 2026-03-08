@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"io"
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
@@ -19,10 +20,13 @@ import (
 func TestAuthHandler_RequestOTP(t *testing.T) {
 	t.Parallel()
 
+	noopHandler := slog.NewTextHandler(io.Discard, nil)
+	slog.SetDefault(slog.New(noopHandler))
+
 	t.Run("success", func(t *testing.T) {
 		t.Parallel()
 		service := new(mocks.AuthService)
-		h := NewAuthHandler(service, slog.Default())
+		h := NewAuthHandler(service)
 
 		email := "test@example.com"
 		service.On("RequestOTP", mock.Anything, email).Return(nil)
@@ -41,7 +45,7 @@ func TestAuthHandler_RequestOTP(t *testing.T) {
 	t.Run("invalid_email", func(t *testing.T) {
 		t.Parallel()
 		service := new(mocks.AuthService)
-		h := NewAuthHandler(service, slog.Default())
+		h := NewAuthHandler(service)
 
 		reqBody, err := json.Marshal(RequestOTPRequest{Email: "invalid-email"})
 		require.NoError(t, err)
@@ -56,7 +60,7 @@ func TestAuthHandler_RequestOTP(t *testing.T) {
 	t.Run("rate_limited", func(t *testing.T) {
 		t.Parallel()
 		service := new(mocks.AuthService)
-		h := NewAuthHandler(service, slog.Default())
+		h := NewAuthHandler(service)
 
 		email := "test@example.com"
 		service.On("RequestOTP", mock.Anything, email).Return(domain.ErrOTPRateLimited)
@@ -74,7 +78,7 @@ func TestAuthHandler_RequestOTP(t *testing.T) {
 	t.Run("user_not_found_returns_accepted", func(t *testing.T) {
 		t.Parallel()
 		service := new(mocks.AuthService)
-		h := NewAuthHandler(service, slog.Default())
+		h := NewAuthHandler(service)
 
 		email := "unknown@example.com"
 		service.On("RequestOTP", mock.Anything, email).Return(domain.ErrNotFound)
@@ -92,7 +96,7 @@ func TestAuthHandler_RequestOTP(t *testing.T) {
 	t.Run("invalid_request_body", func(t *testing.T) {
 		t.Parallel()
 		service := new(mocks.AuthService)
-		h := NewAuthHandler(service, slog.Default())
+		h := NewAuthHandler(service)
 
 		req := httptest.NewRequest(http.MethodPost, "/v1/auth/otp/request", bytes.NewReader([]byte("invalid")))
 		rr := httptest.NewRecorder()
@@ -105,7 +109,7 @@ func TestAuthHandler_RequestOTP(t *testing.T) {
 	t.Run("internal_error", func(t *testing.T) {
 		t.Parallel()
 		service := new(mocks.AuthService)
-		h := NewAuthHandler(service, slog.Default())
+		h := NewAuthHandler(service)
 
 		email := "test@example.com"
 		service.On("RequestOTP", mock.Anything, email).Return(errors.New("db error"))
@@ -124,10 +128,13 @@ func TestAuthHandler_RequestOTP(t *testing.T) {
 func TestAuthHandler_VerifyOTP(t *testing.T) {
 	t.Parallel()
 
+	noopHandler := slog.NewTextHandler(io.Discard, nil)
+	slog.SetDefault(slog.New(noopHandler))
+
 	t.Run("success", func(t *testing.T) {
 		t.Parallel()
 		service := new(mocks.AuthService)
-		h := NewAuthHandler(service, slog.Default())
+		h := NewAuthHandler(service)
 
 		email := "test@example.com"
 		code := "123456"
@@ -159,7 +166,7 @@ func TestAuthHandler_VerifyOTP(t *testing.T) {
 	t.Run("invalid_otp", func(t *testing.T) {
 		t.Parallel()
 		service := new(mocks.AuthService)
-		h := NewAuthHandler(service, slog.Default())
+		h := NewAuthHandler(service)
 
 		email := "test@example.com"
 		code := "000000"
@@ -178,7 +185,7 @@ func TestAuthHandler_VerifyOTP(t *testing.T) {
 	t.Run("invalid_request_body", func(t *testing.T) {
 		t.Parallel()
 		service := new(mocks.AuthService)
-		h := NewAuthHandler(service, slog.Default())
+		h := NewAuthHandler(service)
 
 		req := httptest.NewRequest(http.MethodPost, "/v1/auth/otp/verify", bytes.NewReader([]byte("invalid")))
 		rr := httptest.NewRecorder()
@@ -191,7 +198,7 @@ func TestAuthHandler_VerifyOTP(t *testing.T) {
 	t.Run("user_not_found", func(t *testing.T) {
 		t.Parallel()
 		service := new(mocks.AuthService)
-		h := NewAuthHandler(service, slog.Default())
+		h := NewAuthHandler(service)
 
 		email := "unknown@example.com"
 		service.On("VerifyOTP", mock.Anything, email, "123456").Return(nil, domain.ErrNotFound)
@@ -209,7 +216,7 @@ func TestAuthHandler_VerifyOTP(t *testing.T) {
 	t.Run("internal_error", func(t *testing.T) {
 		t.Parallel()
 		service := new(mocks.AuthService)
-		h := NewAuthHandler(service, slog.Default())
+		h := NewAuthHandler(service)
 
 		email := "test@example.com"
 		service.On("VerifyOTP", mock.Anything, email, "123456").Return(nil, errors.New("boom"))
@@ -227,7 +234,7 @@ func TestAuthHandler_VerifyOTP(t *testing.T) {
 	t.Run("invalid_email", func(t *testing.T) {
 		t.Parallel()
 		service := new(mocks.AuthService)
-		h := NewAuthHandler(service, slog.Default())
+		h := NewAuthHandler(service)
 
 		reqBody, err := json.Marshal(VerifyOTPRequest{Email: "invalid-email", Code: "123456"})
 		require.NoError(t, err)
@@ -242,7 +249,7 @@ func TestAuthHandler_VerifyOTP(t *testing.T) {
 	t.Run("invalid_code", func(t *testing.T) {
 		t.Parallel()
 		service := new(mocks.AuthService)
-		h := NewAuthHandler(service, slog.Default())
+		h := NewAuthHandler(service)
 
 		reqBody, err := json.Marshal(VerifyOTPRequest{Email: "test@example.com", Code: "123"})
 		require.NoError(t, err)
@@ -258,10 +265,13 @@ func TestAuthHandler_VerifyOTP(t *testing.T) {
 func TestAuthHandler_RefreshToken(t *testing.T) {
 	t.Parallel()
 
+	noopHandler := slog.NewTextHandler(io.Discard, nil)
+	slog.SetDefault(slog.New(noopHandler))
+
 	t.Run("success", func(t *testing.T) {
 		t.Parallel()
 		service := new(mocks.AuthService)
-		h := NewAuthHandler(service, slog.Default())
+		h := NewAuthHandler(service)
 
 		refreshToken := "old-refresh-token"
 		expectedPair := &domain.TokenPair{
@@ -290,7 +300,7 @@ func TestAuthHandler_RefreshToken(t *testing.T) {
 	t.Run("missing_header", func(t *testing.T) {
 		t.Parallel()
 		service := new(mocks.AuthService)
-		h := NewAuthHandler(service, slog.Default())
+		h := NewAuthHandler(service)
 
 		req := httptest.NewRequest(http.MethodPost, "/v1/auth/token/refresh", nil)
 		rr := httptest.NewRecorder()
@@ -303,7 +313,7 @@ func TestAuthHandler_RefreshToken(t *testing.T) {
 	t.Run("expired_token", func(t *testing.T) {
 		t.Parallel()
 		service := new(mocks.AuthService)
-		h := NewAuthHandler(service, slog.Default())
+		h := NewAuthHandler(service)
 
 		refreshToken := "expired-token"
 		service.On("RefreshToken", mock.Anything, refreshToken).Return(nil, domain.ErrTokenExpired)
@@ -320,7 +330,7 @@ func TestAuthHandler_RefreshToken(t *testing.T) {
 	t.Run("user_not_found", func(t *testing.T) {
 		t.Parallel()
 		service := new(mocks.AuthService)
-		h := NewAuthHandler(service, slog.Default())
+		h := NewAuthHandler(service)
 
 		refreshToken := "valid-but-no-user"
 		service.On("RefreshToken", mock.Anything, refreshToken).Return(nil, domain.ErrNotFound)
@@ -337,7 +347,7 @@ func TestAuthHandler_RefreshToken(t *testing.T) {
 	t.Run("internal_error", func(t *testing.T) {
 		t.Parallel()
 		service := new(mocks.AuthService)
-		h := NewAuthHandler(service, slog.Default())
+		h := NewAuthHandler(service)
 
 		refreshToken := "valid-token"
 		service.On("RefreshToken", mock.Anything, refreshToken).Return(nil, errors.New("boom"))

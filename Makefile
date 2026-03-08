@@ -1,4 +1,4 @@
-.PHONY: all build run test lint generate clean help task-check deps
+.PHONY: all build run test lint generate clean help task-check deps up down
 
 # Configuration
 BINARY_NAME=moolah-api
@@ -51,7 +51,7 @@ security-check:
 ## test-coverage: Run unit tests and enforce coverage (80% threshold)
 test-coverage:
 	@echo "🧪 Running unit tests with coverage..."
-	@$(GO) test -v -race -count=1 -tags=integration -coverprofile=coverage.out -covermode=atomic $$(go list ./... | grep -v /platform/db/sqlc | grep -v /testutil/mocks)
+	@$(GO) test -v -race -count=1 -tags=integration -timeout=600s -coverprofile=coverage.out -covermode=atomic $$(go list ./... | grep -v /platform/db/sqlc | grep -v /testutil/mocks)
 	@COVERAGE=$$(go tool cover -func=coverage.out | grep total | awk '{print $$3}' | tr -d '%'); \
 	echo "Total coverage: $${COVERAGE}%"; \
 	awk "BEGIN { if ($${COVERAGE} < 80) exit 1 }"; \
@@ -113,3 +113,13 @@ help:
 			} \
 		}' # This is a conceptual help command, usually implemented via grep/awk in shell
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-15s\033[0m %s\n", $$1, $$2}'
+
+## up: Start the Docker Compose
+up:
+	@echo "Starting Docker Compose..."
+	@docker compose up -d
+
+## down: Stop the Docker Compose
+down:
+	@echo "Stopping Docker Compose..."
+	@docker compose down

@@ -13,7 +13,6 @@ type adminService struct {
 	userRepo   domain.AdminUserRepository
 	adminAudit domain.AdminAuditRepository
 	auditRepo  domain.AuditRepository
-	logger     *slog.Logger
 }
 
 // NewAdminService creates a new system-wide administrative service.
@@ -22,14 +21,12 @@ func NewAdminService(
 	userRepo domain.AdminUserRepository,
 	adminAudit domain.AdminAuditRepository,
 	auditRepo domain.AuditRepository,
-	logger *slog.Logger,
 ) domain.AdminService {
 	return &adminService{
 		tenantRepo: tenantRepo,
 		userRepo:   userRepo,
 		adminAudit: adminAudit,
 		auditRepo:  auditRepo,
-		logger:     logger,
 	}
 }
 
@@ -67,7 +64,7 @@ func (s *adminService) UpdateTenantPlan(ctx context.Context, id string, plan dom
 		Action:     domain.AuditActionUpdate,
 	})
 	if auditErr != nil {
-		s.logger.ErrorContext(ctx, "failed to create audit log for tenant plan update", "error", auditErr)
+		slog.ErrorContext(ctx, "failed to create audit log for tenant plan update", "error", auditErr)
 	}
 
 	return tenant, nil
@@ -87,7 +84,7 @@ func (s *adminService) SuspendTenant(ctx context.Context, id string) error {
 		Action:     domain.AuditActionSoftDelete,
 	})
 	if auditErr != nil {
-		s.logger.ErrorContext(ctx, "failed to create audit log for tenant suspension", "error", auditErr)
+		slog.ErrorContext(ctx, "failed to create audit log for tenant suspension", "error", auditErr)
 	}
 
 	return nil
@@ -107,7 +104,7 @@ func (s *adminService) RestoreTenant(ctx context.Context, id string) error {
 		Action:     domain.AuditActionRestore,
 	})
 	if auditErr != nil {
-		s.logger.ErrorContext(ctx, "failed to create audit log for tenant restoration", "error", auditErr)
+		slog.ErrorContext(ctx, "failed to create audit log for tenant restoration", "error", auditErr)
 	}
 
 	return nil
@@ -127,7 +124,7 @@ func (s *adminService) HardDeleteTenant(ctx context.Context, id, confirmationTok
 		Action:     domain.AuditActionSoftDelete, // Record intent
 	})
 	if auditErr != nil {
-		s.logger.ErrorContext(ctx, "failed to create audit log for tenant hard deletion", "error", auditErr)
+		slog.ErrorContext(ctx, "failed to create audit log for tenant hard deletion", "error", auditErr)
 	}
 
 	err := s.tenantRepo.HardDelete(ctx, id)
@@ -167,7 +164,7 @@ func (s *adminService) ForceDeleteUser(ctx context.Context, id string) error {
 		Action:     domain.AuditActionSoftDelete,
 	})
 	if auditErr != nil {
-		s.logger.ErrorContext(ctx, "failed to create audit log for user force delete", "error", auditErr)
+		slog.ErrorContext(ctx, "failed to create audit log for user force delete", "error", auditErr)
 	}
 
 	err := s.userRepo.ForceDelete(ctx, id)

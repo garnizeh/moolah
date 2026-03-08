@@ -17,8 +17,11 @@ import (
 
 func TestOTPRateLimiter(t *testing.T) {
 	t.Parallel()
-	log := slog.New(slog.NewTextHandler(io.Discard, nil))
-	store := NewRateLimiterStore(log)
+
+	noopHandler := slog.NewTextHandler(io.Discard, nil)
+	slog.SetDefault(slog.New(noopHandler))
+
+	store := NewRateLimiterStore()
 
 	// Create a handler that just returns 200 OK
 	handler := store.OTPRateLimiter()(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -119,11 +122,13 @@ func TestOTPRateLimiter(t *testing.T) {
 
 func TestRateLimiterStore_Cleanup(t *testing.T) {
 	t.Parallel()
-	log := slog.New(slog.NewTextHandler(io.Discard, nil))
+
+	noopHandler := slog.NewTextHandler(io.Discard, nil)
+	slog.SetDefault(slog.New(noopHandler))
 
 	// Use a very short interval for testing
 	interval := 50 * time.Millisecond
-	store := NewRateLimiterStoreWithInterval(log, interval)
+	store := NewRateLimiterStoreWithInterval(interval)
 
 	email := "stale@example.com"
 	store.mu.Lock()

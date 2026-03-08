@@ -2,6 +2,7 @@ package service_test
 
 import (
 	"context"
+	"errors"
 	"testing"
 	"time"
 
@@ -114,6 +115,106 @@ func TestTransactionService_Create(t *testing.T) {
 		require.ErrorIs(t, err, domain.ErrNotFound)
 		require.Nil(t, res)
 	})
+
+	t.Run("Error_CategoryLookup", func(t *testing.T) {
+		t.Parallel()
+		accountRepo := new(mocks.AccountRepository)
+		categoryRepo := new(mocks.CategoryRepository)
+
+		accountRepo.On("GetByID", ctx, tenantID, accountID).Return(&domain.Account{ID: accountID}, nil)
+		categoryRepo.On("GetByID", ctx, tenantID, categoryID).Return((*domain.Category)(nil), errors.New("db error"))
+
+		svc := service.NewTransactionService(nil, accountRepo, categoryRepo, nil)
+		res, err := svc.Create(ctx, tenantID, input)
+
+		require.Error(t, err)
+		require.Nil(t, res)
+	})
+
+	t.Run("Error_BalanceUpdate", func(t *testing.T) {
+		t.Parallel()
+		txRepo := new(mocks.TransactionRepository)
+		accountRepo := new(mocks.AccountRepository)
+		categoryRepo := new(mocks.CategoryRepository)
+		auditRepo := new(mocks.AuditRepository)
+
+		accountRepo.On("GetByID", ctx, tenantID, accountID).Return(&domain.Account{ID: accountID}, nil)
+		categoryRepo.On("GetByID", ctx, tenantID, categoryID).Return(&domain.Category{ID: categoryID, Type: domain.CategoryTypeExpense}, nil)
+		txRepo.On("Create", ctx, tenantID, input).Return(&domain.Transaction{ID: "tx_1", AccountID: accountID, CategoryID: categoryID, Type: input.Type, AmountCents: input.AmountCents}, nil)
+		accountRepo.On("UpdateBalance", ctx, tenantID, accountID, int64(-1500)).Return(errors.New("balance error"))
+
+		svc := service.NewTransactionService(txRepo, accountRepo, categoryRepo, auditRepo)
+		res, err := svc.Create(ctx, tenantID, input)
+
+		require.Error(t, err)
+		require.Nil(t, res)
+	})
+}
+
+func TestTransactionService_GetByID(t *testing.T) {
+	t.Parallel()
+
+	ctx := context.Background()
+	tenantID := "tenant_1"
+	txID := "tx_1"
+
+	t.Run("Success", func(t *testing.T) {
+		t.Parallel()
+		txRepo := new(mocks.TransactionRepository)
+		expected := &domain.Transaction{ID: txID}
+		txRepo.On("GetByID", ctx, tenantID, txID).Return(expected, nil)
+
+		svc := service.NewTransactionService(txRepo, nil, nil, nil)
+		res, err := svc.GetByID(ctx, tenantID, txID)
+
+		require.NoError(t, err)
+		require.Equal(t, expected, res)
+	})
+
+	t.Run("Error", func(t *testing.T) {
+		t.Parallel()
+		txRepo := new(mocks.TransactionRepository)
+		txRepo.On("GetByID", ctx, tenantID, txID).Return((*domain.Transaction)(nil), errors.New("db error"))
+
+		svc := service.NewTransactionService(txRepo, nil, nil, nil)
+		res, err := svc.GetByID(ctx, tenantID, txID)
+
+		require.Error(t, err)
+		require.Nil(t, res)
+	})
+}
+
+func TestTransactionService_List(t *testing.T) {
+	t.Parallel()
+
+	ctx := context.Background()
+	tenantID := "tenant_1"
+	params := domain.ListTransactionsParams{Limit: 10}
+
+	t.Run("Success", func(t *testing.T) {
+		t.Parallel()
+		txRepo := new(mocks.TransactionRepository)
+		expected := []domain.Transaction{{ID: "tx_1"}}
+		txRepo.On("List", ctx, tenantID, params).Return(expected, nil)
+
+		svc := service.NewTransactionService(txRepo, nil, nil, nil)
+		res, err := svc.List(ctx, tenantID, params)
+
+		require.NoError(t, err)
+		require.Equal(t, expected, res)
+	})
+
+	t.Run("Error", func(t *testing.T) {
+		t.Parallel()
+		txRepo := new(mocks.TransactionRepository)
+		txRepo.On("List", ctx, tenantID, params).Return(([]domain.Transaction)(nil), errors.New("db error"))
+
+		svc := service.NewTransactionService(txRepo, nil, nil, nil)
+		res, err := svc.List(ctx, tenantID, params)
+
+		require.Error(t, err)
+		require.Nil(t, res)
+	})
 }
 
 func TestTransactionService_Update(t *testing.T) {
@@ -192,5 +293,35 @@ func TestTransactionService_Delete(t *testing.T) {
 		err := svc.Delete(ctx, tenantID, txID)
 
 		require.NoError(t, err)
+	})
+
+	t.Run("NotFound", func(t *testing.T) {
+		t.Parallel()
+		txRepo := new(mocks.TransactionRepository)
+		txRepo.On("GetByID", ctx, tenantID, txID).Return((*domain.Transaction)(nil), nil)
+
+		svc := service.NewTransactionService(txRepo, nil, nil, nil)
+		err := svc.Delete(ctx, tenantID, txID)
+
+		require.ErrorIs(t, err, domain.ErrNotFound)
+	})
+
+	t.Run("DeleteRepoError", func(t *testing.T) {
+		t.Parallel()
+		txRepo := new(mocks.TransactionRepository)
+		accountRepo := new(mocks.AccountRepository)
+		auditRepo := new(mocks.AuditRepository)
+
+		tx := &domain.Transaction{ID: txID, AccountID: "acc_1", AmountCents: 1500, Type: domain.TransactionTypeExpense}
+
+		txRepo.On("GetByID", ctx, tenantID, txID).Return(tx, nil)
+		accountRepo.On("UpdateBalance", ctx, tenantID, "acc_1", int64(1500)).Return(nil)
+		auditRepo.On("Create", ctx, mock.Anything).Return(&domain.AuditLog{}, nil)
+		txRepo.On("Delete", ctx, tenantID, txID).Return(errors.New("db error"))
+
+		svc := service.NewTransactionService(txRepo, accountRepo, nil, auditRepo)
+		err := svc.Delete(ctx, tenantID, txID)
+
+		require.Error(t, err)
 	})
 }
