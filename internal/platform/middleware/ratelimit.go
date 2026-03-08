@@ -26,6 +26,7 @@ type emailLimiter struct {
 // RateLimiterStore holds the state for the in-memory rate limiters.
 type RateLimiterStore struct {
 	limiters map[string]*emailLimiter
+	stop     chan struct{}
 	mu       sync.RWMutex
 }
 
@@ -38,6 +39,7 @@ func NewRateLimiterStore() *RateLimiterStore {
 func NewRateLimiterStoreWithInterval(interval time.Duration) *RateLimiterStore {
 	store := &RateLimiterStore{
 		limiters: make(map[string]*emailLimiter),
+		stop:     make(chan struct{}),
 	}
 
 	go store.cleanup(interval)
@@ -49,15 +51,25 @@ func (s *RateLimiterStore) cleanup(interval time.Duration) {
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
 
-	for range ticker.C {
-		s.mu.Lock()
-		for email, l := range s.limiters {
-			if time.Since(l.lastSeen) > interval {
-				delete(s.limiters, email)
+	for {
+		select {
+		case <-ticker.C:
+			s.mu.Lock()
+			for email, l := range s.limiters {
+				if time.Since(l.lastSeen) > interval {
+					delete(s.limiters, email)
+				}
 			}
+			s.mu.Unlock()
+		case <-s.stop:
+			return
 		}
-		s.mu.Unlock()
 	}
+}
+
+// Close stops the cleanup goroutine.
+func (s *RateLimiterStore) Close() {
+	close(s.stop)
 }
 
 // OTPRateLimiter returns a middleware that enforces per-email OTP rate limiting.

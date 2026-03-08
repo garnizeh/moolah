@@ -20,6 +20,9 @@ type Server struct {
 	// Handler and service interfaces grouped for optimal field alignment
 	handler http.Handler
 
+	// Internal http server for lifecycle management
+	httpServer *http.Server
+
 	// Handlers
 	authHandler *handler.AuthHandler
 
@@ -54,7 +57,7 @@ func New(
 ) *Server {
 	s := &Server{
 		addr:             ":" + port,
-		authHandler:      handler.NewAuthHandler(authSvc, slog.Default()),
+		authHandler:      handler.NewAuthHandler(authSvc),
 		authSvc:          authSvc,
 		tenantSvc:        tenantSvc,
 		accountSvc:       accountSvc,
@@ -66,9 +69,7 @@ func New(
 		tokenParser:      tokenParser,
 	}
 
-	// routes.go will implement the routes method
-	// apply global logger middleware using the default slog logger
-	s.handler = middleware.RequestLogger(slog.Default())(s.routes())
+	s.handler = middleware.RequestLogger()(s.routes())
 
 	return s
 }
@@ -81,7 +82,7 @@ func (s *Server) ListenAndServe(ctx context.Context, readTimeout, writeTimeout t
 		defaultIdleTimeout       = 120 * time.Second
 	)
 
-	srv := &http.Server{
+	s.httpServer = &http.Server{
 		Addr:              s.addr,
 		Handler:           s.handler,
 		ReadTimeout:       readTimeout,
@@ -92,7 +93,7 @@ func (s *Server) ListenAndServe(ctx context.Context, readTimeout, writeTimeout t
 	}
 
 	slog.InfoContext(ctx, "starting server", "addr", s.addr)
-	err := srv.ListenAndServe()
+	err := s.httpServer.ListenAndServe()
 	if err != nil && err != http.ErrServerClosed {
 		slog.ErrorContext(ctx, "server failed", "err", err)
 		return fmt.Errorf("server failed: %w", err)
@@ -103,21 +104,18 @@ func (s *Server) ListenAndServe(ctx context.Context, readTimeout, writeTimeout t
 
 // Shutdown gracefully shuts down the HTTP server, allowing in-flight requests to complete within the given context timeout.
 func (s *Server) Shutdown(ctx context.Context) error {
-	// Mirror the timeouts used when serving to ensure server struct has safe defaults
-	const (
-		defaultReadHeaderTimeout = 5 * time.Second
-		defaultIdleTimeout       = 120 * time.Second
-	)
-
-	srv := &http.Server{
-		Addr:              s.addr,
-		Handler:           s.handler,
-		ReadHeaderTimeout: defaultReadHeaderTimeout,
-		IdleTimeout:       defaultIdleTimeout,
+	// Close middleware stores if they have a Close method
+	if s.rateLimiterStore != nil {
+		s.rateLimiterStore.Close()
 	}
 
 	slog.InfoContext(ctx, "shutting down server", "addr", s.addr)
-	err := srv.Shutdown(ctx)
+
+	if s.httpServer == nil {
+		return nil
+	}
+
+	err := s.httpServer.Shutdown(ctx)
 	if err != nil {
 		slog.ErrorContext(ctx, "server shutdown failed", "err", err)
 		return fmt.Errorf("server shutdown failed: %w", err)

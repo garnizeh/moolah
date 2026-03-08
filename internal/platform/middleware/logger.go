@@ -36,7 +36,7 @@ func (rw *responseWriter) Write(b []byte) (int, error) {
 }
 
 // RequestLogger returns a middleware that logs each request as a structured slog entry.
-func RequestLogger(logger *slog.Logger) func(http.Handler) http.Handler {
+func RequestLogger() func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			start := time.Now()
@@ -63,7 +63,7 @@ func RequestLogger(logger *slog.Logger) func(http.Handler) http.Handler {
 				userID = "anonymous"
 			}
 
-			logger.InfoContext(ctx, "request",
+			slog.InfoContext(ctx, "request",
 				slog.String("request_id", requestID),
 				slog.String("method", r.Method),
 				slog.String("path", r.URL.Path),

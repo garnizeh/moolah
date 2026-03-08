@@ -18,10 +18,12 @@ func TestRequestLogger(t *testing.T) {
 
 	t.Run("logs every request with correct fields", func(t *testing.T) {
 		t.Parallel()
+
 		var logBuf bytes.Buffer
 		logger := slog.New(slog.NewJSONHandler(&logBuf, nil))
+		slog.SetDefault(logger)
 
-		handler := RequestLogger(logger)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		handler := RequestLogger()(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusCreated)
 			if _, err := w.Write([]byte("ok")); err != nil {
 				t.Errorf("failed to write response: %v", err)
@@ -60,10 +62,12 @@ func TestRequestLogger(t *testing.T) {
 
 	t.Run("captures authentic identity from context", func(t *testing.T) {
 		t.Parallel()
+
 		var logBuf bytes.Buffer
 		logger := slog.New(slog.NewJSONHandler(&logBuf, nil))
+		slog.SetDefault(logger)
 
-		handler := RequestLogger(logger)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		handler := RequestLogger()(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
 		}))
 
@@ -88,10 +92,12 @@ func TestRequestLogger(t *testing.T) {
 
 	t.Run("handles default 200 status correctly", func(t *testing.T) {
 		t.Parallel()
+
 		var logBuf bytes.Buffer
 		logger := slog.New(slog.NewJSONHandler(&logBuf, nil))
+		slog.SetDefault(logger)
 
-		handler := RequestLogger(logger)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		handler := RequestLogger()(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			// No WriteHeader called
 			if _, err := w.Write([]byte("ok")); err != nil {
 				panic(err)
