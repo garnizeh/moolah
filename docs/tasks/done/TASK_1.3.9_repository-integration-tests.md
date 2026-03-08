@@ -1,7 +1,7 @@
 # Task 1.3.9 — Repository Integration Tests (Testcontainers)
 
 > **Roadmap Ref:** Phase 1 — MVP › 1.3 Repository Layer
-> **Status:** � `in-progress`
+> **Status:** ✅ `done`
 > **Last Updated:** 2026-03-07
 > **Assignee:** —
 > **Estimated Effort:** L
@@ -25,14 +25,14 @@ Repository implementations cannot be meaningfully unit-tested with mocks — the
 ### In scope
 
 - [x] Dedicated integration test file for `TenantRepository` (Task 1.3.1) using `containers.NewPostgresDB(t)`.
-- [ ] Integration tests for `UserRepository` (Task 1.3.2).
-- [ ] Integration tests for `AuthRepository` / OTP lifecycle (Task 1.3.3).
-- [ ] Integration tests for `AccountRepository` (Task 1.3.4).
-- [ ] Integration tests for `CategoryRepository` (Task 1.3.5).
-- [ ] Integration tests for `TransactionRepository` (Task 1.3.6).
-- [ ] Integration tests for `AuditRepository` (Task 1.3.7).
-- [ ] Integration tests for admin repositories (Task 1.3.8).
-- [ ] All test files use build tag `//go:build integration`.
+- [x] Integration tests for `UserRepository` (Task 1.3.2).
+- [x] Integration tests for `AuthRepository` / OTP lifecycle (Task 1.3.3).
+- [x] Integration tests for `AccountRepository` (Task 1.3.4).
+- [x] Integration tests for `CategoryRepository` (Task 1.3.5).
+- [x] Integration tests for `TransactionRepository` (Task 1.3.6).
+- [x] Integration tests for `AuditRepository` (Task 1.3.7).
+- [x] Integration tests for admin repositories (Task 1.3.8).
+- [x] All test files use build tag `//go:build integration`.
 
 ### Out of scope
 
@@ -139,10 +139,10 @@ func TestExampleRepo_Integration(t *testing.T) {
 
 - [x] `//go:build integration` tag on all test files.
 - [x] Testcontainers spins up and tears down a clean Postgres instance via `NewPostgresDB`.
-- [ ] Migrations are applied via `embed.FS` (handled by utility).
-- [ ] All repository methods have at least one positive test (happy path).
-- [ ] Error translation tests: `ErrNotFound`, `ErrConflict`, `ErrInvalidOTP` verified.
-- [ ] Tests pass with `go test -tags=integration ./internal/platform/repository/...`.
+- [x] Migrations are applied via `embed.FS` (handled by utility).
+- [x] All repository methods have at least one positive test (happy path).
+- [x] Error translation tests: `ErrNotFound`, `ErrConflict`, `ErrInvalidOTP` verified.
+- [x] Tests pass with `go test -tags=integration ./internal/platform/repository/...`.
 - [ ] `golangci-lint run ./...` passes with zero issues.
 - [ ] `gosec ./...` passes with zero issues.
 - [ ] `docs/ROADMAP.md` row updated to ✅ `done`.
@@ -153,14 +153,14 @@ func TestExampleRepo_Integration(t *testing.T) {
 
 | Dependency                              | Type     | Status     |
 | --------------------------------------- | -------- | ---------- |
-| Task 1.3.1 — `tenant_repo.go`           | Upstream | 🔵 backlog |
-| Task 1.3.2 — `user_repo.go`             | Upstream | 🔵 backlog |
-| Task 1.3.3 — `auth_repo.go`             | Upstream | 🔵 backlog |
-| Task 1.3.4 — `account_repo.go`          | Upstream | 🔵 backlog |
-| Task 1.3.5 — `category_repo.go`         | Upstream | 🔵 backlog |
-| Task 1.3.6 — `transaction_repo.go`      | Upstream | 🔵 backlog |
-| Task 1.3.7 — `audit_repo.go`            | Upstream | 🔵 backlog |
-| Task 1.3.8 — `admin_repo.go`            | Upstream | 🔵 backlog |
+| Task 1.3.1 — `tenant_repo.go`           | Upstream | ✅ done |
+| Task 1.3.2 — `user_repo.go`             | Upstream | ✅ done |
+| Task 1.3.3 — `auth_repo.go`             | Upstream | ✅ done |
+| Task 1.3.4 — `account_repo.go`          | Upstream | ✅ done |
+| Task 1.3.5 — `category_repo.go`         | Upstream | ✅ done |
+| Task 1.3.6 — `transaction_repo.go`      | Upstream | ✅ done |
+| Task 1.3.7 — `audit_repo.go`            | Upstream | ✅ done |
+| Task 1.3.8 — `admin_repo.go`            | Upstream | ✅ done |
 | Task 1.1.6 — Goose migration files      | Upstream | ✅ done    |
 | `testcontainers-go` in `vendor/`        | External | ✅ present |
 

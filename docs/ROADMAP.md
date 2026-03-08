@@ -93,13 +93,13 @@
 | 1.3.6 | `repository/transaction_repo.go` | ✅ `done` | 2026-03-07 | 100% coverage |
 | 1.3.7 | `repository/audit_repo.go` | ✅ `done` | 2026-03-07 | |
 | 1.3.8 | `repository/admin_repo.go` | ✅ `done` | 2026-03-07 | |
-| 1.3.9 | Integration tests for all repositories (testcontainers-go) | � `in-progress` | 2026-03-07 | `//go:build integration` tag |
+| 1.3.9 | Integration tests for all repositories (testcontainers-go) | ✅ `done` |
 
 ### 1.4 Service Layer
 
 | # | Task | Status | Last Updated | Notes |
 | --- | --- | --- | --- | --- |
-| 1.4.1 | `service/auth_service.go` + unit tests | 🔵 `backlog` | 2026-03-06 | RequestOTP, VerifyOTP, RefreshToken |
+| 1.4.1 | `service/auth_service.go` + unit tests | ✅ `done` | 2026-03-07 | ReqOTP, VerifyOTP, RefreshToken. 81% cov. |
 | 1.4.2 | `service/tenant_service.go` + unit tests | 🔵 `backlog` | 2026-03-06 | CRUD, invite user |
 | 1.4.3 | `service/account_service.go` + unit tests | 🔵 `backlog` | 2026-03-06 | CRUD, balance recalculation |
 | 1.4.4 | `service/category_service.go` + unit tests | 🔵 `backlog` | 2026-03-06 | CRUD, hierarchy validation |
