@@ -2,6 +2,7 @@ package service_test
 
 import (
 	"context"
+	"io"
 	"log/slog"
 	"testing"
 
@@ -16,7 +17,9 @@ func TestAdminService_TenantOperations(t *testing.T) {
 	t.Parallel()
 
 	ctx := context.Background()
-	logger := slog.Default()
+
+	noopHandler := slog.NewTextHandler(io.Discard, nil)
+	slog.SetDefault(slog.New(noopHandler))
 
 	t.Run("ListAllTenants_Success", func(t *testing.T) {
 		t.Parallel()
@@ -24,7 +27,7 @@ func TestAdminService_TenantOperations(t *testing.T) {
 		expected := []domain.Tenant{{ID: "t1"}, {ID: "t2"}}
 		tenantRepo.On("ListAll", mock.Anything, true).Return(expected, nil)
 
-		svc := service.NewAdminService(tenantRepo, nil, nil, nil, logger)
+		svc := service.NewAdminService(tenantRepo, nil, nil, nil)
 		res, err := svc.ListAllTenants(ctx, true)
 
 		require.NoError(t, err)
@@ -36,7 +39,7 @@ func TestAdminService_TenantOperations(t *testing.T) {
 		tenantRepo := new(mocks.AdminTenantRepository)
 		tenantRepo.On("GetByID", mock.Anything, "t1").Return((*domain.Tenant)(nil), nil)
 
-		svc := service.NewAdminService(tenantRepo, nil, nil, nil, logger)
+		svc := service.NewAdminService(tenantRepo, nil, nil, nil)
 		res, err := svc.GetTenantByID(ctx, "t1")
 
 		require.ErrorIs(t, err, domain.ErrNotFound)
@@ -54,7 +57,7 @@ func TestAdminService_TenantOperations(t *testing.T) {
 			return input.EntityID == "t1" && input.Action == domain.AuditActionUpdate
 		})).Return(&domain.AuditLog{}, nil)
 
-		svc := service.NewAdminService(tenantRepo, nil, nil, auditRepo, logger)
+		svc := service.NewAdminService(tenantRepo, nil, nil, auditRepo)
 		res, err := svc.UpdateTenantPlan(ctx, "t1", domain.TenantPlanPremium)
 
 		require.NoError(t, err)
@@ -69,7 +72,7 @@ func TestAdminService_TenantOperations(t *testing.T) {
 		tenantRepo.On("Suspend", mock.Anything, "t1").Return(nil)
 		auditRepo.On("Create", mock.Anything, mock.Anything).Return(&domain.AuditLog{}, nil)
 
-		svc := service.NewAdminService(tenantRepo, nil, nil, auditRepo, logger)
+		svc := service.NewAdminService(tenantRepo, nil, nil, auditRepo)
 		err := svc.SuspendTenant(ctx, "t1")
 
 		require.NoError(t, err)
@@ -78,7 +81,7 @@ func TestAdminService_TenantOperations(t *testing.T) {
 
 	t.Run("HardDeleteTenant_InvalidToken", func(t *testing.T) {
 		t.Parallel()
-		svc := service.NewAdminService(nil, nil, nil, nil, logger)
+		svc := service.NewAdminService(nil, nil, nil, nil)
 		err := svc.HardDeleteTenant(ctx, "t1", "wrong-token")
 		require.ErrorIs(t, err, domain.ErrInvalidInput)
 	})
@@ -91,7 +94,7 @@ func TestAdminService_TenantOperations(t *testing.T) {
 		auditRepo.On("Create", mock.Anything, mock.Anything).Return(&domain.AuditLog{}, nil)
 		tenantRepo.On("HardDelete", mock.Anything, "t1").Return(nil)
 
-		svc := service.NewAdminService(tenantRepo, nil, nil, auditRepo, logger)
+		svc := service.NewAdminService(tenantRepo, nil, nil, auditRepo)
 		err := svc.HardDeleteTenant(ctx, "t1", "t1")
 
 		require.NoError(t, err)
@@ -103,7 +106,9 @@ func TestAdminService_UserOperations(t *testing.T) {
 	t.Parallel()
 
 	ctx := context.Background()
-	logger := slog.Default()
+
+	noopHandler := slog.NewTextHandler(io.Discard, nil)
+	slog.SetDefault(slog.New(noopHandler))
 
 	t.Run("ListAllUsers_Success", func(t *testing.T) {
 		t.Parallel()
@@ -111,7 +116,7 @@ func TestAdminService_UserOperations(t *testing.T) {
 		expected := []domain.User{{ID: "u1"}}
 		userRepo.On("ListAll", mock.Anything).Return(expected, nil)
 
-		svc := service.NewAdminService(nil, userRepo, nil, nil, logger)
+		svc := service.NewAdminService(nil, userRepo, nil, nil)
 		res, err := svc.ListAllUsers(ctx)
 
 		require.NoError(t, err)
@@ -126,7 +131,7 @@ func TestAdminService_UserOperations(t *testing.T) {
 		auditRepo.On("Create", mock.Anything, mock.Anything).Return(&domain.AuditLog{}, nil)
 		userRepo.On("ForceDelete", mock.Anything, "u1").Return(nil)
 
-		svc := service.NewAdminService(nil, userRepo, nil, auditRepo, logger)
+		svc := service.NewAdminService(nil, userRepo, nil, auditRepo)
 		err := svc.ForceDeleteUser(ctx, "u1")
 
 		require.NoError(t, err)
@@ -138,7 +143,9 @@ func TestAdminService_AuditOperations(t *testing.T) {
 	t.Parallel()
 
 	ctx := context.Background()
-	logger := slog.Default()
+
+	noopHandler := slog.NewTextHandler(io.Discard, nil)
+	slog.SetDefault(slog.New(noopHandler))
 
 	t.Run("ListAuditLogs_Success", func(t *testing.T) {
 		t.Parallel()
@@ -147,7 +154,7 @@ func TestAdminService_AuditOperations(t *testing.T) {
 		expected := []domain.AuditLog{{ID: "a1"}}
 		adminAudit.On("ListAll", mock.Anything, params).Return(expected, nil)
 
-		svc := service.NewAdminService(nil, nil, adminAudit, nil, logger)
+		svc := service.NewAdminService(nil, nil, adminAudit, nil)
 		res, err := svc.ListAuditLogs(ctx, params)
 
 		require.NoError(t, err)

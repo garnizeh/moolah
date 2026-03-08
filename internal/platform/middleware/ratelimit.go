@@ -25,21 +25,19 @@ type emailLimiter struct {
 
 // RateLimiterStore holds the state for the in-memory rate limiters.
 type RateLimiterStore struct {
-	log      *slog.Logger
-	limiters map[string]*emailLimiter
 	mu       sync.RWMutex
+	limiters map[string]*emailLimiter
 }
 
 // NewRateLimiterStore creates a new store and starts the cleanup goroutine.
-func NewRateLimiterStore(log *slog.Logger) *RateLimiterStore {
-	return NewRateLimiterStoreWithInterval(log, otpRatePeriod)
+func NewRateLimiterStore() *RateLimiterStore {
+	return NewRateLimiterStoreWithInterval(otpRatePeriod)
 }
 
 // NewRateLimiterStoreWithInterval is for testing cleanup with custom intervals.
-func NewRateLimiterStoreWithInterval(log *slog.Logger, interval time.Duration) *RateLimiterStore {
+func NewRateLimiterStoreWithInterval(interval time.Duration) *RateLimiterStore {
 	store := &RateLimiterStore{
 		limiters: make(map[string]*emailLimiter),
-		log:      log,
 	}
 
 	go store.cleanup(interval)
@@ -74,7 +72,7 @@ func (s *RateLimiterStore) OTPRateLimiter() func(http.Handler) http.Handler {
 			// Read and buffer the body
 			body, err := io.ReadAll(r.Body)
 			if err != nil {
-				s.log.Error("failed to read request body in rate limiter", "error", err)
+				slog.Error("failed to read request body in rate limiter", "error", err)
 				next.ServeHTTP(w, r)
 				return
 			}
@@ -130,7 +128,7 @@ func (s *RateLimiterStore) OTPRateLimiter() func(http.Handler) http.Handler {
 					// Fallback if JSON encoding fails
 					_, err = w.Write([]byte(`{"error":{"code":"INTERNAL_ERROR","message":"failed to encode rate limit error"}}`))
 					if err != nil {
-						s.log.Error("failed to write fallback rate limit response", "error", err)
+						slog.Error("failed to write fallback rate limit response", "error", err)
 					}
 				}
 				return

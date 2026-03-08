@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
@@ -28,24 +29,42 @@ func main() {
 	cfg := config.Load()
 
 	// Init Logger
-	l := logger.New(nil, cfg.LogLevel, cfg.LogFormat)
-	slog.SetDefault(l)
+	log := logger.New(nil, cfg.LogLevel, cfg.LogFormat)
+	slog.SetDefault(log)
 
+	err := run(ctx, cfg)
+	if err != nil {
+		slog.Error("application error", "err", err)
+		os.Exit(1)
+	}
+}
+
+func run(ctx context.Context, cfg *config.Config) error {
 	// Connect DB, run migrations, and create sqlc querier
 	pool, querier, err := db.Querier(ctx, cfg.DatabaseURL)
 	if err != nil {
-		slog.Error("failed to connect to database", "err", err)
-		os.Exit(1)
+		return fmt.Errorf("database initialization failed: %w", err)
 	}
 	defer pool.Close()
 
 	// Connect Redis
 	rdb, err := redis.NewClient(ctx, cfg.RedisAddr, cfg.RedisPassword, 0)
 	if err != nil {
-		slog.Error("failed to connect to redis", "err", err)
-		os.Exit(1)
+		return fmt.Errorf("redis initialization failed: %w", err)
 	}
 	defer rdb.Close()
+
+	// Initialize Mailer
+	smtpMailer, err := mailer.NewSMTPMailer(cfg.SMTPHost, cfg.SMTPPort, cfg.SMTPUser, cfg.SMTPPassword, cfg.EmailFrom)
+	if err != nil {
+		return fmt.Errorf("mailer initialization failed: %w", err)
+	}
+
+	// Parse PASETO key
+	pasetoKey, err := paseto.V4SymmetricKeyFromHex(cfg.PasetoSecretKey)
+	if err != nil {
+		return fmt.Errorf("failed to parse paseto secret key: %w", err)
+	}
 
 	// Wire Repositories
 	authRepo := repository.NewAuthRepository(querier)
@@ -62,27 +81,15 @@ func main() {
 
 	idempotencyStore := idempotency.NewRedisStore(rdb)
 
-	smtpMailer, err := mailer.NewSMTPMailer(cfg.SMTPHost, cfg.SMTPPort, cfg.SMTPUser, cfg.SMTPPassword, cfg.EmailFrom)
-	if err != nil {
-		slog.Error("failed to initialize mailer", "err", err)
-		os.Exit(1)
-	}
-
-	pasetoKey, err := paseto.V4SymmetricKeyFromHex(cfg.PasetoSecretKey)
-	if err != nil {
-		slog.Error("failed to parse paseto secret key", "err", err)
-		os.Exit(1)
-	}
-
 	// Wire Services
 	authSvc := service.NewAuthService(authRepo, userRepo, auditRepo, smtpMailer, pasetoKey)
 	tenantSvc := service.NewTenantService(tenantRepo, userRepo, auditRepo)
 	accountSvc := service.NewAccountService(accountRepo, userRepo, auditRepo)
 	categorySvc := service.NewCategoryService(categoryRepo, auditRepo)
 	transactionSvc := service.NewTransactionService(transactionRepo, accountRepo, categoryRepo, auditRepo)
-	adminSvc := service.NewAdminService(adminTenantRepo, adminUserRepo, adminAuditRepo, auditRepo, l)
+	adminSvc := service.NewAdminService(adminTenantRepo, adminUserRepo, adminAuditRepo, auditRepo)
 
-	rateLimiterStore := middleware.NewRateLimiterStore(l)
+	rateLimiterStore := middleware.NewRateLimiterStore()
 	tokenParser := paseto.NewTokenParser(pasetoKey)
 
 	// Create Server
@@ -126,4 +133,6 @@ func main() {
 
 	<-idleConnsClosed
 	slog.Info("server stopped")
+
+	return nil
 }
