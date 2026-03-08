@@ -11,10 +11,6 @@ import (
 func (s *Server) routes() http.Handler {
 	mux := http.NewServeMux()
 
-<<<<<<< Updated upstream
-	// Placeholder routes until Task 1.5.4+ handlers are built
-	mux.HandleFunc("/healthz", s.handleHealthz)
-=======
 	// 1. Auth & Public Routes
 	mux.HandleFunc("GET /healthz", s.handleHealthz)
 
@@ -65,13 +61,10 @@ func (s *Server) routes() http.Handler {
 	mux.Handle("GET /v1/admin/users", requireAuth(sysadminOnly(http.HandlerFunc(s.handleAdminListUsers))))
 	mux.Handle("DELETE /v1/admin/users/{id}", requireAuth(sysadminOnly(http.HandlerFunc(s.handleAdminForceDeleteUser))))
 	mux.Handle("GET /v1/admin/audit-logs", requireAuth(sysadminOnly(http.HandlerFunc(s.handleAdminListAuditLogs))))
->>>>>>> Stashed changes
 
 	return mux
 }
 
-<<<<<<< Updated upstream
-=======
 // TODO: Implement handlers in Tasks 1.5.4 - 1.5.9
 
 func (s *Server) handleGetTenantMe(w http.ResponseWriter, r *http.Request)           {}
@@ -102,7 +95,6 @@ func (s *Server) handleAdminListUsers(w http.ResponseWriter, r *http.Request)   
 func (s *Server) handleAdminForceDeleteUser(w http.ResponseWriter, r *http.Request)  {}
 func (s *Server) handleAdminListAuditLogs(w http.ResponseWriter, r *http.Request)    {}
 
->>>>>>> Stashed changes
 func (s *Server) handleHealthz(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		w.WriteHeader(http.StatusMethodNotAllowed)
