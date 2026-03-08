@@ -74,3 +74,24 @@ type CategoryRepository interface {
 	// Delete performs a soft delete on the specified category.
 	Delete(ctx context.Context, tenantID, id string) error
 }
+
+// CategoryService defines the business-logic contract for category management.
+type CategoryService interface {
+	// Create persists a new category with hierarchy depth validation.
+	Create(ctx context.Context, tenantID string, input CreateCategoryInput) (*Category, error)
+
+	// GetByID retrieves a specific category by its ID and tenant ID.
+	GetByID(ctx context.Context, tenantID, id string) (*Category, error)
+
+	// ListByTenant returns all categories for the given tenant.
+	ListByTenant(ctx context.Context, tenantID string) ([]Category, error)
+
+	// ListChildren returns all subcategories for a given parent within a tenant.
+	ListChildren(ctx context.Context, tenantID, parentID string) ([]Category, error)
+
+	// Update modifies an existing category's metadata and writes to the audit trail.
+	Update(ctx context.Context, tenantID, id string, input UpdateCategoryInput) (*Category, error)
+
+	// Delete performs a soft-delete and writes to the audit trail.
+	Delete(ctx context.Context, tenantID, id string) error
+}

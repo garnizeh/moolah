@@ -1,7 +1,7 @@
 # Task 1.4.4 — `service/category_service.go` + unit tests
 
 > **Roadmap Ref:** Phase 1 — MVP › 1.4 Service Layer
-> **Status:** 🔵 `backlog`
+> **Status:** ✅ `done`
 > **Last Updated:** 2026-03-07
 > **Assignee:** —
 > **Estimated Effort:** S
@@ -24,15 +24,15 @@ Categories are tenant-scoped labels for transactions. The domain supports one le
 
 ### In scope
 
-- [ ] `internal/service/category_service.go` — concrete `CategoryService` struct.
-- [ ] `internal/domain/category.go` — add `CategoryService` interface definition.
-- [ ] `Create(ctx, tenantID string, input CreateCategoryInput) (*Category, error)` — validate hierarchy depth, persist, audit log `create`.
-- [ ] `GetByID(ctx, tenantID, id string) (*Category, error)` — tenant-scoped fetch.
-- [ ] `ListByTenant(ctx, tenantID string) ([]Category, error)` — all categories.
-- [ ] `ListChildren(ctx, tenantID, parentID string) ([]Category, error)` — subcategories.
-- [ ] `Update(ctx, tenantID, id string, input UpdateCategoryInput) (*Category, error)` — name/icon/color only; audit log `update`.
-- [ ] `Delete(ctx, tenantID, id string) error` — soft-delete; audit log `soft_delete`.
-- [ ] Full unit tests in `internal/service/category_service_test.go`.
+- [x] `internal/service/category_service.go` — concrete `CategoryService` struct.
+- [x] `internal/domain/category.go` — add `CategoryService` interface definition.
+- [x] `Create(ctx, tenantID string, input CreateCategoryInput) (*Category, error)` — validate hierarchy depth, persist, audit log `create`.
+- [x] `GetByID(ctx, tenantID, id string) (*Category, error)` — tenant-scoped fetch.
+- [x] `ListByTenant(ctx, tenantID string) ([]Category, error)` — all categories.
+- [x] `ListChildren(ctx, tenantID, parentID string) ([]Category, error)` — subcategories.
+- [x] `Update(ctx, tenantID, id string, input UpdateCategoryInput) (*Category, error)` — name/icon/color only; audit log `update`.
+- [x] `Delete(ctx, tenantID, id string) error` — soft-delete; audit log `soft_delete`.
+- [x] Full unit tests in `internal/service/category_service_test.go`.
 
 ### Out of scope
 
@@ -86,16 +86,16 @@ type CategoryService interface {
 
 ## 5. Acceptance Criteria
 
-- [ ] `CategoryService` interface defined in `internal/domain/category.go`.
-- [ ] `NewCategoryService` constructor accepts `CategoryRepository` and `AuditRepository`.
-- [ ] `Create` with a child of a child returns `domain.ErrInvalidInput`.
-- [ ] `Create` with a non-existent `ParentID` returns `domain.ErrNotFound`.
-- [ ] `Update` writes audit log with old and new values.
-- [ ] `Delete` writes audit log `soft_delete`.
-- [ ] Unit tests cover all happy paths and all error branches (≥ 80% coverage).
-- [ ] `golangci-lint run ./...` passes with zero issues.
-- [ ] `gosec ./...` passes with zero issues.
-- [ ] `docs/ROADMAP.md` row updated to ✅ `done`.
+- [x] `CategoryService` interface defined in `internal/domain/category.go`.
+- [x] `NewCategoryService` constructor accepts `CategoryRepository` and `AuditRepository`.
+- [x] `Create` with a child of a child returns `domain.ErrInvalidInput`.
+- [x] `Create` with a non-existent `ParentID` returns `domain.ErrNotFound`.
+- [x] `Update` writes audit log with old and new values.
+- [x] `Delete` writes audit log `soft_delete`.
+- [x] Unit tests cover all happy paths and all error branches (≥ 80% coverage).
+- [x] `golangci-lint run ./...` passes with zero issues.
+- [x] `gosec ./...` passes with zero issues.
+- [x] `docs/ROADMAP.md` row updated to ✅ `done`.
 
 ---
 
