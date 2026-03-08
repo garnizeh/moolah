@@ -48,3 +48,36 @@ type AdminAuditRepository interface {
 	// ListAll returns audit logs across all tenants with optional filters.
 	ListAll(ctx context.Context, params ListAuditLogsParams) ([]AuditLog, error)
 }
+
+// AdminService defines the business-logic contract for cross-tenant sysadmin operations.
+type AdminService interface {
+	// ListAllTenants returns all tenants in the system, with an option to include soft-deleted ones.
+	ListAllTenants(ctx context.Context, withDeleted bool) ([]Tenant, error)
+
+	// GetTenantByID retrieves a tenant by its ID without tenant isolation.
+	GetTenantByID(ctx context.Context, id string) (*Tenant, error)
+
+	// UpdateTenantPlan changes the subscription plan for a tenant.
+	UpdateTenantPlan(ctx context.Context, id string, plan TenantPlan) (*Tenant, error)
+
+	// SuspendTenant performs a soft-delete on the tenant, blocking all user access.
+	SuspendTenant(ctx context.Context, id string) error
+
+	// RestoreTenant reverses a soft-delete on the tenant, restoring user access.
+	RestoreTenant(ctx context.Context, id string) error
+
+	// HardDeleteTenant permanently deletes a tenant and all associated data after confirmation.
+	HardDeleteTenant(ctx context.Context, id, confirmationToken string) error
+
+	// ListAllUsers returns all users across the system without tenant isolation.
+	ListAllUsers(ctx context.Context) ([]User, error)
+
+	// GetUserByID retrieves a user by ID without tenant isolation.
+	GetUserByID(ctx context.Context, id string) (*User, error)
+
+	// ForceDeleteUser permanently deletes a user record without tenant isolation.
+	ForceDeleteUser(ctx context.Context, id string) error
+
+	// ListAuditLogs returns audit logs across all tenants with optional filters, without tenant isolation.
+	ListAuditLogs(ctx context.Context, params ListAuditLogsParams) ([]AuditLog, error)
+}

@@ -38,17 +38,23 @@ type UpdateUserInput struct {
 type UserRepository interface {
 	// Create persists a new user within a tenant.
 	Create(ctx context.Context, input CreateUserInput) (*User, error)
+
 	// GetByID retrieves a user by ID, scoped to a specific tenant.
 	GetByID(ctx context.Context, tenantID, id string) (*User, error)
+
 	// GetByEmail retrieves a user by their unique email across all tenants.
 	// Used primarily during the authentication flow.
 	GetByEmail(ctx context.Context, email string) (*User, error)
+
 	// ListByTenant returns all active users belonging to a household.
 	ListByTenant(ctx context.Context, tenantID string) ([]User, error)
+
 	// Update modifies a user's attributes within their tenant.
 	Update(ctx context.Context, tenantID, id string, input UpdateUserInput) (*User, error)
+
 	// UpdateLastLogin updates the login timestamp for a user.
 	UpdateLastLogin(ctx context.Context, id string) error
+
 	// Delete performs a soft-delete on a user.
 	Delete(ctx context.Context, tenantID, id string) error
 }

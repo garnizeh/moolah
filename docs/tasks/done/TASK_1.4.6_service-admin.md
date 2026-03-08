@@ -1,7 +1,7 @@
 # Task 1.4.6 — `service/admin_service.go` + unit tests
 
 > **Roadmap Ref:** Phase 1 — MVP › 1.4 Service Layer
-> **Status:** 🔵 `backlog`
+> **Status:** ✅ `done`
 > **Last Updated:** 2026-03-07
 > **Assignee:** —
 > **Estimated Effort:** M

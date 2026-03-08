@@ -252,6 +252,143 @@ func (m *AuditRepository) ListByEntity(ctx context.Context, tenantID, entityType
 
 var _ domain.AuditRepository = (*AuditRepository)(nil)
 
+// AdminTenantRepository is a mock implementation of domain.AdminTenantRepository.
+type AdminTenantRepository struct {
+	mock.Mock
+}
+
+func (m *AdminTenantRepository) ListAll(ctx context.Context, withDeleted bool) ([]domain.Tenant, error) {
+	args := m.Called(ctx, withDeleted)
+	var err error
+	if e := args.Error(1); e != nil {
+		err = fmt.Errorf("mock AdminTenantRepository.ListAll: %w", e)
+	}
+
+	res, ok := args.Get(0).([]domain.Tenant)
+	if !ok && args.Get(0) != nil {
+		return nil, fmt.Errorf("mock AdminTenantRepository.ListAll: unexpected type %T", args.Get(0))
+	}
+	return res, err
+}
+
+func (m *AdminTenantRepository) GetByID(ctx context.Context, id string) (*domain.Tenant, error) {
+	args := m.Called(ctx, id)
+	var err error
+	if e := args.Error(1); e != nil {
+		err = fmt.Errorf("mock AdminTenantRepository.GetByID: %w", e)
+	}
+
+	res, ok := args.Get(0).(*domain.Tenant)
+	if !ok && args.Get(0) != nil {
+		return nil, fmt.Errorf("mock AdminTenantRepository.GetByID: unexpected type %T", args.Get(0))
+	}
+	return res, err
+}
+
+func (m *AdminTenantRepository) UpdatePlan(ctx context.Context, id string, plan domain.TenantPlan) (*domain.Tenant, error) {
+	args := m.Called(ctx, id, plan)
+	var err error
+	if e := args.Error(1); e != nil {
+		err = fmt.Errorf("mock AdminTenantRepository.UpdatePlan: %w", e)
+	}
+
+	res, ok := args.Get(0).(*domain.Tenant)
+	if !ok && args.Get(0) != nil {
+		return nil, fmt.Errorf("mock AdminTenantRepository.UpdatePlan: unexpected type %T", args.Get(0))
+	}
+	return res, err
+}
+
+func (m *AdminTenantRepository) Suspend(ctx context.Context, id string) error {
+	args := m.Called(ctx, id)
+	if e := args.Error(0); e != nil {
+		return fmt.Errorf("mock AdminTenantRepository.Suspend: %w", e)
+	}
+	return nil
+}
+
+func (m *AdminTenantRepository) Restore(ctx context.Context, id string) error {
+	args := m.Called(ctx, id)
+	if e := args.Error(0); e != nil {
+		return fmt.Errorf("mock AdminTenantRepository.Restore: %w", e)
+	}
+	return nil
+}
+
+func (m *AdminTenantRepository) HardDelete(ctx context.Context, id string) error {
+	args := m.Called(ctx, id)
+	if e := args.Error(0); e != nil {
+		return fmt.Errorf("mock AdminTenantRepository.HardDelete: %w", e)
+	}
+	return nil
+}
+
+var _ domain.AdminTenantRepository = (*AdminTenantRepository)(nil)
+
+// AdminUserRepository is a mock implementation of domain.AdminUserRepository.
+type AdminUserRepository struct {
+	mock.Mock
+}
+
+func (m *AdminUserRepository) ListAll(ctx context.Context) ([]domain.User, error) {
+	args := m.Called(ctx)
+	var err error
+	if e := args.Error(1); e != nil {
+		err = fmt.Errorf("mock AdminUserRepository.ListAll: %w", e)
+	}
+
+	res, ok := args.Get(0).([]domain.User)
+	if !ok && args.Get(0) != nil {
+		return nil, fmt.Errorf("mock AdminUserRepository.ListAll: unexpected type %T", args.Get(0))
+	}
+	return res, err
+}
+
+func (m *AdminUserRepository) GetByID(ctx context.Context, id string) (*domain.User, error) {
+	args := m.Called(ctx, id)
+	var err error
+	if e := args.Error(1); e != nil {
+		err = fmt.Errorf("mock AdminUserRepository.GetByID: %w", e)
+	}
+
+	res, ok := args.Get(0).(*domain.User)
+	if !ok && args.Get(0) != nil {
+		return nil, fmt.Errorf("mock AdminUserRepository.GetByID: unexpected type %T", args.Get(0))
+	}
+	return res, err
+}
+
+func (m *AdminUserRepository) ForceDelete(ctx context.Context, id string) error {
+	args := m.Called(ctx, id)
+	if e := args.Error(0); e != nil {
+		return fmt.Errorf("mock AdminUserRepository.ForceDelete: %w", e)
+	}
+	return nil
+}
+
+var _ domain.AdminUserRepository = (*AdminUserRepository)(nil)
+
+// AdminAuditRepository is a mock implementation of domain.AdminAuditRepository.
+type AdminAuditRepository struct {
+	mock.Mock
+}
+
+func (m *AdminAuditRepository) ListAll(ctx context.Context, params domain.ListAuditLogsParams) ([]domain.AuditLog, error) {
+	args := m.Called(ctx, params)
+	var err error
+	if e := args.Error(1); e != nil {
+		err = fmt.Errorf("mock AdminAuditRepository.ListAll: %w", e)
+	}
+
+	res, ok := args.Get(0).([]domain.AuditLog)
+	if !ok && args.Get(0) != nil {
+		return nil, fmt.Errorf("mock AdminAuditRepository.ListAll: unexpected type %T", args.Get(0))
+	}
+	return res, err
+}
+
+var _ domain.AdminAuditRepository = (*AdminAuditRepository)(nil)
+
 // AccountRepository is a testify/mock implementation of domain.AccountRepository.
 type AccountRepository struct {
 	mock.Mock

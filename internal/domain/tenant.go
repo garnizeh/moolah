@@ -43,12 +43,16 @@ type UpdateTenantInput struct {
 type TenantRepository interface {
 	// Create persists a new tenant.
 	Create(ctx context.Context, input CreateTenantInput) (*Tenant, error)
+
 	// GetByID retrieves a tenant by its unique identifier.
 	GetByID(ctx context.Context, id string) (*Tenant, error)
+
 	// List returns all active (non-deleted) tenants.
 	List(ctx context.Context) ([]Tenant, error)
+
 	// Update modifies an existing tenant's attributes.
 	Update(ctx context.Context, id string, input UpdateTenantInput) (*Tenant, error)
+
 	// Delete performs a soft-delete on the tenant.
 	Delete(ctx context.Context, id string) error
 }
@@ -57,14 +61,19 @@ type TenantRepository interface {
 type TenantService interface {
 	// Create persists a new tenant and records an audit log.
 	Create(ctx context.Context, input CreateTenantInput) (*Tenant, error)
+
 	// GetByID retrieves a tenant by its unique identifier.
 	GetByID(ctx context.Context, id string) (*Tenant, error)
+
 	// List returns all active (non-deleted) tenants. Restricted to sysadmins.
 	List(ctx context.Context) ([]Tenant, error)
+
 	// Update modifies an existing tenant's attributes and records an audit log.
 	Update(ctx context.Context, id string, input UpdateTenantInput) (*Tenant, error)
+
 	// Delete performs a soft-delete on the tenant and records an audit log.
 	Delete(ctx context.Context, id string) error
+
 	// InviteUser creates a new user within the context of a tenant.
 	InviteUser(ctx context.Context, tenantID string, input CreateUserInput) (*User, error)
 }
