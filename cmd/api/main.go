@@ -36,11 +36,12 @@ func main() {
 	slog.SetDefault(l)
 
 	// Connect DB, run migrations, and create sqlc querier
-	querier, err := db.Querier(ctx, cfg.DatabaseURL)
+	querier, dbPool, err := db.Querier(ctx, cfg.DatabaseURL)
 	if err != nil {
 		slog.Error("failed to connect to database", "err", err)
 		os.Exit(1)
 	}
+	defer dbPool.Close()
 
 	// 5. Connect Redis
 	rdb := redis.NewClient(&redis.Options{
