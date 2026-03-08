@@ -1,6 +1,5 @@
 # Moolah — Project Roadmap
 
-> **Version:** 1.0.0 | **Last Updated:** 2026-03-07 | **Status:** 🟡 In Progress
 > **Version:** 1.0.0 | **Last Updated:** 2026-03-08 | **Status:** 🟡 In Progress
 | 1.5.2 | `cmd/api/server.go` — `http.Server` factory, middleware chain | ✅ `done` | 2026-03-08 | Implemented in `internal/server`: global logger middleware applied; `/healthz` route fixed. |
 
@@ -115,7 +114,7 @@
 | 1.5.1 | `cmd/api/main.go` — DI wiring, Goose migrations, server start | ✅ `done` | 2026-03-07 | |
 | 1.5.2 | `cmd/api/server.go` — `http.Server` factory, middleware chain | ✅ `done` | 2026-03-08 | |
 | 1.5.3 | `cmd/api/routes.go` — all route registrations | ✅ `done` | 2026-03-08 | Go 1.22 `METHOD /path/{param}` syntax; middleware wired. |
-| 1.5.4 | `handler/auth_handler.go` — `RequestOTP`, `VerifyOTP`, `RefreshToken` | 🔵 `backlog` | 2026-03-07 | |
+| 1.5.4 | `handler/auth_handler.go` — `RequestOTP`, `VerifyOTP`, `RefreshToken` | � `in-progress` | 2026-03-08 | |
 | 1.5.5 | `handler/tenant_handler.go` — `GetMe`, `UpdateMe`, `InviteUser` | 🔵 `backlog` | 2026-03-07 | |
 | 1.5.6 | `handler/account_handler.go` — full CRUD | 🔵 `backlog` | 2026-03-07 | |
 | 1.5.7 | `handler/category_handler.go` — CRUD | 🔵 `backlog` | 2026-03-07 | |

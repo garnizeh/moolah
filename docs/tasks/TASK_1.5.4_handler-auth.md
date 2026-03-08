@@ -1,8 +1,8 @@
 # Task 1.5.4 — `handler/auth_handler.go` — `RequestOTP`, `VerifyOTP`, `RefreshToken`
 
 > **Roadmap Ref:** Phase 1 — MVP › 1.5 HTTP Handler Layer
-> **Status:** 🔵 `backlog`
-> **Last Updated:** 2026-03-07
+> **Status:** � `in-progress`
+> **Last Updated:** 2026-03-08
 > **Assignee:** —
 > **Estimated Effort:** M
 
