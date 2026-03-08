@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -155,6 +156,87 @@ func TestIdempotencyMiddleware(t *testing.T) {
 		handler.ServeHTTP(rec, req)
 
 		assert.Equal(t, http.StatusInternalServerError, rec.Code)
+		store.AssertExpectations(t)
+	})
+
+	t.Run("store get error returns 500", func(t *testing.T) {
+		t.Parallel()
+		store := new(mocks.IdempotencyStore)
+		mw := Idempotency(store)
+		handler := mw(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {}))
+
+		store.On("Get", mock.Anything, redisKey).Return((*domain.CachedResponse)(nil), errors.New("redis down"))
+
+		req := httptest.NewRequest(http.MethodPost, "/", nil)
+		req.Header.Set(idempotencyHeader, key)
+		ctx := context.WithValue(req.Context(), UserIDKey, userID)
+		req = req.WithContext(ctx)
+
+		rec := httptest.NewRecorder()
+		handler.ServeHTTP(rec, req)
+
+		assert.Equal(t, http.StatusInternalServerError, rec.Code)
+		assert.Contains(t, rec.Body.String(), "internal_error")
+	})
+
+	t.Run("lock acquisition error returns 500", func(t *testing.T) {
+		t.Parallel()
+		store := new(mocks.IdempotencyStore)
+		mw := Idempotency(store)
+		handler := mw(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {}))
+
+		store.On("Get", mock.Anything, redisKey).Return(nil, nil)
+		store.On("SetLocked", mock.Anything, redisKey, idempotencyTTL).Return(false, errors.New("redis down"))
+
+		req := httptest.NewRequest(http.MethodPost, "/", nil)
+		req.Header.Set(idempotencyHeader, key)
+		ctx := context.WithValue(req.Context(), UserIDKey, userID)
+		req = req.WithContext(ctx)
+
+		rec := httptest.NewRecorder()
+		handler.ServeHTTP(rec, req)
+
+		assert.Equal(t, http.StatusInternalServerError, rec.Code)
+		assert.Contains(t, rec.Body.String(), "internal_error")
+	})
+
+	t.Run("non post bypasses idempotency", func(t *testing.T) {
+		t.Parallel()
+		store := new(mocks.IdempotencyStore)
+		mw := Idempotency(store)
+		handlerCalled := false
+		handler := mw(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			handlerCalled = true
+			w.WriteHeader(http.StatusNoContent)
+		}))
+
+		req := httptest.NewRequest(http.MethodGet, "/", nil)
+		rec := httptest.NewRecorder()
+		handler.ServeHTTP(rec, req)
+
+		assert.True(t, handlerCalled)
+		assert.Equal(t, http.StatusNoContent, rec.Code)
+	})
+
+	t.Run("missing user defaults to anonymous", func(t *testing.T) {
+		t.Parallel()
+		store := new(mocks.IdempotencyStore)
+		mw := Idempotency(store)
+		handler := mw(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusCreated)
+		}))
+
+		anonymousKey := "idempotency:anonymous:test-key"
+		store.On("Get", mock.Anything, anonymousKey).Return(nil, nil)
+		store.On("SetLocked", mock.Anything, anonymousKey, idempotencyTTL).Return(true, nil)
+		store.On("SetResponse", mock.Anything, anonymousKey, mock.Anything, idempotencyTTL).Return(nil)
+
+		req := httptest.NewRequest(http.MethodPost, "/", nil)
+		req.Header.Set(idempotencyHeader, key)
+		rec := httptest.NewRecorder()
+		handler.ServeHTTP(rec, req)
+
+		assert.Equal(t, http.StatusCreated, rec.Code)
 		store.AssertExpectations(t)
 	})
 }

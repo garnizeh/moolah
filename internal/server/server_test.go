@@ -2,7 +2,9 @@ package server
 
 import (
 	"context"
+	"net"
 	"net/http"
+	"strconv"
 	"testing"
 	"time"
 
@@ -95,4 +97,55 @@ func TestServer_ListenAndServe_Shutdown(t *testing.T) {
 	case <-time.After(1 * time.Second):
 		t.Fatal("server did not return after shutdown")
 	}
+}
+
+func TestServer_ListenAndServe_BindError(t *testing.T) {
+	t.Parallel()
+
+	listener, err := net.Listen("tcp", "127.0.0.1:0")
+	require.NoError(t, err)
+	defer func() {
+		require.NoError(t, listener.Close())
+	}()
+
+	tcpAddr, ok := listener.Addr().(*net.TCPAddr)
+	require.True(t, ok)
+
+	port := strconv.Itoa(tcpAddr.Port)
+	s := New(
+		port,
+		new(mocks.AuthService),
+		new(mocks.TenantService),
+		new(mocks.AccountService),
+		new(mocks.CategoryService),
+		new(mocks.TransactionService),
+		new(mocks.AdminService),
+		new(mocks.IdempotencyStore),
+		nil,
+		nil,
+	)
+
+	err = s.ListenAndServe(context.Background(), 100*time.Millisecond, 100*time.Millisecond)
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "server failed")
+}
+
+func TestServer_Shutdown_NoHTTPServer(t *testing.T) {
+	t.Parallel()
+
+	s := New(
+		"0",
+		new(mocks.AuthService),
+		new(mocks.TenantService),
+		new(mocks.AccountService),
+		new(mocks.CategoryService),
+		new(mocks.TransactionService),
+		new(mocks.AdminService),
+		new(mocks.IdempotencyStore),
+		nil,
+		nil,
+	)
+
+	err := s.Shutdown(context.Background())
+	require.NoError(t, err)
 }

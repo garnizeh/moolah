@@ -2,6 +2,7 @@ package service_test
 
 import (
 	"context"
+	"errors"
 	"testing"
 
 	"github.com/garnizeh/moolah/internal/domain"
@@ -155,6 +156,18 @@ func TestCategoryService_List(t *testing.T) {
 		require.Equal(t, categories, res)
 	})
 
+	t.Run("ListByTenant_Error", func(t *testing.T) {
+		t.Parallel()
+		categoryRepo := new(mocks.CategoryRepository)
+		categoryRepo.On("ListByTenant", ctx, tenantID).Return(([]domain.Category)(nil), errors.New("db error"))
+
+		svc := service.NewCategoryService(categoryRepo, nil)
+		res, err := svc.ListByTenant(ctx, tenantID)
+
+		require.Error(t, err)
+		require.Nil(t, res)
+	})
+
 	t.Run("ListChildren", func(t *testing.T) {
 		t.Parallel()
 		categoryRepo := new(mocks.CategoryRepository)
@@ -167,6 +180,19 @@ func TestCategoryService_List(t *testing.T) {
 
 		require.NoError(t, err)
 		require.Equal(t, categories, res)
+	})
+
+	t.Run("ListChildren_Error", func(t *testing.T) {
+		t.Parallel()
+		categoryRepo := new(mocks.CategoryRepository)
+		parentID := "parent_1"
+		categoryRepo.On("ListChildren", ctx, tenantID, parentID).Return(([]domain.Category)(nil), errors.New("db error"))
+
+		svc := service.NewCategoryService(categoryRepo, nil)
+		res, err := svc.ListChildren(ctx, tenantID, parentID)
+
+		require.Error(t, err)
+		require.Nil(t, res)
 	})
 }
 
@@ -196,6 +222,21 @@ func TestCategoryService_Update(t *testing.T) {
 
 		require.NoError(t, err)
 		require.Equal(t, newCat, res)
+	})
+
+	t.Run("UpdateError", func(t *testing.T) {
+		t.Parallel()
+		categoryRepo := new(mocks.CategoryRepository)
+		oldCat := &domain.Category{ID: catID, Name: "Old Name"}
+
+		categoryRepo.On("GetByID", ctx, tenantID, catID).Return(oldCat, nil)
+		categoryRepo.On("Update", ctx, tenantID, catID, input).Return((*domain.Category)(nil), errors.New("db error"))
+
+		svc := service.NewCategoryService(categoryRepo, nil)
+		res, err := svc.Update(ctx, tenantID, catID, input)
+
+		require.Error(t, err)
+		require.Nil(t, res)
 	})
 }
 
@@ -232,5 +273,20 @@ func TestCategoryService_Delete(t *testing.T) {
 
 		require.Error(t, err)
 		require.ErrorIs(t, err, domain.ErrNotFound)
+	})
+
+	t.Run("DeleteError", func(t *testing.T) {
+		t.Parallel()
+		categoryRepo := new(mocks.CategoryRepository)
+		auditRepo := new(mocks.AuditRepository)
+
+		categoryRepo.On("GetByID", ctx, tenantID, catID).Return(&domain.Category{ID: catID}, nil)
+		auditRepo.On("Create", ctx, mock.Anything).Return(&domain.AuditLog{}, nil)
+		categoryRepo.On("Delete", ctx, tenantID, catID).Return(errors.New("db error"))
+
+		svc := service.NewCategoryService(categoryRepo, auditRepo)
+		err := svc.Delete(ctx, tenantID, catID)
+
+		require.Error(t, err)
 	})
 }

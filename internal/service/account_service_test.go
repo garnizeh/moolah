@@ -147,6 +147,18 @@ func TestAccountService_List(t *testing.T) {
 		require.Equal(t, accounts, res)
 	})
 
+	t.Run("ListByTenant_Error", func(t *testing.T) {
+		t.Parallel()
+		accountRepo := new(mocks.AccountRepository)
+		accountRepo.On("ListByTenant", ctx, tenantID).Return(([]domain.Account)(nil), errors.New("db error"))
+
+		svc := service.NewAccountService(accountRepo, nil, nil)
+		res, err := svc.ListByTenant(ctx, tenantID)
+
+		require.Error(t, err)
+		require.Nil(t, res)
+	})
+
 	t.Run("ListByUser", func(t *testing.T) {
 		t.Parallel()
 		accountRepo := new(mocks.AccountRepository)
@@ -159,6 +171,18 @@ func TestAccountService_List(t *testing.T) {
 
 		require.NoError(t, err)
 		require.Equal(t, accounts, res)
+	})
+
+	t.Run("ListByUser_Error", func(t *testing.T) {
+		t.Parallel()
+		accountRepo := new(mocks.AccountRepository)
+		accountRepo.On("ListByUser", ctx, tenantID, userID).Return(([]domain.Account)(nil), errors.New("db error"))
+
+		svc := service.NewAccountService(accountRepo, nil, nil)
+		res, err := svc.ListByUser(ctx, tenantID, userID)
+
+		require.Error(t, err)
+		require.Nil(t, res)
 	})
 }
 
@@ -202,6 +226,21 @@ func TestAccountService_Update(t *testing.T) {
 		require.ErrorIs(t, err, domain.ErrNotFound)
 		require.Nil(t, res)
 	})
+
+	t.Run("UpdateError", func(t *testing.T) {
+		t.Parallel()
+		accountRepo := new(mocks.AccountRepository)
+		oldAccount := &domain.Account{ID: accountID, TenantID: tenantID, Name: "Old Name"}
+
+		accountRepo.On("GetByID", ctx, tenantID, accountID).Return(oldAccount, nil)
+		accountRepo.On("Update", ctx, tenantID, accountID, input).Return((*domain.Account)(nil), errors.New("db error"))
+
+		svc := service.NewAccountService(accountRepo, nil, nil)
+		res, err := svc.Update(ctx, tenantID, accountID, input)
+
+		require.Error(t, err)
+		require.Nil(t, res)
+	})
 }
 
 func TestAccountService_Delete(t *testing.T) {
@@ -237,5 +276,21 @@ func TestAccountService_Delete(t *testing.T) {
 
 		require.Error(t, err)
 		require.ErrorIs(t, err, domain.ErrNotFound)
+	})
+
+	t.Run("DeleteError", func(t *testing.T) {
+		t.Parallel()
+		accountRepo := new(mocks.AccountRepository)
+		auditRepo := new(mocks.AuditRepository)
+
+		account := &domain.Account{ID: accountID, TenantID: tenantID, UserID: "user_1"}
+		accountRepo.On("GetByID", ctx, tenantID, accountID).Return(account, nil)
+		auditRepo.On("Create", ctx, mock.Anything).Return(&domain.AuditLog{}, nil)
+		accountRepo.On("Delete", ctx, tenantID, accountID).Return(errors.New("db error"))
+
+		svc := service.NewAccountService(accountRepo, nil, auditRepo)
+		err := svc.Delete(ctx, tenantID, accountID)
+
+		require.Error(t, err)
 	})
 }
