@@ -1,8 +1,8 @@
 # Task 1.5.7 — `handler/category_handler.go` — CRUD
 
 > **Roadmap Ref:** Phase 1 — MVP › 1.5 HTTP Handler Layer
-> **Status:** 🔵 `backlog`
-> **Last Updated:** 2026-03-07
+> **Status:** ✅ `done`
+> **Last Updated:** 2025-03-20
 > **Assignee:** —
 > **Estimated Effort:** S
 
@@ -24,13 +24,13 @@ The `CategoryService` is fully implemented (Task 1.4.4) but has no HTTP entry po
 
 ### In scope
 
-- [ ] `internal/handler/category_handler.go` — `CategoryHandler` struct + 5 HTTP handler methods.
-- [ ] `GET /v1/categories` — list all categories for the tenant.
-- [ ] `POST /v1/categories` — create a category (root or child with `parent_id`).
-- [ ] `GET /v1/categories/{id}` — get a single category by ID.
-- [ ] `PATCH /v1/categories/{id}` — partial update (name, icon, color).
-- [ ] `DELETE /v1/categories/{id}` — soft delete.
-- [ ] Unit tests in `internal/handler/category_handler_test.go`.
+- [x] `internal/handler/category_handler.go` — `CategoryHandler` struct + 5 HTTP handler methods.
+- [x] `GET /v1/categories` — list all categories for the tenant.
+- [x] `POST /v1/categories` — create a category (root or child with `parent_id`).
+- [x] `GET /v1/categories/{id}` — get a single category by ID.
+- [x] `PATCH /v1/categories/{id}` — partial update (name, icon, color).
+- [x] `DELETE /v1/categories/{id}` — soft delete.
+- [x] Unit tests in `internal/handler/category_handler_test.go`.
 
 ### Out of scope
 
@@ -89,14 +89,14 @@ type UpdateCategoryRequest struct {
 
 ## 5. Acceptance Criteria
 
-- [ ] All 5 endpoints decode, validate, and call the service correctly.
-- [ ] `tenant_id` is always sourced from context.
-- [ ] All domain error sentinels map to the correct HTTP status codes.
-- [ ] Unit tests cover all happy paths and error cases.
-- [ ] Test coverage for handler ≥ 80%.
-- [ ] `golangci-lint run ./...` passes with zero issues.
-- [ ] `gosec ./...` passes with zero issues.
-- [ ] `docs/ROADMAP.md` row updated to ✅ `done`.
+- [x] All 5 endpoints decode, validate, and call the service correctly.
+- [x] `tenant_id` is always sourced from context.
+- [x] All domain error sentinels map to the correct HTTP status codes.
+- [x] Unit tests cover all happy paths and error cases.
+- [x] Test coverage for handler ≥ 80%.
+- [x] `golangci-lint run ./...` passes with zero issues.
+- [x] `gosec ./...` passes with zero issues.
+- [x] `docs/ROADMAP.md` row updated to ✅ `done`.
 
 ---
 
