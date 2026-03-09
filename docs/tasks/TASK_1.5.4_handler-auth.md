@@ -1,8 +1,8 @@
 # Task 1.5.4 — `handler/auth_handler.go` — `RequestOTP`, `VerifyOTP`, `RefreshToken`
 
 > **Roadmap Ref:** Phase 1 — MVP › 1.5 HTTP Handler Layer
-> **Status:** � `in-progress`
-> **Last Updated:** 2026-03-08
+> **Status:** ✅ `done`
+> **Last Updated:** 2026-03-09
 > **Assignee:** —
 > **Estimated Effort:** M
 
@@ -24,13 +24,13 @@ The `AuthService` is fully implemented (Task 1.4.1) but has no HTTP entry point.
 
 ### In scope
 
-- [ ] `internal/handler/auth_handler.go` — `AuthHandler` struct + 3 HTTP handler methods.
-- [ ] `POST /v1/auth/otp/request` — validate email, call `AuthService.RequestOTP`.
-- [ ] `POST /v1/auth/otp/verify` — validate email + code, call `AuthService.VerifyOTP`, return token.
-- [ ] `POST /v1/auth/token/refresh` — extract bearer token, call `AuthService.RefreshToken`, return new token.
-- [ ] Request struct validation via `go-playground/validator`.
-- [ ] Domain error → HTTP status mapping.
-- [ ] Unit tests in `internal/handler/auth_handler_test.go` with mocked `AuthService`.
+- [x] `internal/handler/auth_handler.go` — `AuthHandler` struct + 3 HTTP handler methods.
+- [x] `POST /v1/auth/otp/request` — validate email, call `AuthService.RequestOTP`.
+- [x] `POST /v1/auth/otp/verify` — validate email + code, call `AuthService.VerifyOTP`, return token.
+- [x] `POST /v1/auth/token/refresh` — extract bearer token, call `AuthService.RefreshToken`, return new token.
+- [x] Request struct validation via `go-playground/validator`.
+- [x] Domain error → HTTP status mapping.
+- [x] Unit tests in `internal/handler/auth_handler_test.go` with mocked `AuthService`.
 
 ### Out of scope
 
@@ -90,14 +90,14 @@ type TokenResponse struct {
 
 ## 5. Acceptance Criteria
 
-- [ ] All 3 endpoints decode, validate, and call the service correctly.
-- [ ] All domain error sentinels map to the correct HTTP status codes.
-- [ ] JSON responses follow a consistent envelope: `{"data": ...}` for success and `{"error": "..."}` for failures.
-- [ ] Unit tests cover happy paths and all named error cases.
-- [ ] Test coverage for handler ≥ 80%.
-- [ ] `golangci-lint run ./...` passes with zero issues.
-- [ ] `gosec ./...` passes with zero issues.
-- [ ] `docs/ROADMAP.md` row updated to ✅ `done`.
+- [x] All 3 endpoints decode, validate, and call the service correctly.
+- [x] All domain error sentinels map to the correct HTTP status codes.
+- [x] JSON responses follow a consistent envelope: `{"data": ...}` for success and `{"error": "..."}` for failures.
+- [x] Unit tests cover happy paths and all named error cases.
+- [x] Test coverage for handler ≥ 80%.
+- [x] `golangci-lint run ./...` passes with zero issues.
+- [x] `gosec ./......` passes with zero issues.
+- [x] `docs/ROADMAP.md` row updated to ✅ `done`.
 
 ---
 
@@ -141,3 +141,4 @@ type TokenResponse struct {
 | Date       | Author | Change                    |
 | ---------- | ------ | ------------------------- |
 | 2026-03-07 | —      | Task created from roadmap |
+| 2026-03-09 | —      | Completed handler implementation and tests |
