@@ -230,4 +230,3 @@ func (h *CategoryHandler) Delete(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusNoContent)
 }
-
