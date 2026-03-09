@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.3.0](https://github.com/garnizeh/moolah/compare/v1.2.0...v1.3.0) (2026-03-09)
+
+
+### Features
+
+* Implement CRUD operations for category management and add tests ([774801f](https://github.com/garnizeh/moolah/commit/774801ff20d79cb963d764f9f1c48108b6a64e2d))
+
+
+### Bug Fixes
+
+* Remove unnecessary newline in Delete handler ([a3ee1a3](https://github.com/garnizeh/moolah/commit/a3ee1a3f1663082dad866db3c5f8cd820585b2f2))
+
 ## [1.2.0](https://github.com/garnizeh/moolah/compare/v1.1.0...v1.2.0) (2026-03-09)
 
 
