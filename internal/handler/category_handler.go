@@ -41,7 +41,7 @@ type UpdateCategoryRequest struct {
 func (h *CategoryHandler) List(w http.ResponseWriter, r *http.Request) {
 	tenantID, ok := middleware.TenantIDFromCtx(r.Context())
 	if !ok {
-		h.respondError(w, r, "unauthorized", http.StatusUnauthorized)
+		respondError(w, r, "unauthorized", http.StatusUnauthorized)
 		return
 	}
 
@@ -59,7 +59,7 @@ func (h *CategoryHandler) List(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		slog.ErrorContext(r.Context(), "failed to list categories", "error", err, "tenant_id", tenantID)
-		h.respondError(w, r, "internal server error", http.StatusInternalServerError)
+		respondError(w, r, "internal server error", http.StatusInternalServerError)
 		return
 	}
 
@@ -74,25 +74,25 @@ func (h *CategoryHandler) List(w http.ResponseWriter, r *http.Request) {
 		categories = filtered
 	}
 
-	h.respondJSON(w, r, categories, http.StatusOK)
+	respondJSON(w, r, categories, http.StatusOK)
 }
 
 // Create handles POST /v1/categories
 func (h *CategoryHandler) Create(w http.ResponseWriter, r *http.Request) {
 	tenantID, ok := middleware.TenantIDFromCtx(r.Context())
 	if !ok {
-		h.respondError(w, r, "unauthorized", http.StatusUnauthorized)
+		respondError(w, r, "unauthorized", http.StatusUnauthorized)
 		return
 	}
 
 	var req CreateCategoryRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		h.respondError(w, r, "invalid request body", http.StatusBadRequest)
+		respondError(w, r, "invalid request body", http.StatusBadRequest)
 		return
 	}
 
 	if err := h.validate.Struct(req); err != nil {
-		h.respondError(w, r, err.Error(), http.StatusUnprocessableEntity)
+		respondError(w, r, err.Error(), http.StatusUnprocessableEntity)
 		return
 	}
 
@@ -115,69 +115,69 @@ func (h *CategoryHandler) Create(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		switch {
 		case errors.Is(err, domain.ErrConflict):
-			h.respondError(w, r, "category already exists", http.StatusConflict)
+			respondError(w, r, "category already exists", http.StatusConflict)
 		case errors.Is(err, domain.ErrInvalidInput):
-			h.respondError(w, r, err.Error(), http.StatusUnprocessableEntity)
+			respondError(w, r, err.Error(), http.StatusUnprocessableEntity)
 		default:
 			slog.ErrorContext(r.Context(), "failed to create category", "error", err, "tenant_id", tenantID)
-			h.respondError(w, r, "internal server error", http.StatusInternalServerError)
+			respondError(w, r, "internal server error", http.StatusInternalServerError)
 		}
 		return
 	}
 
-	h.respondJSON(w, r, category, http.StatusCreated)
+	respondJSON(w, r, category, http.StatusCreated)
 }
 
 // GetByID handles GET /v1/categories/{id}
 func (h *CategoryHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	tenantID, ok := middleware.TenantIDFromCtx(r.Context())
 	if !ok {
-		h.respondError(w, r, "unauthorized", http.StatusUnauthorized)
+		respondError(w, r, "unauthorized", http.StatusUnauthorized)
 		return
 	}
 
 	id := r.PathValue("id")
 	if id == "" {
-		h.respondError(w, r, "missing category id", http.StatusBadRequest)
+		respondError(w, r, "missing category id", http.StatusBadRequest)
 		return
 	}
 
 	category, err := h.service.GetByID(r.Context(), tenantID, id)
 	if err != nil {
 		if errors.Is(err, domain.ErrNotFound) {
-			h.respondError(w, r, "category not found", http.StatusNotFound)
+			respondError(w, r, "category not found", http.StatusNotFound)
 			return
 		}
 		slog.ErrorContext(r.Context(), "failed to get category", "error", err, "tenant_id", tenantID, "category_id", id)
-		h.respondError(w, r, "internal server error", http.StatusInternalServerError)
+		respondError(w, r, "internal server error", http.StatusInternalServerError)
 		return
 	}
 
-	h.respondJSON(w, r, category, http.StatusOK)
+	respondJSON(w, r, category, http.StatusOK)
 }
 
 // Update handles PATCH /v1/categories/{id}
 func (h *CategoryHandler) Update(w http.ResponseWriter, r *http.Request) {
 	tenantID, ok := middleware.TenantIDFromCtx(r.Context())
 	if !ok {
-		h.respondError(w, r, "unauthorized", http.StatusUnauthorized)
+		respondError(w, r, "unauthorized", http.StatusUnauthorized)
 		return
 	}
 
 	id := r.PathValue("id")
 	if id == "" {
-		h.respondError(w, r, "missing category id", http.StatusBadRequest)
+		respondError(w, r, "missing category id", http.StatusBadRequest)
 		return
 	}
 
 	var req UpdateCategoryRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		h.respondError(w, r, "invalid request body", http.StatusBadRequest)
+		respondError(w, r, "invalid request body", http.StatusBadRequest)
 		return
 	}
 
 	if err := h.validate.Struct(req); err != nil {
-		h.respondError(w, r, err.Error(), http.StatusUnprocessableEntity)
+		respondError(w, r, err.Error(), http.StatusUnprocessableEntity)
 		return
 	}
 
@@ -191,54 +191,43 @@ func (h *CategoryHandler) Update(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		switch {
 		case errors.Is(err, domain.ErrNotFound):
-			h.respondError(w, r, "category not found", http.StatusNotFound)
+			respondError(w, r, "category not found", http.StatusNotFound)
 		case errors.Is(err, domain.ErrConflict):
-			h.respondError(w, r, "category name conflict", http.StatusConflict)
+			respondError(w, r, "category name conflict", http.StatusConflict)
 		default:
 			slog.ErrorContext(r.Context(), "failed to update category", "error", err, "tenant_id", tenantID, "category_id", id)
-			h.respondError(w, r, "internal server error", http.StatusInternalServerError)
+			respondError(w, r, "internal server error", http.StatusInternalServerError)
 		}
 		return
 	}
 
-	h.respondJSON(w, r, category, http.StatusOK)
+	respondJSON(w, r, category, http.StatusOK)
 }
 
 // Delete handles DELETE /v1/categories/{id}
 func (h *CategoryHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	tenantID, ok := middleware.TenantIDFromCtx(r.Context())
 	if !ok {
-		h.respondError(w, r, "unauthorized", http.StatusUnauthorized)
+		respondError(w, r, "unauthorized", http.StatusUnauthorized)
 		return
 	}
 
 	id := r.PathValue("id")
 	if id == "" {
-		h.respondError(w, r, "missing category id", http.StatusBadRequest)
+		respondError(w, r, "missing category id", http.StatusBadRequest)
 		return
 	}
 
 	if err := h.service.Delete(r.Context(), tenantID, id); err != nil {
 		if errors.Is(err, domain.ErrNotFound) {
-			h.respondError(w, r, "category not found", http.StatusNotFound)
+			respondError(w, r, "category not found", http.StatusNotFound)
 			return
 		}
 		slog.ErrorContext(r.Context(), "failed to delete category", "error", err, "tenant_id", tenantID, "category_id", id)
-		h.respondError(w, r, "internal server error", http.StatusInternalServerError)
+		respondError(w, r, "internal server error", http.StatusInternalServerError)
 		return
 	}
 
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func (h *CategoryHandler) respondJSON(w http.ResponseWriter, r *http.Request, data any, status int) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(status)
-	if err := json.NewEncoder(w).Encode(data); err != nil {
-		slog.ErrorContext(r.Context(), "failed to encode response", "error", err)
-	}
-}
-
-func (h *CategoryHandler) respondError(w http.ResponseWriter, r *http.Request, message string, status int) {
-	h.respondJSON(w, r, map[string]string{"error": message}, status)
-}

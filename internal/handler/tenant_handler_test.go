@@ -77,6 +77,23 @@ func TestTenantHandler_GetMe(t *testing.T) {
 
 		require.Equal(t, http.StatusUnauthorized, rr.Code)
 	})
+
+	t.Run("internal_error", func(t *testing.T) {
+		t.Parallel()
+		service := new(mocks.TenantService)
+		h := NewTenantHandler(service)
+
+		tenantID := "tenant-id"
+		service.On("GetByID", mock.Anything, tenantID).Return(nil, errors.New("boom"))
+
+		ctx := context.WithValue(context.Background(), middleware.TenantIDKey, tenantID)
+		req := httptest.NewRequest(http.MethodGet, "/v1/tenants/me", nil).WithContext(ctx)
+		rr := httptest.NewRecorder()
+
+		h.GetMe(rr, req)
+
+		require.Equal(t, http.StatusInternalServerError, rr.Code)
+	})
 }
 
 func TestTenantHandler_UpdateMe(t *testing.T) {
@@ -202,6 +219,19 @@ func TestTenantHandler_UpdateMe(t *testing.T) {
 		h.UpdateMe(rr, req)
 
 		require.Equal(t, http.StatusForbidden, rr.Code)
+	})
+
+	t.Run("unauthorized", func(t *testing.T) {
+		t.Parallel()
+		service := new(mocks.TenantService)
+		h := NewTenantHandler(service)
+
+		req := httptest.NewRequest(http.MethodPatch, "/v1/tenants/me", nil)
+		rr := httptest.NewRecorder()
+
+		h.UpdateMe(rr, req)
+
+		require.Equal(t, http.StatusUnauthorized, rr.Code)
 	})
 }
 
@@ -351,5 +381,18 @@ func TestTenantHandler_InviteUser(t *testing.T) {
 		h.InviteUser(rr, httpRequest)
 
 		require.Equal(t, http.StatusBadRequest, rr.Code)
+	})
+
+	t.Run("unauthorized", func(t *testing.T) {
+		t.Parallel()
+		service := new(mocks.TenantService)
+		h := NewTenantHandler(service)
+
+		httpRequest := httptest.NewRequest(http.MethodPost, "/v1/tenants/me/invite", nil)
+		rr := httptest.NewRecorder()
+
+		h.InviteUser(rr, httpRequest)
+
+		require.Equal(t, http.StatusUnauthorized, rr.Code)
 	})
 }

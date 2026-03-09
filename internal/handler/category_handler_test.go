@@ -139,8 +139,10 @@ func TestCategoryHandler_Create(t *testing.T) {
 
 		tenantID := "t1"
 		reqBody := CreateCategoryRequest{
-			Name: "Food",
-			Type: domain.CategoryTypeExpense,
+			Icon:  new("icon"),
+			Color: new("color"),
+			Name:  "Food",
+			Type:  domain.CategoryTypeExpense,
 		}
 
 		service.On("Create", mock.Anything, tenantID, mock.MatchedBy(func(in domain.CreateCategoryInput) bool {
@@ -528,6 +530,26 @@ func TestCategoryHandler_Update(t *testing.T) {
 		h.Update(rr, req)
 
 		require.Equal(t, http.StatusBadRequest, rr.Code)
+	})
+
+	t.Run("validation_error", func(t *testing.T) {
+		t.Parallel()
+		service := new(mocks.CategoryService)
+		h := NewCategoryHandler(service)
+
+		ctx := context.WithValue(context.Background(), middleware.TenantIDKey, "t1")
+		name := "" // too short
+		reqBody := UpdateCategoryRequest{Name: &name}
+		body, err := json.Marshal(reqBody)
+		require.NoError(t, err)
+
+		req := httptest.NewRequest(http.MethodPatch, "/v1/categories/c1", bytes.NewReader(body)).WithContext(ctx)
+		req.SetPathValue("id", "c1")
+		rr := httptest.NewRecorder()
+
+		h.Update(rr, req)
+
+		require.Equal(t, http.StatusUnprocessableEntity, rr.Code)
 	})
 }
 
