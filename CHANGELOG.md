@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.0](https://github.com/garnizeh/moolah/compare/v1.0.0...v1.1.0) (2026-03-09)
+
+
+### Features
+
+* **makefile:** add clean-branches target to remove local branches no longer on origin ([6e3cb12](https://github.com/garnizeh/moolah/commit/6e3cb12be942322d5c373e01cc6dcd36a4065b0c))
+* **makefile:** handler auth ([69cd98a](https://github.com/garnizeh/moolah/commit/69cd98ab7372663e0c5205a0a6c2a9f7200bf7f1))
+
 ## 1.0.0 (2026-03-08)
 
 
