@@ -1,8 +1,8 @@
 # Task 1.5.5 — `handler/tenant_handler.go` — `GetMe`, `UpdateMe`, `InviteUser`
 
 > **Roadmap Ref:** Phase 1 — MVP › 1.5 HTTP Handler Layer
-> **Status:** 🔵 `backlog`
-> **Last Updated:** 2026-03-07
+> **Status:** ✅ `done`
+> **Last Updated:** 2026-03-09
 > **Assignee:** —
 > **Estimated Effort:** S
 
@@ -24,11 +24,11 @@ The `TenantService` is fully implemented (Task 1.4.2) but has no HTTP entry poin
 
 ### In scope
 
-- [ ] `internal/handler/tenant_handler.go` — `TenantHandler` struct + 3 HTTP handler methods.
-- [ ] `GET /v1/tenants/me` — returns the current tenant's profile.
-- [ ] `PATCH /v1/tenants/me` — partial update of tenant settings (name).
-- [ ] `POST /v1/tenants/me/invite` — invite a user by email to the household.
-- [ ] Unit tests in `internal/handler/tenant_handler_test.go`.
+- [x] `internal/handler/tenant_handler.go` — `TenantHandler` struct + 3 HTTP handler methods.
+- [x] `GET /v1/tenants/me` — returns the current tenant's profile.
+- [x] `PATCH /v1/tenants/me` — partial update of tenant settings (name).
+- [x] `POST /v1/tenants/me/invite` — invite a user by email to the household.
+- [x] Unit tests in `internal/handler/tenant_handler_test.go`.
 
 ### Out of scope
 
@@ -80,14 +80,14 @@ type InviteUserRequest struct {
 
 ## 5. Acceptance Criteria
 
-- [ ] All 3 endpoints decode, validate, and call the service correctly.
-- [ ] `tenant_id` is always sourced from context (never from the request body).
-- [ ] All domain error sentinels map to the correct HTTP status codes.
-- [ ] Unit tests cover all happy paths and error cases.
-- [ ] Test coverage for handler ≥ 80%.
-- [ ] `golangci-lint run ./...` passes with zero issues.
-- [ ] `gosec ./...` passes with zero issues.
-- [ ] `docs/ROADMAP.md` row updated to ✅ `done`.
+- [x] All 3 endpoints decode, validate, and call the service correctly.
+- [x] `tenant_id` is always sourced from context (never from the request body).
+- [x] All domain error sentinels map to the correct HTTP status codes.
+- [x] Unit tests cover all happy paths and error cases.
+- [x] Test coverage for handler ≥ 80%.
+- [x] `golangci-lint run ./...` passes with zero issues.
+- [x] `gosec ./...` passes with zero issues.
+- [x] `docs/ROADMAP.md` row updated to ✅ `done`.
 
 ---
 
@@ -129,3 +129,4 @@ type InviteUserRequest struct {
 | Date       | Author | Change                    |
 | ---------- | ------ | ------------------------- |
 | 2026-03-07 | —      | Task created from roadmap |
+| 2026-03-09 | —      | Implemented TenantHandler and unit tests |
