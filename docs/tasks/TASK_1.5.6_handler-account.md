@@ -1,8 +1,8 @@
 # Task 1.5.6 — `handler/account_handler.go` — full CRUD
 
 > **Roadmap Ref:** Phase 1 — MVP › 1.5 HTTP Handler Layer
-> **Status:** 🔵 `backlog`
-> **Last Updated:** 2026-03-07
+> **Status:** ✅ `done`
+> **Last Updated:** 2025-03-20
 > **Assignee:** —
 > **Estimated Effort:** M
 
@@ -24,13 +24,13 @@ The `AccountService` is fully implemented (Task 1.4.3) but has no HTTP entry poi
 
 ### In scope
 
-- [ ] `internal/handler/account_handler.go` — `AccountHandler` struct + 5 HTTP handler methods.
-- [ ] `GET /v1/accounts` — list all accounts for the tenant.
-- [ ] `POST /v1/accounts` — create a new account.
-- [ ] `GET /v1/accounts/{id}` — get a single account by ID.
-- [ ] `PATCH /v1/accounts/{id}` — partial update (name, description, currency).
-- [ ] `DELETE /v1/accounts/{id}` — soft delete.
-- [ ] Unit tests in `internal/handler/account_handler_test.go`.
+- [x] `internal/handler/account_handler.go` — `AccountHandler` struct + 5 HTTP handler methods.
+- [x] `GET /v1/accounts` — list all accounts for the tenant.
+- [x] `POST /v1/accounts` — create a new account.
+- [x] `GET /v1/accounts/{id}` — get a single account by ID.
+- [x] `PATCH /v1/accounts/{id}` — partial update (name, description, currency).
+- [x] `DELETE /v1/accounts/{id}` — soft delete.
+- [x] Unit tests in `internal/handler/account_handler_test.go`.
 
 ### Out of scope
 
@@ -89,15 +89,15 @@ type UpdateAccountRequest struct {
 
 ## 5. Acceptance Criteria
 
-- [ ] All 5 endpoints decode, validate, and call the service correctly.
-- [ ] `tenant_id` is always sourced from context (never from the request body).
-- [ ] All domain error sentinels map to the correct HTTP status codes.
-- [ ] `POST` and `PATCH` responses include the created/updated resource.
-- [ ] Unit tests cover all happy paths and error cases.
-- [ ] Test coverage for handler ≥ 80%.
-- [ ] `golangci-lint run ./...` passes with zero issues.
-- [ ] `gosec ./...` passes with zero issues.
-- [ ] `docs/ROADMAP.md` row updated to ✅ `done`.
+- [x] All 5 endpoints decode, validate, and call the service correctly.
+- [x] `tenant_id` is always sourced from context (never from the request body).
+- [x] All domain error sentinels map to the correct HTTP status codes.
+- [x] `POST` and `PATCH` responses include the created/updated resource.
+- [x] Unit tests cover all happy paths and error cases.
+- [x] Test coverage for handler ≥ 80%.
+- [x] `golangci-lint run ./...` passes with zero issues.
+- [x] `gosec ./...` passes with zero issues.
+- [x] `docs/ROADMAP.md` row updated to ✅ `done`.
 
 ---
 

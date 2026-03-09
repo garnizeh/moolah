@@ -54,12 +54,12 @@ type TokenResponse struct {
 func (h *AuthHandler) RequestOTP(w http.ResponseWriter, r *http.Request) {
 	var req RequestOTPRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		h.respondError(w, r, "invalid request body", http.StatusBadRequest)
+		respondError(w, r, "invalid request body", http.StatusBadRequest)
 		return
 	}
 
 	if err := h.validate.Struct(req); err != nil {
-		h.respondError(w, r, err.Error(), http.StatusUnprocessableEntity)
+		respondError(w, r, err.Error(), http.StatusUnprocessableEntity)
 		return
 	}
 
@@ -67,13 +67,13 @@ func (h *AuthHandler) RequestOTP(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		switch {
 		case errors.Is(err, domain.ErrOTPRateLimited):
-			h.respondError(w, r, err.Error(), http.StatusTooManyRequests)
+			respondError(w, r, err.Error(), http.StatusTooManyRequests)
 		case errors.Is(err, domain.ErrNotFound):
 			// We return 202 even if the user is not found to prevent user enumeration
 			w.WriteHeader(http.StatusAccepted)
 		default:
 			slog.ErrorContext(r.Context(), "failed to request OTP", "error", err, "email", req.Email)
-			h.respondError(w, r, "internal server error", http.StatusInternalServerError)
+			respondError(w, r, "internal server error", http.StatusInternalServerError)
 		}
 		return
 	}
@@ -85,12 +85,12 @@ func (h *AuthHandler) RequestOTP(w http.ResponseWriter, r *http.Request) {
 func (h *AuthHandler) VerifyOTP(w http.ResponseWriter, r *http.Request) {
 	var req VerifyOTPRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		h.respondError(w, r, "invalid request body", http.StatusBadRequest)
+		respondError(w, r, "invalid request body", http.StatusBadRequest)
 		return
 	}
 
 	if err := h.validate.Struct(req); err != nil {
-		h.respondError(w, r, err.Error(), http.StatusUnprocessableEntity)
+		respondError(w, r, err.Error(), http.StatusUnprocessableEntity)
 		return
 	}
 
@@ -98,17 +98,17 @@ func (h *AuthHandler) VerifyOTP(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		switch {
 		case errors.Is(err, domain.ErrInvalidOTP):
-			h.respondError(w, r, err.Error(), http.StatusUnauthorized)
+			respondError(w, r, err.Error(), http.StatusUnauthorized)
 		case errors.Is(err, domain.ErrNotFound):
-			h.respondError(w, r, "user not found", http.StatusNotFound)
+			respondError(w, r, "user not found", http.StatusNotFound)
 		default:
 			slog.ErrorContext(r.Context(), "failed to verify OTP", "error", err, "email", req.Email)
-			h.respondError(w, r, "internal server error", http.StatusInternalServerError)
+			respondError(w, r, "internal server error", http.StatusInternalServerError)
 		}
 		return
 	}
 
-	h.respondJSON(w, r, TokenResponse{
+	respondJSON(w, r, TokenResponse{
 		AccessToken:  pair.AccessToken,
 		RefreshToken: pair.RefreshToken,
 		ExpiresAt:    pair.ExpiresAt,
@@ -119,7 +119,7 @@ func (h *AuthHandler) VerifyOTP(w http.ResponseWriter, r *http.Request) {
 func (h *AuthHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
 	authHeader := r.Header.Get("Authorization")
 	if len(authHeader) < 8 || authHeader[:7] != "Bearer " {
-		h.respondError(w, r, "missing or invalid authorization header", http.StatusUnauthorized)
+		respondError(w, r, "missing or invalid authorization header", http.StatusUnauthorized)
 		return
 	}
 	token := authHeader[7:]
@@ -128,31 +128,19 @@ func (h *AuthHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		switch {
 		case errors.Is(err, domain.ErrTokenExpired), errors.Is(err, domain.ErrUnauthorized):
-			h.respondError(w, r, "invalid or expired refresh token", http.StatusUnauthorized)
+			respondError(w, r, "invalid or expired refresh token", http.StatusUnauthorized)
 		case errors.Is(err, domain.ErrNotFound):
-			h.respondError(w, r, "user not found", http.StatusNotFound)
+			respondError(w, r, "user not found", http.StatusNotFound)
 		default:
 			slog.ErrorContext(r.Context(), "failed to refresh token", "error", err)
-			h.respondError(w, r, "internal server error", http.StatusInternalServerError)
+			respondError(w, r, "internal server error", http.StatusInternalServerError)
 		}
 		return
 	}
 
-	h.respondJSON(w, r, TokenResponse{
+	respondJSON(w, r, TokenResponse{
 		AccessToken:  pair.AccessToken,
 		RefreshToken: pair.RefreshToken,
 		ExpiresAt:    pair.ExpiresAt,
 	}, http.StatusOK)
-}
-
-func (h *AuthHandler) respondJSON(w http.ResponseWriter, r *http.Request, data any, status int) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(status)
-	if err := json.NewEncoder(w).Encode(data); err != nil {
-		slog.ErrorContext(r.Context(), "failed to encode response", "error", err)
-	}
-}
-
-func (h *AuthHandler) respondError(w http.ResponseWriter, r *http.Request, message string, status int) {
-	h.respondJSON(w, r, map[string]string{"error": message}, status)
 }
