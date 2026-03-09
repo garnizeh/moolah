@@ -40,7 +40,7 @@ type InviteUserRequest struct {
 func (h *TenantHandler) GetMe(w http.ResponseWriter, r *http.Request) {
 	tenantID, ok := middleware.TenantIDFromCtx(r.Context())
 	if !ok {
-		h.respondError(w, r, "unauthorized", http.StatusUnauthorized)
+		respondError(w, r, "unauthorized", http.StatusUnauthorized)
 		return
 	}
 
@@ -48,33 +48,33 @@ func (h *TenantHandler) GetMe(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		switch {
 		case errors.Is(err, domain.ErrNotFound):
-			h.respondError(w, r, "tenant not found", http.StatusNotFound)
+			respondError(w, r, "tenant not found", http.StatusNotFound)
 		default:
 			slog.ErrorContext(r.Context(), "failed to get tenant", "error", err, "tenant_id", tenantID)
-			h.respondError(w, r, "internal server error", http.StatusInternalServerError)
+			respondError(w, r, "internal server error", http.StatusInternalServerError)
 		}
 		return
 	}
 
-	h.respondJSON(w, r, tenant, http.StatusOK)
+	respondJSON(w, r, tenant, http.StatusOK)
 }
 
 // UpdateMe handles PATCH /v1/tenants/me
 func (h *TenantHandler) UpdateMe(w http.ResponseWriter, r *http.Request) {
 	tenantID, ok := middleware.TenantIDFromCtx(r.Context())
 	if !ok {
-		h.respondError(w, r, "unauthorized", http.StatusUnauthorized)
+		respondError(w, r, "unauthorized", http.StatusUnauthorized)
 		return
 	}
 
 	var req UpdateTenantRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		h.respondError(w, r, "invalid request body", http.StatusBadRequest)
+		respondError(w, r, "invalid request body", http.StatusBadRequest)
 		return
 	}
 
 	if err := h.validate.Struct(req); err != nil {
-		h.respondError(w, r, err.Error(), http.StatusUnprocessableEntity)
+		respondError(w, r, err.Error(), http.StatusUnprocessableEntity)
 		return
 	}
 
@@ -86,35 +86,35 @@ func (h *TenantHandler) UpdateMe(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		switch {
 		case errors.Is(err, domain.ErrNotFound):
-			h.respondError(w, r, "tenant not found", http.StatusNotFound)
+			respondError(w, r, "tenant not found", http.StatusNotFound)
 		case errors.Is(err, domain.ErrForbidden):
-			h.respondError(w, r, "forbidden", http.StatusForbidden)
+			respondError(w, r, "forbidden", http.StatusForbidden)
 		default:
 			slog.ErrorContext(r.Context(), "failed to update tenant", "error", err, "tenant_id", tenantID)
-			h.respondError(w, r, "internal server error", http.StatusInternalServerError)
+			respondError(w, r, "internal server error", http.StatusInternalServerError)
 		}
 		return
 	}
 
-	h.respondJSON(w, r, tenant, http.StatusOK)
+	respondJSON(w, r, tenant, http.StatusOK)
 }
 
 // InviteUser handles POST /v1/tenants/me/invite
 func (h *TenantHandler) InviteUser(w http.ResponseWriter, r *http.Request) {
 	tenantID, ok := middleware.TenantIDFromCtx(r.Context())
 	if !ok {
-		h.respondError(w, r, "unauthorized", http.StatusUnauthorized)
+		respondError(w, r, "unauthorized", http.StatusUnauthorized)
 		return
 	}
 
 	var req InviteUserRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		h.respondError(w, r, "invalid request body", http.StatusBadRequest)
+		respondError(w, r, "invalid request body", http.StatusBadRequest)
 		return
 	}
 
 	if err := h.validate.Struct(req); err != nil {
-		h.respondError(w, r, err.Error(), http.StatusUnprocessableEntity)
+		respondError(w, r, err.Error(), http.StatusUnprocessableEntity)
 		return
 	}
 
@@ -127,29 +127,17 @@ func (h *TenantHandler) InviteUser(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		switch {
 		case errors.Is(err, domain.ErrConflict):
-			h.respondError(w, r, "user already exists", http.StatusConflict)
+			respondError(w, r, "user already exists", http.StatusConflict)
 		case errors.Is(err, domain.ErrForbidden):
-			h.respondError(w, r, "forbidden", http.StatusForbidden)
+			respondError(w, r, "forbidden", http.StatusForbidden)
 		case errors.Is(err, domain.ErrNotFound):
-			h.respondError(w, r, "tenant not found", http.StatusNotFound)
+			respondError(w, r, "tenant not found", http.StatusNotFound)
 		default:
 			slog.ErrorContext(r.Context(), "failed to invite user", "error", err, "tenant_id", tenantID, "email", req.Email)
-			h.respondError(w, r, "internal server error", http.StatusInternalServerError)
+			respondError(w, r, "internal server error", http.StatusInternalServerError)
 		}
 		return
 	}
 
-	h.respondJSON(w, r, user, http.StatusCreated)
-}
-
-func (h *TenantHandler) respondJSON(w http.ResponseWriter, r *http.Request, data any, status int) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(status)
-	if err := json.NewEncoder(w).Encode(data); err != nil {
-		slog.ErrorContext(r.Context(), "failed to encode response", "error", err)
-	}
-}
-
-func (h *TenantHandler) respondError(w http.ResponseWriter, r *http.Request, message string, status int) {
-	h.respondJSON(w, r, map[string]string{"error": message}, status)
+	respondJSON(w, r, user, http.StatusCreated)
 }
