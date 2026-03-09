@@ -88,7 +88,8 @@ jobs:
           files: ./coverage.out
           fail_ci_if_error: false
           token: ${{ secrets.CODECOV_TOKEN }}
-          slug: garnizeh/moolah          
+          slug: garnizeh/moolah
+          override_branch: main
 
   # ─── Stage 4: Integration Tests (testcontainers-go) ──────────────────────
   integration-tests:

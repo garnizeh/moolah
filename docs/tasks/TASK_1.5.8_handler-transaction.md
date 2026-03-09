@@ -1,9 +1,9 @@
 # Task 1.5.8 — `handler/transaction_handler.go` — full CRUD + list with filters
 
 > **Roadmap Ref:** Phase 1 — MVP › 1.5 HTTP Handler Layer
-> **Status:** 🔵 `backlog`
-> **Last Updated:** 2026-03-07
-> **Assignee:** —
+> **Status:** ✅ `done`
+> **Last Updated:** 2026-03-09
+> **Assignee:** GitHub Copilot
 > **Estimated Effort:** L
 
 ---
@@ -24,14 +24,14 @@ The `TransactionService` is fully implemented (Task 1.4.5) but has no HTTP entry
 
 ### In scope
 
-- [ ] `internal/handler/transaction_handler.go` — `TransactionHandler` struct + 5 HTTP handler methods.
-- [ ] `GET /v1/transactions` — list transactions with optional filters.
-- [ ] `POST /v1/transactions` — create a new transaction.
-- [ ] `GET /v1/transactions/{id}` — get a single transaction by ID.
-- [ ] `PATCH /v1/transactions/{id}` — partial update (amount, description, category, date).
-- [ ] `DELETE /v1/transactions/{id}` — soft delete + balance revert.
-- [ ] Query parameter filters on `GET /v1/transactions`: `account_id`, `category_id`, `type`, `from` (date), `to` (date), `limit`, `offset`.
-- [ ] Unit tests in `internal/handler/transaction_handler_test.go`.
+- [x] `internal/handler/transaction_handler.go` — `TransactionHandler` struct + 5 HTTP handler methods.
+- [x] `GET /v1/transactions` — list transactions with optional filters.
+- [x] `POST /v1/transactions` — create a new transaction.
+- [x] `GET /v1/transactions/{id}` — get a single transaction by ID.
+- [x] `PATCH /v1/transactions/{id}` — partial update (amount, description, category, date).
+- [x] `DELETE /v1/transactions/{id}` — soft delete + balance revert.
+- [x] Query parameter filters on `GET /v1/transactions`: `account_id`, `category_id`, `type`, `from` (date), `to` (date), `limit`, `offset`.
+- [x] Unit tests in `internal/handler/transaction_handler_test.go`.
 
 ### Out of scope
 
@@ -102,16 +102,16 @@ type ListTransactionsQuery struct {
 
 ## 5. Acceptance Criteria
 
-- [ ] All 5 endpoints decode, validate, and call the service correctly.
-- [ ] `tenant_id` is always sourced from context.
-- [ ] `GET /v1/transactions` supports all query parameters listed above.
-- [ ] All domain error sentinels map to the correct HTTP status codes.
-- [ ] `DELETE` returns `204 No Content` on success.
-- [ ] Unit tests cover all happy paths and all error cases.
-- [ ] Test coverage for handler ≥ 80%.
-- [ ] `golangci-lint run ./...` passes with zero issues.
-- [ ] `gosec ./...` passes with zero issues.
-- [ ] `docs/ROADMAP.md` row updated to ✅ `done`.
+- [x] All 5 endpoints decode, validate, and call the service correctly.
+- [x] `tenant_id` is always sourced from context.
+- [x] `GET /v1/transactions` supports all query parameters listed above.
+- [x] All domain error sentinels map to the correct HTTP status codes.
+- [x] `DELETE` returns `204 No Content` on success.
+- [x] Unit tests cover all happy paths and all error cases.
+- [x] Test coverage for handler ≥ 80%. (Reached 100%)
+- [x] `golangci-lint run ./...` passes with zero issues.
+- [x] `gosec ./...` passes with zero issues.
+- [x] `docs/ROADMAP.md` row updated to ✅ `done`.
 
 ---
 
