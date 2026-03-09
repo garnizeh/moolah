@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.2.0](https://github.com/garnizeh/moolah/compare/v1.1.0...v1.2.0) (2026-03-09)
+
+
+### Features
+
+* Implement full CRUD for account management ([8026548](https://github.com/garnizeh/moolah/commit/802654850bc735eb1a7df87f87427c15e64c9342))
+* Implement full CRUD for account management ([338bdba](https://github.com/garnizeh/moolah/commit/338bdbaeaa537239976d76df6d41a923555acd7f))
+
 ## [1.1.0](https://github.com/garnizeh/moolah/compare/v1.0.0...v1.1.0) (2026-03-09)
 
 
