@@ -97,6 +97,12 @@ clean:
 	rm -rf $(OUT_DIR)
 	rm -rf vendor/
 
+## clean-branches: Remove local branches that no longer exist on origin
+clean-branches:
+	@echo "🧹 Cleaning up local branches that are gone from origin..."
+	@git fetch -p
+	@git branch -vv | grep ': gone]' | awk '{print $$1}' | xargs -r git branch -D
+
 ## help: Show this help message
 help:
 	@echo "Usage: make [target]"
