@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.4.0](https://github.com/garnizeh/moolah/compare/v1.3.0...v1.4.0) (2026-03-10)
+
+
+### Features
+
+* implement transaction handler with full CRUD operations ([79c8875](https://github.com/garnizeh/moolah/commit/79c8875cfe8e8841b629fdc8e122310796ee1859))
+* implement transaction handler with full CRUD operations and associated tests ([bb77ebf](https://github.com/garnizeh/moolah/commit/bb77ebfb022064c2ba3e182fdaabaa8d8f258295))
+
 ## [1.3.0](https://github.com/garnizeh/moolah/compare/v1.2.0...v1.3.0) (2026-03-09)
 
 
