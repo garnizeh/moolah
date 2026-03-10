@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.6.0](https://github.com/garnizeh/moolah/compare/v1.5.0...v1.6.0) (2026-03-10)
+
+
+### Features
+
+* add Idempotency-Key header to all mutating POST/PATCH routes ([01cec35](https://github.com/garnizeh/moolah/commit/01cec35c798a15461131748098e44f2a27aee04b))
+* add Idempotency-Key header to all mutating POST/PATCH routes and update documentation ([d2066ab](https://github.com/garnizeh/moolah/commit/d2066ab33c644a8b6562f300db7682362fbe58b0))
+* enhance API documentation with Swagger annotations ([16b48ae](https://github.com/garnizeh/moolah/commit/16b48ae20514386cedf61e0d0c13f7f41bc845f5))
+
+
+### Bug Fixes
+
+* exclude /api directory from test coverage checks ([65ea928](https://github.com/garnizeh/moolah/commit/65ea9289f24ed79f9dc9a9d7fcb9acfba86ecfff))
+
 ## [1.5.0](https://github.com/garnizeh/moolah/compare/v1.4.0...v1.5.0) (2026-03-10)
 
 
