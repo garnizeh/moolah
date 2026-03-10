@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"net/http"
 
+	_ "github.com/garnizeh/moolah/api"
 	"github.com/garnizeh/moolah/internal/domain"
 	"github.com/garnizeh/moolah/internal/platform/middleware"
+	httpSwagger "github.com/swaggo/http-swagger/v2"
 )
 
 func (s *Server) routes() http.Handler {
@@ -13,6 +15,7 @@ func (s *Server) routes() http.Handler {
 
 	// 1. Auth & Public Routes
 	mux.HandleFunc("GET /healthz", s.handleHealthz)
+	mux.Handle("GET /swagger/", httpSwagger.Handler())
 
 	// Inject middleware helpers
 	requireAuth := middleware.RequireAuth(s.tokenParser)

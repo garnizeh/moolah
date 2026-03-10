@@ -45,6 +45,20 @@ type UpdateTransactionRequest struct {
 }
 
 // Create handles POST /v1/transactions
+//
+// @Summary		Create transaction
+// @Description	Creates a new financial transaction (income, expense, or transfer).
+// @Tags			transactions
+// @Accept			json
+// @Produce		json
+// @Security		BearerAuth
+// @Param			request	body		CreateTransactionRequest	true	"Transaction details"
+// @Success		201		{object}	domain.Transaction
+// @Failure		400		{object}	map[string]string	"Invalid request body"
+// @Failure		401		{object}	map[string]string	"Unauthorized"
+// @Failure		422		{object}	map[string]string	"Validation error"
+// @Failure		500		{object}	map[string]string	"Internal server error"
+// @Router			/v1/transactions [post]
 func (h *TransactionHandler) Create(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	tenantID, ok := middleware.TenantIDFromCtx(ctx)
@@ -85,6 +99,19 @@ func (h *TransactionHandler) Create(w http.ResponseWriter, r *http.Request) {
 }
 
 // GetByID handles GET /v1/transactions/{id}
+//
+// @Summary		Get transaction
+// @Description	Returns details of a specific transaction by ID.
+// @Tags			transactions
+// @Accept			json
+// @Produce		json
+// @Security		BearerAuth
+// @Param			id	path		string	true	"Transaction ULID"
+// @Success		200	{object}	domain.Transaction
+// @Failure		401	{object}	map[string]string	"Unauthorized"
+// @Failure		404	{object}	map[string]string		"Transaction not found"
+// @Failure		500	{object}	map[string]string	"Internal server error"
+// @Router			/v1/transactions/{id} [get]
 func (h *TransactionHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	tenantID, ok := middleware.TenantIDFromCtx(ctx)
@@ -109,6 +136,22 @@ func (h *TransactionHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 }
 
 // Update handles PATCH /v1/transactions/{id}
+//
+// @Summary		Update transaction
+// @Description	Updates details of an existing transaction.
+// @Tags			transactions
+// @Accept			json
+// @Produce		json
+// @Security		BearerAuth
+// @Param			id		path		string						true	"Transaction ULID"
+// @Param			request	body		UpdateTransactionRequest	true	"Update fields"
+// @Success		200		{object}	domain.Transaction
+// @Failure		400		{object}	map[string]string	"Invalid request body"
+// @Failure		401		{object}	map[string]string	"Unauthorized"
+// @Failure		404		{object}	map[string]string		"Transaction not found"
+// @Failure		422		{object}	map[string]string	"Validation error"
+// @Failure		500		{object}	map[string]string	"Internal server error"
+// @Router			/v1/transactions/{id} [patch]
 func (h *TransactionHandler) Update(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	tenantID, ok := middleware.TenantIDFromCtx(ctx)
@@ -151,6 +194,19 @@ func (h *TransactionHandler) Update(w http.ResponseWriter, r *http.Request) {
 }
 
 // Delete handles DELETE /v1/transactions/{id}
+//
+// @Summary		Delete transaction
+// @Description	Soft-deletes a transaction.
+// @Tags			transactions
+// @Accept			json
+// @Produce		json
+// @Security		BearerAuth
+// @Param			id	path	string	true	"Transaction ULID"
+// @Success		204	"Transaction deleted"
+// @Failure		401	{object}	map[string]string	"Unauthorized"
+// @Failure		404	{object}	map[string]string		"Transaction not found"
+// @Failure		500	{object}	map[string]string	"Internal server error"
+// @Router			/v1/transactions/{id} [delete]
 func (h *TransactionHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	tenantID, ok := middleware.TenantIDFromCtx(ctx)
@@ -174,6 +230,24 @@ func (h *TransactionHandler) Delete(w http.ResponseWriter, r *http.Request) {
 }
 
 // List handles GET /v1/transactions
+//
+// @Summary		List transactions
+// @Description	Returns a list of transactions for the current tenant. Can be filtered by account, category, type, and date range.
+// @Tags			transactions
+// @Accept			json
+// @Produce		json
+// @Security		BearerAuth
+// @Param			account_id	query		string	false	"Account ULID"
+// @Param			category_id	query		string	false	"Category ULID"
+// @Param			type		query		string	false	"Transaction type (income/expense/transfer)"
+// @Param			start_date	query		string	false	"Start date (RFC3339)"
+// @Param			end_date	query		string	false	"End date (RFC3339)"
+// @Param			limit		query		int		false	"Limit (default 50)"
+// @Param			offset		query		int		false	"Offset (default 0)"
+// @Success		200			{array}		domain.Transaction
+// @Failure		401			{object}	map[string]string	"Unauthorized"
+// @Failure		500			{object}	map[string]string	"Internal server error"
+// @Router			/v1/transactions [get]
 func (h *TransactionHandler) List(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	tenantID, ok := middleware.TenantIDFromCtx(ctx)

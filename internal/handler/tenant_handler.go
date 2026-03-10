@@ -35,6 +35,18 @@ type InviteUserRequest struct {
 }
 
 // GetMe handles GET /v1/tenants/me
+//
+// @Summary		Get current tenant
+// @Description	Returns the details of the tenant (household) associated with the authenticated user.
+// @Tags			tenants
+// @Accept			json
+// @Produce		json
+// @Security		BearerAuth
+// @Success		200	{object}	domain.Tenant
+// @Failure		401	{object}	map[string]string	"Unauthorized"
+// @Failure		404	{object}	map[string]string	"Tenant not found"
+// @Failure		500	{object}	map[string]string	"Internal server error"
+// @Router			/v1/tenants/me [get]
 func (h *TenantHandler) GetMe(w http.ResponseWriter, r *http.Request) {
 	tenantID, ok := middleware.TenantIDFromCtx(r.Context())
 	if !ok {
@@ -52,6 +64,20 @@ func (h *TenantHandler) GetMe(w http.ResponseWriter, r *http.Request) {
 }
 
 // UpdateMe handles PATCH /v1/tenants/me
+//
+// @Summary		Update current tenant
+// @Description	Updates the details of the current tenant (e.g., household name).
+// @Tags			tenants
+// @Accept			json
+// @Produce		json
+// @Security		BearerAuth
+// @Param			request	body		UpdateTenantRequest	true	"Update fields"
+// @Success		200		{object}	domain.Tenant
+// @Failure		400		{object}	map[string]string	"Invalid request body"
+// @Failure		401		{object}	map[string]string	"Unauthorized"
+// @Failure		422		{object}	map[string]string	"Validation error"
+// @Failure		500		{object}	map[string]string	"Internal server error"
+// @Router			/v1/tenants/me [patch]
 func (h *TenantHandler) UpdateMe(w http.ResponseWriter, r *http.Request) {
 	tenantID, ok := middleware.TenantIDFromCtx(r.Context())
 	if !ok {
@@ -84,6 +110,21 @@ func (h *TenantHandler) UpdateMe(w http.ResponseWriter, r *http.Request) {
 }
 
 // InviteUser handles POST /v1/tenants/me/invite
+//
+// @Summary		Invite user
+// @Description	Invites a new user (family member) to the current tenant.
+// @Tags			tenants
+// @Accept			json
+// @Produce		json
+// @Security		BearerAuth
+// @Param			request	body		InviteUserRequest	true	"Invite details"
+// @Success		201		{object}	domain.User
+// @Failure		400		{object}	map[string]string	"Invalid request body"
+// @Failure		401		{object}	map[string]string	"Unauthorized"
+// @Failure		403		{object}	map[string]string	"Forbidden (admin only)"
+// @Failure		422		{object}	map[string]string	"Validation error"
+// @Failure		500		{object}	map[string]string	"Internal server error"
+// @Router			/v1/tenants/me/invite [post]
 func (h *TenantHandler) InviteUser(w http.ResponseWriter, r *http.Request) {
 	tenantID, ok := middleware.TenantIDFromCtx(r.Context())
 	if !ok {

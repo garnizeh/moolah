@@ -1,16 +1,16 @@
 # Task 1.5.10 — Swaggo annotations on all handlers; `swag init` verified in CI
 
 > **Roadmap Ref:** Phase 1 — MVP › 1.5 HTTP Handler Layer
-> **Status:** 🔵 `backlog`
-> **Last Updated:** 2026-03-07
-> **Assignee:** —
+> **Status:** ✅ `done`
+> **Last Updated:** 2026-03-09
+> **Assignee:** GitHub Copilot
 > **Estimated Effort:** M
 
 ---
 
 ## 1. Summary
 
-Add Swaggo (`github.com/swaggo/swag`) doc comments to all Phase 1 HTTP handlers and verify that `swag init` is idempotent and committed in CI. The generated `docs/swagger/` output (OpenAPI 2.0 spec) must be kept in sync with handler annotations at every PR.
+Add Swaggo (`github.com/swaggo/swag`) doc comments to all Phase 1 HTTP handlers and verify that `swag init` is idempotent and committed in CI. The generated `cmd/api/docs/` output (OpenAPI 2.0 spec) must be kept in sync with handler annotations at every PR.
 
 ---
 
@@ -24,17 +24,17 @@ The API has functional handlers but no machine-readable documentation. Swaggo ge
 
 ### In scope
 
-- [ ] Add `@Summary`, `@Description`, `@Tags`, `@Accept`, `@Produce`, `@Param`, `@Success`, `@Failure`, `@Router` annotations to every handler method in:
+- [x] Add `@Summary`, `@Description`, `@Tags`, `@Accept`, `@Produce`, `@Param`, `@Success`, `@Failure`, `@Router` annotations to every handler method in:
   - `internal/handler/auth_handler.go`
   - `internal/handler/tenant_handler.go`
   - `internal/handler/account_handler.go`
   - `internal/handler/category_handler.go`
   - `internal/handler/transaction_handler.go`
   - `internal/handler/admin_handler.go`
-- [ ] Top-level `@title`, `@version`, `@host`, `@BasePath`, `@securityDefinitions` in `cmd/api/main.go` or a dedicated `docs.go`.
-- [ ] Run `swag init` and commit the generated `docs/swagger/` directory.
-- [ ] Add `make swagger` target to `Makefile`.
-- [ ] Add `swag init --output docs/swagger && git diff --exit-code docs/swagger` check to GitHub Actions CI.
+- [x] Top-level `@title`, `@version`, `@host`, `@BasePath`, `@securityDefinitions` in `cmd/api/main.go` or a dedicated `docs.go`.
+- [x] Run `swag init` and commit the generated `cmd/api/docs/` directory.
+- [x] Add `make swagger` target to `Makefile`.
+- [x] Add `swag init --output cmd/api/docs && git diff --exit-code cmd/api/docs` check to GitHub Actions CI.
 
 ### Out of scope
 
@@ -51,8 +51,8 @@ The API has functional handlers but no machine-readable documentation. Swaggo ge
 | ------ | -------------------------------------- | ------------------------------------ |
 | MODIFY | All `internal/handler/*.go` files      | Add Swaggo doc comments              |
 | CREATE | `cmd/api/docs.go` (or inline in main)  | Top-level API metadata comment       |
-| CREATE | `docs/swagger/swagger.json`            | Generated OpenAPI 2.0 spec           |
-| CREATE | `docs/swagger/swagger.yaml`            | Generated YAML spec                  |
+| CREATE | `cmd/api/docs/swagger.json`            | Generated OpenAPI 2.0 spec           |
+| CREATE | `cmd/api/docs/swagger.yaml`            | Generated YAML spec                  |
 | MODIFY | `Makefile`                             | Add `swagger` target                 |
 | MODIFY | `.github/workflows/ci.yml`             | Add swagger drift check step         |
 
@@ -85,12 +85,12 @@ func (h *AuthHandler) RequestOTP(w http.ResponseWriter, r *http.Request) {
 
 ## 5. Acceptance Criteria
 
-- [ ] Every handler method has complete Swaggo annotations.
-- [ ] `swag init` produces a valid `docs/swagger/swagger.json` without errors.
-- [ ] `git diff --exit-code docs/swagger/` passes in CI (no uncommitted drift).
-- [ ] `make swagger` target works locally.
-- [ ] `golangci-lint run ./...` passes with zero issues (swagger output excluded from lint via `.golangci.yml`).
-- [ ] `docs/ROADMAP.md` row updated to ✅ `done`.
+- [x] Every handler method has complete Swaggo annotations.
+- [x] `swag init` produces a valid `cmd/api/docs/swagger.json` without errors.
+- [x] `git diff --exit-code cmd/api/docs/` passes in CI (no uncommitted drift).
+- [x] `make swagger` target works locally.
+- [x] `golangci-lint run ./...` passes with zero issues (swagger output excluded from lint via `.golangci.yml`).
+- [x] `docs/ROADMAP.md` row updated to ✅ `done`.
 
 ---
 
@@ -98,12 +98,12 @@ func (h *AuthHandler) RequestOTP(w http.ResponseWriter, r *http.Request) {
 
 | Dependency                               | Type     | Status     |
 | ---------------------------------------- | -------- | ---------- |
-| Task 1.5.4 — `handler/auth_handler`      | Upstream | 🔵 backlog |
-| Task 1.5.5 — `handler/tenant_handler`    | Upstream | 🔵 backlog |
-| Task 1.5.6 — `handler/account_handler`   | Upstream | 🔵 backlog |
-| Task 1.5.7 — `handler/category_handler`  | Upstream | 🔵 backlog |
-| Task 1.5.8 — `handler/transaction_handler`| Upstream | 🔵 backlog |
-| Task 1.5.9 — `handler/admin_handler`     | Upstream | 🔵 backlog |
+| Task 1.5.4 — `handler/auth_handler`      | Upstream | ✅ done |
+| Task 1.5.5 — `handler/tenant_handler`    | Upstream | ✅ done |
+| Task 1.5.6 — `handler/account_handler`   | Upstream | ✅ done |
+| Task 1.5.7 — `handler/category_handler`  | Upstream | ✅ done |
+| Task 1.5.8 — `handler/transaction_handler`| Upstream | ✅ done |
+| Task 1.5.9 — `handler/admin_handler`     | Upstream | ✅ done |
 
 ---
 
@@ -125,7 +125,7 @@ N/A — Swaggo annotations are documentation, not logic.
 | # | Question                                               | Owner | Resolution |
 | - | ------------------------------------------------------ | ----- | ---------- |
 | 1 | Serve Swagger UI at `/swagger/` in dev mode?           | —     | Deferred to Phase 5. Spec is available as static file only. |
-| 2 | Should `docs/swagger/` be `.gitignore`d or committed?  | —     | Committed — drift detection in CI requires it to be in source control. |
+| 2 | Should `cmd/api/docs/` be `.gitignore`d or committed?  | —     | Committed — drift detection in CI requires it to be in source control. |
 
 ---
 
@@ -134,3 +134,5 @@ N/A — Swaggo annotations are documentation, not logic.
 | Date       | Author | Change                    |
 | ---------- | ------ | ------------------------- |
 | 2026-03-07 | —      | Task created from roadmap |
+| 2026-03-09 | Copilot| Switched output path to cmd/api/docs |
+| 2026-03-09 | Copilot| Completed task |

@@ -1,5 +1,16 @@
 package main
 
+// @title           Moolah Financial API
+// @version         1.0
+// @description     Moolah Household Finance & Investment SaaS API.
+// @contact.name    API Support
+// @host            localhost:8080
+// @BasePath        /v1
+
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+
 import (
 	"context"
 	"fmt"
