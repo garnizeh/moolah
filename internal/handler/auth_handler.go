@@ -96,15 +96,7 @@ func (h *AuthHandler) VerifyOTP(w http.ResponseWriter, r *http.Request) {
 
 	pair, err := h.service.VerifyOTP(r.Context(), req.Email, req.Code)
 	if err != nil {
-		switch {
-		case errors.Is(err, domain.ErrInvalidOTP):
-			respondError(w, r, err.Error(), http.StatusUnauthorized)
-		case errors.Is(err, domain.ErrNotFound):
-			respondError(w, r, "user not found", http.StatusNotFound)
-		default:
-			slog.ErrorContext(r.Context(), "failed to verify OTP", "error", err, "email", req.Email)
-			respondError(w, r, "internal server error", http.StatusInternalServerError)
-		}
+		handleError(w, r, err, "failed to verify OTP")
 		return
 	}
 
@@ -126,15 +118,7 @@ func (h *AuthHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
 
 	pair, err := h.service.RefreshToken(r.Context(), token)
 	if err != nil {
-		switch {
-		case errors.Is(err, domain.ErrTokenExpired), errors.Is(err, domain.ErrUnauthorized):
-			respondError(w, r, "invalid or expired refresh token", http.StatusUnauthorized)
-		case errors.Is(err, domain.ErrNotFound):
-			respondError(w, r, "user not found", http.StatusNotFound)
-		default:
-			slog.ErrorContext(r.Context(), "failed to refresh token", "error", err)
-			respondError(w, r, "internal server error", http.StatusInternalServerError)
-		}
+		handleError(w, r, err, "failed to refresh token")
 		return
 	}
 

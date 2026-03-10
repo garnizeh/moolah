@@ -2,8 +2,6 @@ package handler
 
 import (
 	"encoding/json"
-	"errors"
-	"log/slog"
 	"net/http"
 
 	"github.com/garnizeh/moolah/internal/domain"
@@ -49,8 +47,7 @@ func (h *AccountHandler) List(w http.ResponseWriter, r *http.Request) {
 
 	accounts, err := h.service.ListByTenant(r.Context(), tenantID)
 	if err != nil {
-		slog.ErrorContext(r.Context(), "failed to list accounts", "error", err, "tenant_id", tenantID)
-		respondError(w, r, "internal server error", http.StatusInternalServerError)
+		handleError(w, r, err, "failed to list accounts")
 		return
 	}
 
@@ -87,15 +84,7 @@ func (h *AccountHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	account, err := h.service.Create(r.Context(), tenantID, input)
 	if err != nil {
-		switch {
-		case errors.Is(err, domain.ErrConflict):
-			respondError(w, r, "account name conflict", http.StatusConflict)
-		case errors.Is(err, domain.ErrForbidden):
-			respondError(w, r, "forbidden", http.StatusForbidden)
-		default:
-			slog.ErrorContext(r.Context(), "failed to create account", "error", err, "tenant_id", tenantID)
-			respondError(w, r, "internal server error", http.StatusInternalServerError)
-		}
+		handleError(w, r, err, "failed to create account")
 		return
 	}
 
@@ -118,13 +107,7 @@ func (h *AccountHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 
 	account, err := h.service.GetByID(r.Context(), tenantID, id)
 	if err != nil {
-		switch {
-		case errors.Is(err, domain.ErrNotFound):
-			respondError(w, r, "account not found", http.StatusNotFound)
-		default:
-			slog.ErrorContext(r.Context(), "failed to get account", "error", err, "tenant_id", tenantID, "account_id", id)
-			respondError(w, r, "internal server error", http.StatusInternalServerError)
-		}
+		handleError(w, r, err, "failed to get account")
 		return
 	}
 
@@ -163,17 +146,7 @@ func (h *AccountHandler) Update(w http.ResponseWriter, r *http.Request) {
 
 	account, err := h.service.Update(r.Context(), tenantID, id, input)
 	if err != nil {
-		switch {
-		case errors.Is(err, domain.ErrNotFound):
-			respondError(w, r, "account not found", http.StatusNotFound)
-		case errors.Is(err, domain.ErrForbidden):
-			respondError(w, r, "forbidden", http.StatusForbidden)
-		case errors.Is(err, domain.ErrConflict):
-			respondError(w, r, "account name conflict", http.StatusConflict)
-		default:
-			slog.ErrorContext(r.Context(), "failed to update account", "error", err, "tenant_id", tenantID, "account_id", id)
-			respondError(w, r, "internal server error", http.StatusInternalServerError)
-		}
+		handleError(w, r, err, "failed to update account")
 		return
 	}
 
@@ -196,15 +169,7 @@ func (h *AccountHandler) Delete(w http.ResponseWriter, r *http.Request) {
 
 	err := h.service.Delete(r.Context(), tenantID, id)
 	if err != nil {
-		switch {
-		case errors.Is(err, domain.ErrNotFound):
-			respondError(w, r, "account not found", http.StatusNotFound)
-		case errors.Is(err, domain.ErrForbidden):
-			respondError(w, r, "forbidden", http.StatusForbidden)
-		default:
-			slog.ErrorContext(r.Context(), "failed to delete account", "error", err, "tenant_id", tenantID, "account_id", id)
-			respondError(w, r, "internal server error", http.StatusInternalServerError)
-		}
+		handleError(w, r, err, "failed to delete account")
 		return
 	}
 

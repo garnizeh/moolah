@@ -2,7 +2,6 @@ package handler
 
 import (
 	"encoding/json"
-	"errors"
 	"log/slog"
 	"net/http"
 	"strconv"
@@ -78,17 +77,7 @@ func (h *TransactionHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	tx, err := h.service.Create(ctx, tenantID, input)
 	if err != nil {
-		switch {
-		case errors.Is(err, domain.ErrNotFound):
-			respondError(w, r, "account or category not found", http.StatusNotFound)
-		case errors.Is(err, domain.ErrInvalidInput):
-			respondError(w, r, err.Error(), http.StatusUnprocessableEntity)
-		case errors.Is(err, domain.ErrForbidden):
-			respondError(w, r, "forbidden", http.StatusForbidden)
-		default:
-			slog.ErrorContext(ctx, "failed to create transaction", "error", err, "tenant_id", tenantID)
-			respondError(w, r, "internal server error", http.StatusInternalServerError)
-		}
+		handleError(w, r, err, "failed to create transaction")
 		return
 	}
 
@@ -112,12 +101,7 @@ func (h *TransactionHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 
 	tx, err := h.service.GetByID(ctx, tenantID, id)
 	if err != nil {
-		if errors.Is(err, domain.ErrNotFound) {
-			respondError(w, r, "transaction not found", http.StatusNotFound)
-			return
-		}
-		slog.ErrorContext(ctx, "failed to fetch transaction", "error", err, "transaction_id", id)
-		respondError(w, r, "internal server error", http.StatusInternalServerError)
+		handleError(w, r, err, "failed to fetch transaction")
 		return
 	}
 
@@ -159,17 +143,7 @@ func (h *TransactionHandler) Update(w http.ResponseWriter, r *http.Request) {
 
 	tx, err := h.service.Update(ctx, tenantID, id, input)
 	if err != nil {
-		switch {
-		case errors.Is(err, domain.ErrNotFound):
-			respondError(w, r, "transaction not found", http.StatusNotFound)
-		case errors.Is(err, domain.ErrInvalidInput):
-			respondError(w, r, err.Error(), http.StatusUnprocessableEntity)
-		case errors.Is(err, domain.ErrForbidden):
-			respondError(w, r, "forbidden", http.StatusForbidden)
-		default:
-			slog.ErrorContext(ctx, "failed to update transaction", "error", err, "transaction_id", id)
-			respondError(w, r, "internal server error", http.StatusInternalServerError)
-		}
+		handleError(w, r, err, "failed to update transaction")
 		return
 	}
 
@@ -192,12 +166,7 @@ func (h *TransactionHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.service.Delete(ctx, tenantID, id); err != nil {
-		if errors.Is(err, domain.ErrNotFound) {
-			respondError(w, r, "transaction not found", http.StatusNotFound)
-			return
-		}
-		slog.ErrorContext(ctx, "failed to delete transaction", "error", err, "transaction_id", id)
-		respondError(w, r, "internal server error", http.StatusInternalServerError)
+		handleError(w, r, err, "failed to delete transaction")
 		return
 	}
 

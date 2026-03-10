@@ -2,8 +2,6 @@ package handler
 
 import (
 	"encoding/json"
-	"errors"
-	"log/slog"
 	"net/http"
 
 	"github.com/garnizeh/moolah/internal/domain"
@@ -46,13 +44,7 @@ func (h *TenantHandler) GetMe(w http.ResponseWriter, r *http.Request) {
 
 	tenant, err := h.service.GetByID(r.Context(), tenantID)
 	if err != nil {
-		switch {
-		case errors.Is(err, domain.ErrNotFound):
-			respondError(w, r, "tenant not found", http.StatusNotFound)
-		default:
-			slog.ErrorContext(r.Context(), "failed to get tenant", "error", err, "tenant_id", tenantID)
-			respondError(w, r, "internal server error", http.StatusInternalServerError)
-		}
+		handleError(w, r, err, "failed to get tenant")
 		return
 	}
 
@@ -84,15 +76,7 @@ func (h *TenantHandler) UpdateMe(w http.ResponseWriter, r *http.Request) {
 
 	tenant, err := h.service.Update(r.Context(), tenantID, input)
 	if err != nil {
-		switch {
-		case errors.Is(err, domain.ErrNotFound):
-			respondError(w, r, "tenant not found", http.StatusNotFound)
-		case errors.Is(err, domain.ErrForbidden):
-			respondError(w, r, "forbidden", http.StatusForbidden)
-		default:
-			slog.ErrorContext(r.Context(), "failed to update tenant", "error", err, "tenant_id", tenantID)
-			respondError(w, r, "internal server error", http.StatusInternalServerError)
-		}
+		handleError(w, r, err, "failed to update tenant")
 		return
 	}
 
@@ -125,17 +109,7 @@ func (h *TenantHandler) InviteUser(w http.ResponseWriter, r *http.Request) {
 
 	user, err := h.service.InviteUser(r.Context(), tenantID, input)
 	if err != nil {
-		switch {
-		case errors.Is(err, domain.ErrConflict):
-			respondError(w, r, "user already exists", http.StatusConflict)
-		case errors.Is(err, domain.ErrForbidden):
-			respondError(w, r, "forbidden", http.StatusForbidden)
-		case errors.Is(err, domain.ErrNotFound):
-			respondError(w, r, "tenant not found", http.StatusNotFound)
-		default:
-			slog.ErrorContext(r.Context(), "failed to invite user", "error", err, "tenant_id", tenantID, "email", req.Email)
-			respondError(w, r, "internal server error", http.StatusInternalServerError)
-		}
+		handleError(w, r, err, "failed to invite user")
 		return
 	}
 
