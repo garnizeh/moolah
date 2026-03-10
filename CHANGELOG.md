@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.5.0](https://github.com/garnizeh/moolah/compare/v1.4.0...v1.5.0) (2026-03-10)
+
+
+### Features
+
+* implement admin handler with CRUD operations for tenants and users ([b64fbf5](https://github.com/garnizeh/moolah/commit/b64fbf5e4e3720d1ac01e623240339a4cec65519))
+* implement admin handler with CRUD operations for tenants and users ([f754755](https://github.com/garnizeh/moolah/commit/f754755abd75973052bf00907c29b2fac7172cab))
+
 ## [1.4.0](https://github.com/garnizeh/moolah/compare/v1.3.0...v1.4.0) (2026-03-10)
 
 
