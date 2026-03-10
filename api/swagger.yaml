@@ -1,0 +1,1754 @@
+basePath: /v1
+definitions:
+  domain.Account:
+    properties:
+      balance_cents:
+        description: Always in cents; never float
+        type: integer
+      created_at:
+        type: string
+      currency:
+        description: ISO 4217 code (e.g. "USD")
+        type: string
+      deleted_at:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      tenant_id:
+        type: string
+      type:
+        $ref: '#/definitions/domain.AccountType'
+      updated_at:
+        type: string
+      user_id:
+        type: string
+    type: object
+  domain.AccountType:
+    enum:
+    - checking
+    - savings
+    - credit_card
+    - investment
+    type: string
+    x-enum-varnames:
+    - AccountTypeChecking
+    - AccountTypeSavings
+    - AccountTypeCreditCard
+    - AccountTypeInvestment
+  domain.Category:
+    properties:
+      color:
+        description: Optional hex color, e.g. "#FF5733"
+        type: string
+      created_at:
+        type: string
+      deleted_at:
+        type: string
+      icon:
+        description: Optional emoji or icon identifier
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      parent_id:
+        description: Empty string means root category
+        type: string
+      tenant_id:
+        type: string
+      type:
+        $ref: '#/definitions/domain.CategoryType'
+      updated_at:
+        type: string
+    type: object
+  domain.CategoryType:
+    enum:
+    - income
+    - expense
+    - transfer
+    type: string
+    x-enum-varnames:
+    - CategoryTypeIncome
+    - CategoryTypeExpense
+    - CategoryTypeTransfer
+  domain.Role:
+    enum:
+    - sysadmin
+    - admin
+    - member
+    type: string
+    x-enum-varnames:
+    - RoleSysadmin
+    - RoleAdmin
+    - RoleMember
+  domain.Tenant:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      plan:
+        $ref: '#/definitions/domain.TenantPlan'
+      updatedAt:
+        type: string
+    type: object
+  domain.TenantPlan:
+    enum:
+    - free
+    - basic
+    - premium
+    type: string
+    x-enum-varnames:
+    - TenantPlanFree
+    - TenantPlanBasic
+    - TenantPlanPremium
+  domain.Transaction:
+    properties:
+      account_id:
+        type: string
+      amount_cents:
+        description: Always in cents; positive value; type determines direction
+        type: integer
+      category_id:
+        type: string
+      created_at:
+        type: string
+      deleted_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      master_purchase_id:
+        description: Empty for regular transactions; set in Phase 2
+        type: string
+      occurred_at:
+        type: string
+      tenant_id:
+        type: string
+      type:
+        $ref: '#/definitions/domain.TransactionType'
+      updated_at:
+        type: string
+      user_id:
+        type: string
+    type: object
+  domain.TransactionType:
+    enum:
+    - income
+    - expense
+    - transfer
+    type: string
+    x-enum-varnames:
+    - TransactionTypeIncome
+    - TransactionTypeExpense
+    - TransactionTypeTransfer
+  domain.User:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        type: string
+      email:
+        type: string
+      id:
+        type: string
+      lastLoginAt:
+        type: string
+      name:
+        type: string
+      role:
+        $ref: '#/definitions/domain.Role'
+      tenantID:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  handler.CreateAccountRequest:
+    properties:
+      currency:
+        type: string
+      initial_cents:
+        type: integer
+      name:
+        maxLength: 100
+        minLength: 1
+        type: string
+      type:
+        allOf:
+        - $ref: '#/definitions/domain.AccountType'
+        enum:
+        - checking
+        - savings
+        - credit_card
+        - investment
+    required:
+    - currency
+    - initial_cents
+    - name
+    - type
+    type: object
+  handler.CreateCategoryRequest:
+    properties:
+      color:
+        type: string
+      icon:
+        type: string
+      name:
+        maxLength: 100
+        minLength: 1
+        type: string
+      parent_id:
+        type: string
+      type:
+        $ref: '#/definitions/domain.CategoryType'
+    required:
+    - name
+    - type
+    type: object
+  handler.CreateTransactionRequest:
+    properties:
+      account_id:
+        type: string
+      amount_cents:
+        type: integer
+      category_id:
+        type: string
+      description:
+        maxLength: 255
+        minLength: 1
+        type: string
+      occurred_at:
+        type: string
+      type:
+        allOf:
+        - $ref: '#/definitions/domain.TransactionType'
+        enum:
+        - income
+        - expense
+        - transfer
+    required:
+    - account_id
+    - amount_cents
+    - category_id
+    - description
+    - occurred_at
+    - type
+    type: object
+  handler.InviteUserRequest:
+    properties:
+      email:
+        type: string
+      role:
+        allOf:
+        - $ref: '#/definitions/domain.Role'
+        enum:
+        - owner
+        - member
+    required:
+    - email
+    - role
+    type: object
+  handler.RequestOTPRequest:
+    properties:
+      email:
+        type: string
+    required:
+    - email
+    type: object
+  handler.TokenResponse:
+    properties:
+      access_token:
+        description: AccessToken is the PASETO access token.
+        type: string
+      expires_at:
+        description: ExpiresAt is the timestamp when the access token expires.
+        type: string
+      refresh_token:
+        description: RefreshToken is the PASETO refresh token.
+        type: string
+    type: object
+  handler.UpdateAccountRequest:
+    properties:
+      currency:
+        type: string
+      name:
+        maxLength: 100
+        minLength: 1
+        type: string
+    type: object
+  handler.UpdateCategoryRequest:
+    properties:
+      color:
+        type: string
+      icon:
+        type: string
+      name:
+        maxLength: 100
+        minLength: 1
+        type: string
+    type: object
+  handler.UpdateTenantPlanRequest:
+    properties:
+      plan:
+        allOf:
+        - $ref: '#/definitions/domain.TenantPlan'
+        enum:
+        - free
+        - pro
+        - business
+    required:
+    - plan
+    type: object
+  handler.UpdateTenantRequest:
+    properties:
+      name:
+        maxLength: 100
+        minLength: 2
+        type: string
+    type: object
+  handler.UpdateTransactionRequest:
+    properties:
+      amount_cents:
+        type: integer
+      category_id:
+        type: string
+      description:
+        maxLength: 255
+        minLength: 1
+        type: string
+      occurred_at:
+        type: string
+    type: object
+  handler.VerifyOTPRequest:
+    properties:
+      code:
+        type: string
+      email:
+        type: string
+    required:
+    - code
+    - email
+    type: object
+host: localhost:8080
+info:
+  contact:
+    name: API Support
+  description: Moolah Household Finance & Investment SaaS API.
+  title: Moolah Financial API
+  version: "1.0"
+paths:
+  /v1/accounts:
+    get:
+      consumes:
+      - application/json
+      description: Returns all accounts belonging to the current tenant.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/domain.Account'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List accounts
+      tags:
+      - accounts
+    post:
+      consumes:
+      - application/json
+      description: Creates a new financial account for the current tenant.
+      parameters:
+      - description: Account details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.CreateAccountRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/domain.Account'
+        "400":
+          description: Invalid request body
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "422":
+          description: Validation error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create account
+      tags:
+      - accounts
+  /v1/accounts/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Soft-deletes an account and its transactions.
+      parameters:
+      - description: Account ULID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Account deleted
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Account not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete account
+      tags:
+      - accounts
+    get:
+      consumes:
+      - application/json
+      description: Returns details of a specific account by ID.
+      parameters:
+      - description: Account ULID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.Account'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Account not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get account
+      tags:
+      - accounts
+    patch:
+      consumes:
+      - application/json
+      description: Updates details of an existing account.
+      parameters:
+      - description: Account ULID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Update fields
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.UpdateAccountRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.Account'
+        "400":
+          description: Invalid request body
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Account not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "422":
+          description: Validation error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update account
+      tags:
+      - accounts
+  /v1/admin/audit-logs:
+    get:
+      consumes:
+      - application/json
+      description: Returns a paginated list of system audit logs. Requires sysadmin
+        role.
+      parameters:
+      - description: Limit (default 50)
+        in: query
+        name: limit
+        type: integer
+      - description: Offset (default 0)
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List audit logs
+      tags:
+      - admin
+  /v1/admin/tenants:
+    get:
+      consumes:
+      - application/json
+      description: Returns a list of all tenants in the system. Requires sysadmin
+        role.
+      parameters:
+      - description: Include soft-deleted tenants
+        in: query
+        name: with_deleted
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/domain.Tenant'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List all tenants
+      tags:
+      - admin
+  /v1/admin/tenants/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Permanently deletes a tenant and all its data. Requires sysadmin
+        role and matching X-Confirm-Token header.
+      parameters:
+      - description: Tenant ULID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Confirmation token (must match ID)
+        in: header
+        name: X-Confirm-Token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Tenant deleted permanently
+        "400":
+          description: Invalid confirmation token
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Hard delete tenant
+      tags:
+      - admin
+    get:
+      consumes:
+      - application/json
+      description: Returns details of any tenant by ID. Requires sysadmin role.
+      parameters:
+      - description: Tenant ULID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.Tenant'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Tenant not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get tenant details
+      tags:
+      - admin
+  /v1/admin/tenants/{id}/plan:
+    patch:
+      consumes:
+      - application/json
+      description: Changes the subscription plan of a tenant. Requires sysadmin role.
+      parameters:
+      - description: Tenant ULID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: New plan details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.UpdateTenantPlanRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.Tenant'
+        "400":
+          description: Invalid request body
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "422":
+          description: Validation error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update tenant plan
+      tags:
+      - admin
+  /v1/admin/tenants/{id}/restore:
+    post:
+      consumes:
+      - application/json
+      description: Restores a suspended or soft-deleted tenant. Requires sysadmin
+        role.
+      parameters:
+      - description: Tenant ULID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Tenant restored
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Tenant not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Restore tenant
+      tags:
+      - admin
+  /v1/admin/tenants/{id}/suspend:
+    post:
+      consumes:
+      - application/json
+      description: Suspends a tenant's access to the system. Requires sysadmin role.
+      parameters:
+      - description: Tenant ULID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Tenant suspended
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Tenant not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Suspend tenant
+      tags:
+      - admin
+  /v1/admin/users:
+    get:
+      consumes:
+      - application/json
+      description: Returns a list of all users in the system across all tenants. Requires
+        sysadmin role.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/domain.User'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List all users
+      tags:
+      - admin
+  /v1/admin/users/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Permanently deletes a user from the system. Requires sysadmin role.
+      parameters:
+      - description: User ULID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: User deleted permanently
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Force delete user
+      tags:
+      - admin
+    get:
+      consumes:
+      - application/json
+      description: Returns details of any user by ID. Requires sysadmin role.
+      parameters:
+      - description: User ULID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.User'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: User not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get user details
+      tags:
+      - admin
+  /v1/auth/otp/request:
+    post:
+      consumes:
+      - application/json
+      description: Validates email and generates a 6-digit verification code sent
+        via email.
+      parameters:
+      - description: Email address
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.RequestOTPRequest'
+      produces:
+      - application/json
+      responses:
+        "202":
+          description: OTP requested successfully (Accepted)
+        "400":
+          description: Invalid request body
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "422":
+          description: Validation error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "429":
+          description: Rate limit exceeded
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Request OTP
+      tags:
+      - auth
+  /v1/auth/otp/verify:
+    post:
+      consumes:
+      - application/json
+      description: Validates the 6-digit code and returns a PASETO token pair.
+      parameters:
+      - description: Email and Code
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.VerifyOTPRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.TokenResponse'
+        "400":
+          description: Invalid request body
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Invalid or expired OTP
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "422":
+          description: Validation error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Verify OTP
+      tags:
+      - auth
+  /v1/auth/token/refresh:
+    post:
+      consumes:
+      - application/json
+      description: Uses a valid refresh token to obtain a new access token.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.TokenResponse'
+        "401":
+          description: Invalid or expired refresh token
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Refresh Token
+      tags:
+      - auth
+  /v1/categories:
+    get:
+      consumes:
+      - application/json
+      description: Returns all categories for the current tenant. Can be filtered
+        by type or parent ID.
+      parameters:
+      - description: Category type (income/expense)
+        in: query
+        name: type
+        type: string
+      - description: Parent category ULID
+        in: query
+        name: parent_id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/domain.Category'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List categories
+      tags:
+      - categories
+    post:
+      consumes:
+      - application/json
+      description: Creates a new category for the current tenant.
+      parameters:
+      - description: Category details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.CreateCategoryRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/domain.Category'
+        "400":
+          description: Invalid request body
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "422":
+          description: Validation error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create category
+      tags:
+      - categories
+  /v1/categories/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Soft-deletes a category. This may be blocked if there are transactions
+        associated with it.
+      parameters:
+      - description: Category ULID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Category deleted
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Category not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete category
+      tags:
+      - categories
+    get:
+      consumes:
+      - application/json
+      description: Returns details of a specific category by ID.
+      parameters:
+      - description: Category ULID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.Category'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Category not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get category
+      tags:
+      - categories
+    patch:
+      consumes:
+      - application/json
+      description: Updates details of an existing category.
+      parameters:
+      - description: Category ULID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Update fields
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.UpdateCategoryRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.Category'
+        "400":
+          description: Invalid request body
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Category not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "422":
+          description: Validation error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update category
+      tags:
+      - categories
+  /v1/tenants/me:
+    get:
+      consumes:
+      - application/json
+      description: Returns the details of the tenant (household) associated with the
+        authenticated user.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.Tenant'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Tenant not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get current tenant
+      tags:
+      - tenants
+    patch:
+      consumes:
+      - application/json
+      description: Updates the details of the current tenant (e.g., household name).
+      parameters:
+      - description: Update fields
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.UpdateTenantRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.Tenant'
+        "400":
+          description: Invalid request body
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "422":
+          description: Validation error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update current tenant
+      tags:
+      - tenants
+  /v1/tenants/me/invite:
+    post:
+      consumes:
+      - application/json
+      description: Invites a new user (family member) to the current tenant.
+      parameters:
+      - description: Invite details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.InviteUserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/domain.User'
+        "400":
+          description: Invalid request body
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden (admin only)
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "422":
+          description: Validation error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Invite user
+      tags:
+      - tenants
+  /v1/transactions:
+    get:
+      consumes:
+      - application/json
+      description: Returns a list of transactions for the current tenant. Can be filtered
+        by account, category, type, and date range.
+      parameters:
+      - description: Account ULID
+        in: query
+        name: account_id
+        type: string
+      - description: Category ULID
+        in: query
+        name: category_id
+        type: string
+      - description: Transaction type (income/expense/transfer)
+        in: query
+        name: type
+        type: string
+      - description: Start date (RFC3339)
+        in: query
+        name: start_date
+        type: string
+      - description: End date (RFC3339)
+        in: query
+        name: end_date
+        type: string
+      - description: Limit (default 50)
+        in: query
+        name: limit
+        type: integer
+      - description: Offset (default 0)
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/domain.Transaction'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List transactions
+      tags:
+      - transactions
+    post:
+      consumes:
+      - application/json
+      description: Creates a new financial transaction (income, expense, or transfer).
+      parameters:
+      - description: Transaction details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.CreateTransactionRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/domain.Transaction'
+        "400":
+          description: Invalid request body
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "422":
+          description: Validation error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create transaction
+      tags:
+      - transactions
+  /v1/transactions/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Soft-deletes a transaction.
+      parameters:
+      - description: Transaction ULID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Transaction deleted
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Transaction not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete transaction
+      tags:
+      - transactions
+    get:
+      consumes:
+      - application/json
+      description: Returns details of a specific transaction by ID.
+      parameters:
+      - description: Transaction ULID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.Transaction'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Transaction not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get transaction
+      tags:
+      - transactions
+    patch:
+      consumes:
+      - application/json
+      description: Updates details of an existing transaction.
+      parameters:
+      - description: Transaction ULID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Update fields
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.UpdateTransactionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.Transaction'
+        "400":
+          description: Invalid request body
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Transaction not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "422":
+          description: Validation error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update transaction
+      tags:
+      - transactions
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

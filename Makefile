@@ -1,17 +1,18 @@
-.PHONY: all build run test lint generate clean help task-check deps up down
+.PHONY: all build run test lint generate clean help task-check deps up down swagger
 
 # Configuration
 BINARY_NAME=moolah-api
 CMD_DIR=./cmd/api
 OUT_DIR=bin
+SWAGGER_OUT=api
 
 # Default Go toolchain command
 GO=go
 
-all: deps lint generate test build
+all: deps lint generate test build swagger
 
 ## task-check: Run all checks required before completing a task (Linter, SQLC, Security, Unit Tests with Coverage)
-task-check: deps lint-check sqlc-check security-check test-coverage
+task-check: deps lint-check sqlc-check security-check test-coverage swagger-check
 
 deps:
 	@echo "Installing dependencies..."
@@ -20,6 +21,22 @@ deps:
 	@gofumpt -w .
 	@go fmt .
 	@go fix ./...
+
+## swagger: Generate Swagger documentation
+swagger:
+	@echo "📝 Generating Swagger documentation..."
+	@go install github.com/swaggo/swag/cmd/swag@latest
+	@mkdir -p $(SWAGGER_OUT)
+	@$$(go env GOPATH)/bin/swag init --dir ./cmd/api,./internal/handler,./internal/domain --output $(SWAGGER_OUT)
+
+## swagger-check: Verify if swagger documentation is up to date
+swagger-check: swagger
+	@echo "⚙️ Checking swagger documentation..."
+	@if [ -n "$$(git diff --name-only $(SWAGGER_OUT)/)" ]; then \
+		echo "❌ Error: Swagger documentation is out of date. Commit the changes."; \
+		exit 1; \
+	fi; \
+	echo "✅ Swagger documentation is up to date."
 
 ## lint-check: Run golangci-lint
 lint-check:
@@ -51,7 +68,7 @@ security-check:
 ## test-coverage: Run unit tests and enforce coverage (80% threshold)
 test-coverage:
 	@echo "🧪 Running unit tests with coverage..."
-	@$(GO) test -v -race -count=1 -tags=integration -timeout=600s -coverprofile=coverage.out -covermode=atomic $$(go list ./... | grep -v /platform/db/sqlc | grep -v /testutil/mocks)
+	@$(GO) test -v -race -count=1 -tags=integration -timeout=600s -coverprofile=coverage.out -covermode=atomic $$(go list ./... | grep -v /platform/db/sqlc | grep -v /testutil/mocks | grep -v /api)
 	@COVERAGE=$$(go tool cover -func=coverage.out | grep total | awk '{print $$3}' | tr -d '%'); \
 	echo "Total coverage: $${COVERAGE}%"; \
 	awk "BEGIN { if ($${COVERAGE} < 80) exit 1 }"; \

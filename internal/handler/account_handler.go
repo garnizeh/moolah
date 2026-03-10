@@ -38,6 +38,17 @@ type UpdateAccountRequest struct {
 }
 
 // List handles GET /v1/accounts
+//
+// @Summary		List accounts
+// @Description	Returns all accounts belonging to the current tenant.
+// @Tags			accounts
+// @Accept			json
+// @Produce		json
+// @Security		BearerAuth
+// @Success		200	{array}		domain.Account
+// @Failure		401	{object}	map[string]string	"Unauthorized"
+// @Failure		500	{object}	map[string]string	"Internal server error"
+// @Router			/v1/accounts [get]
 func (h *AccountHandler) List(w http.ResponseWriter, r *http.Request) {
 	tenantID, ok := middleware.TenantIDFromCtx(r.Context())
 	if !ok {
@@ -55,6 +66,20 @@ func (h *AccountHandler) List(w http.ResponseWriter, r *http.Request) {
 }
 
 // Create handles POST /v1/accounts
+//
+// @Summary		Create account
+// @Description	Creates a new financial account for the current tenant.
+// @Tags			accounts
+// @Accept			json
+// @Produce		json
+// @Security		BearerAuth
+// @Param			request	body		CreateAccountRequest	true	"Account details"
+// @Success		201		{object}	domain.Account
+// @Failure		400		{object}	map[string]string	"Invalid request body"
+// @Failure		401		{object}	map[string]string	"Unauthorized"
+// @Failure		422		{object}	map[string]string	"Validation error"
+// @Failure		500		{object}	map[string]string	"Internal server error"
+// @Router			/v1/accounts [post]
 func (h *AccountHandler) Create(w http.ResponseWriter, r *http.Request) {
 	tenantID, ok := middleware.TenantIDFromCtx(r.Context())
 	userID, userOK := middleware.UserIDFromCtx(r.Context())
@@ -92,6 +117,19 @@ func (h *AccountHandler) Create(w http.ResponseWriter, r *http.Request) {
 }
 
 // GetByID handles GET /v1/accounts/{id}
+//
+// @Summary		Get account
+// @Description	Returns details of a specific account by ID.
+// @Tags			accounts
+// @Accept			json
+// @Produce		json
+// @Security		BearerAuth
+// @Param			id	path		string	true	"Account ULID"
+// @Success		200	{object}	domain.Account
+// @Failure		401	{object}	map[string]string	"Unauthorized"
+// @Failure		404	{object}	map[string]string		"Account not found"
+// @Failure		500	{object}	map[string]string	"Internal server error"
+// @Router			/v1/accounts/{id} [get]
 func (h *AccountHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	tenantID, ok := middleware.TenantIDFromCtx(r.Context())
 	if !ok {
@@ -115,6 +153,22 @@ func (h *AccountHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 }
 
 // Update handles PATCH /v1/accounts/{id}
+//
+// @Summary		Update account
+// @Description	Updates details of an existing account.
+// @Tags			accounts
+// @Accept			json
+// @Produce		json
+// @Security		BearerAuth
+// @Param			id		path		string					true	"Account ULID"
+// @Param			request	body		UpdateAccountRequest	true	"Update fields"
+// @Success		200		{object}	domain.Account
+// @Failure		400		{object}	map[string]string	"Invalid request body"
+// @Failure		401		{object}	map[string]string	"Unauthorized"
+// @Failure		404		{object}	map[string]string		"Account not found"
+// @Failure		422		{object}	map[string]string	"Validation error"
+// @Failure		500		{object}	map[string]string	"Internal server error"
+// @Router			/v1/accounts/{id} [patch]
 func (h *AccountHandler) Update(w http.ResponseWriter, r *http.Request) {
 	tenantID, ok := middleware.TenantIDFromCtx(r.Context())
 	if !ok {
@@ -154,6 +208,19 @@ func (h *AccountHandler) Update(w http.ResponseWriter, r *http.Request) {
 }
 
 // Delete handles DELETE /v1/accounts/{id}
+//
+// @Summary		Delete account
+// @Description	Soft-deletes an account and its transactions.
+// @Tags			accounts
+// @Accept			json
+// @Produce		json
+// @Security		BearerAuth
+// @Param			id	path	string	true	"Account ULID"
+// @Success		204	"Account deleted"
+// @Failure		401	{object}	map[string]string	"Unauthorized"
+// @Failure		404	{object}	map[string]string		"Account not found"
+// @Failure		500	{object}	map[string]string	"Internal server error"
+// @Router			/v1/accounts/{id} [delete]
 func (h *AccountHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	tenantID, ok := middleware.TenantIDFromCtx(r.Context())
 	if !ok {

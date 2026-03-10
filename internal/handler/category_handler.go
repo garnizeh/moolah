@@ -36,6 +36,19 @@ type UpdateCategoryRequest struct {
 }
 
 // List handles GET /v1/categories
+//
+// @Summary		List categories
+// @Description	Returns all categories for the current tenant. Can be filtered by type or parent ID.
+// @Tags			categories
+// @Accept			json
+// @Produce		json
+// @Security		BearerAuth
+// @Param			type		query		string	false	"Category type (income/expense)"
+// @Param			parent_id	query		string	false	"Parent category ULID"
+// @Success		200			{array}		domain.Category
+// @Failure		401			{object}	map[string]string	"Unauthorized"
+// @Failure		500			{object}	map[string]string	"Internal server error"
+// @Router			/v1/categories [get]
 func (h *CategoryHandler) List(w http.ResponseWriter, r *http.Request) {
 	tenantID, ok := middleware.TenantIDFromCtx(r.Context())
 	if !ok {
@@ -75,6 +88,20 @@ func (h *CategoryHandler) List(w http.ResponseWriter, r *http.Request) {
 }
 
 // Create handles POST /v1/categories
+//
+// @Summary		Create category
+// @Description	Creates a new category for the current tenant.
+// @Tags			categories
+// @Accept			json
+// @Produce		json
+// @Security		BearerAuth
+// @Param			request	body		CreateCategoryRequest	true	"Category details"
+// @Success		201		{object}	domain.Category
+// @Failure		400		{object}	map[string]string	"Invalid request body"
+// @Failure		401		{object}	map[string]string	"Unauthorized"
+// @Failure		422		{object}	map[string]string	"Validation error"
+// @Failure		500		{object}	map[string]string	"Internal server error"
+// @Router			/v1/categories [post]
 func (h *CategoryHandler) Create(w http.ResponseWriter, r *http.Request) {
 	tenantID, ok := middleware.TenantIDFromCtx(r.Context())
 	if !ok {
@@ -118,6 +145,19 @@ func (h *CategoryHandler) Create(w http.ResponseWriter, r *http.Request) {
 }
 
 // GetByID handles GET /v1/categories/{id}
+//
+// @Summary		Get category
+// @Description	Returns details of a specific category by ID.
+// @Tags			categories
+// @Accept			json
+// @Produce		json
+// @Security		BearerAuth
+// @Param			id	path		string	true	"Category ULID"
+// @Success		200	{object}	domain.Category
+// @Failure		401	{object}	map[string]string	"Unauthorized"
+// @Failure		404	{object}	map[string]string		"Category not found"
+// @Failure		500	{object}	map[string]string	"Internal server error"
+// @Router			/v1/categories/{id} [get]
 func (h *CategoryHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	tenantID, ok := middleware.TenantIDFromCtx(r.Context())
 	if !ok {
@@ -141,6 +181,22 @@ func (h *CategoryHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 }
 
 // Update handles PATCH /v1/categories/{id}
+//
+// @Summary		Update category
+// @Description	Updates details of an existing category.
+// @Tags			categories
+// @Accept			json
+// @Produce		json
+// @Security		BearerAuth
+// @Param			id		path		string					true	"Category ULID"
+// @Param			request	body		UpdateCategoryRequest	true	"Update fields"
+// @Success		200		{object}	domain.Category
+// @Failure		400		{object}	map[string]string	"Invalid request body"
+// @Failure		401		{object}	map[string]string	"Unauthorized"
+// @Failure		404		{object}	map[string]string		"Category not found"
+// @Failure		422		{object}	map[string]string	"Validation error"
+// @Failure		500		{object}	map[string]string	"Internal server error"
+// @Router			/v1/categories/{id} [patch]
 func (h *CategoryHandler) Update(w http.ResponseWriter, r *http.Request) {
 	tenantID, ok := middleware.TenantIDFromCtx(r.Context())
 	if !ok {
@@ -181,6 +237,19 @@ func (h *CategoryHandler) Update(w http.ResponseWriter, r *http.Request) {
 }
 
 // Delete handles DELETE /v1/categories/{id}
+//
+// @Summary		Delete category
+// @Description	Soft-deletes a category. This may be blocked if there are transactions associated with it.
+// @Tags			categories
+// @Accept			json
+// @Produce		json
+// @Security		BearerAuth
+// @Param			id	path	string	true	"Category ULID"
+// @Success		204	"Category deleted"
+// @Failure		401	{object}	map[string]string	"Unauthorized"
+// @Failure		404	{object}	map[string]string		"Category not found"
+// @Failure		500	{object}	map[string]string	"Internal server error"
+// @Router			/v1/categories/{id} [delete]
 func (h *CategoryHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	tenantID, ok := middleware.TenantIDFromCtx(r.Context())
 	if !ok {

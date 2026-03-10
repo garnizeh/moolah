@@ -51,6 +51,19 @@ type TokenResponse struct {
 }
 
 // RequestOTP handles POST /v1/auth/otp/request
+//
+// @Summary		Request OTP
+// @Description	Validates email and generates a 6-digit verification code sent via email.
+// @Tags			auth
+// @Accept			json
+// @Produce		json
+// @Param			request	body	RequestOTPRequest	true	"Email address"
+// @Success		202		"OTP requested successfully (Accepted)"
+// @Failure		400		{object}	map[string]string	"Invalid request body"
+// @Failure		422		{object}	map[string]string	"Validation error"
+// @Failure		429		{object}	map[string]string	"Rate limit exceeded"
+// @Failure		500		{object}	map[string]string	"Internal server error"
+// @Router			/v1/auth/otp/request [post]
 func (h *AuthHandler) RequestOTP(w http.ResponseWriter, r *http.Request) {
 	var req RequestOTPRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -82,6 +95,19 @@ func (h *AuthHandler) RequestOTP(w http.ResponseWriter, r *http.Request) {
 }
 
 // VerifyOTP handles POST /v1/auth/otp/verify
+//
+// @Summary		Verify OTP
+// @Description	Validates the 6-digit code and returns a PASETO token pair.
+// @Tags			auth
+// @Accept			json
+// @Produce		json
+// @Param			request	body		VerifyOTPRequest	true	"Email and Code"
+// @Success		200		{object}	TokenResponse
+// @Failure		400		{object}	map[string]string	"Invalid request body"
+// @Failure		401		{object}	map[string]string	"Invalid or expired OTP"
+// @Failure		422		{object}	map[string]string	"Validation error"
+// @Failure		500		{object}	map[string]string	"Internal server error"
+// @Router			/v1/auth/otp/verify [post]
 func (h *AuthHandler) VerifyOTP(w http.ResponseWriter, r *http.Request) {
 	var req VerifyOTPRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -108,6 +134,17 @@ func (h *AuthHandler) VerifyOTP(w http.ResponseWriter, r *http.Request) {
 }
 
 // RefreshToken handles POST /v1/auth/token/refresh
+//
+// @Summary		Refresh Token
+// @Description	Uses a valid refresh token to obtain a new access token.
+// @Tags			auth
+// @Accept			json
+// @Produce		json
+// @Security		BearerAuth
+// @Success		200	{object}	TokenResponse
+// @Failure		401	{object}	map[string]string	"Invalid or expired refresh token"
+// @Failure		500	{object}	map[string]string	"Internal server error"
+// @Router			/v1/auth/token/refresh [post]
 func (h *AuthHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
 	authHeader := r.Header.Get("Authorization")
 	if len(authHeader) < 8 || authHeader[:7] != "Bearer " {
