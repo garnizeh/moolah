@@ -115,10 +115,10 @@
 | 1.5.2 | `cmd/api/server.go` — `http.Server` factory, middleware chain | ✅ `done` | 2026-03-08 | |
 | 1.5.3 | `cmd/api/routes.go` — all route registrations | ✅ `done` | 2026-03-08 | Go 1.22 `METHOD /path/{param}` syntax; middleware wired. |
 | 1.5.4 | `handler/auth_handler.go` — `RequestOTP`, `VerifyOTP`, `RefreshToken` | ✅ `done` | 2026-03-09 | 98% test coverage |
-| 1.5.5 | `handler/tenant_handler.go` — `GetMe`, `UpdateMe`, `InviteUser` | ✅ `done` | 2026-03-09 | 90% coverage |
-| 1.5.6 | `handler/account_handler.go` — full CRUD | 🔵 `backlog` | 2026-03-07 | |
-| 1.5.7 | `handler/category_handler.go` — CRUD | 🔵 `backlog` | 2026-03-07 | |
-| 1.5.8 | `handler/transaction_handler.go` — full CRUD + list with filters | 🔵 `backlog` | 2026-03-07 | |
+| 1.5.5 | `handler/tenant_handler.go` — `GetMe`, `UpdateMe`, `InviteUser` | ✅ `done` | 2026-03-09 | 100% test coverage |
+| 1.5.6 | `handler/account_handler.go` — full CRUD | ✅ `done` | 2026-03-09 | |
+| 1.5.7 | `handler/category_handler.go` — CRUD | ✅ `done` | 2026-03-09 | 100% test coverage |
+| 1.5.8 | `handler/transaction_handler.go` — full CRUD + list with filters | ✅ `done` | 2026-03-09 | 100% test coverage; fixed validation tags |
 | 1.5.9 | `handler/admin_handler.go` — sysadmin routes | 🔵 `backlog` | 2026-03-07 | |
 | 1.5.10 | Swaggo annotations on all handlers; `swag init` verified in CI | 🔵 `backlog` | 2026-03-07 | `docs/swagger/` |
 | 1.5.11 | Wire `Idempotency` middleware on all mutating `POST` routes | 🔵 `backlog` | 2026-03-07 | Depends on 1.1.14 + 1.1.15; apply after `RequireAuth` in the chain |
