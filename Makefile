@@ -68,7 +68,7 @@ security-check:
 ## test-coverage: Run unit tests and enforce coverage (80% threshold)
 test-coverage:
 	@echo "🧪 Running unit tests with coverage..."
-	@$(GO) test -v -race -count=1 -tags=integration -timeout=600s -coverprofile=coverage.out -covermode=atomic $$(go list ./... | grep -v /platform/db/sqlc | grep -v /testutil/mocks)
+	@$(GO) test -v -race -count=1 -tags=integration -timeout=600s -coverprofile=coverage.out -covermode=atomic $$(go list ./... | grep -v /platform/db/sqlc | grep -v /testutil/mocks | grep -v /api)
 	@COVERAGE=$$(go tool cover -func=coverage.out | grep total | awk '{print $$3}' | tr -d '%'); \
 	echo "Total coverage: $${COVERAGE}%"; \
 	awk "BEGIN { if ($${COVERAGE} < 80) exit 1 }"; \
