@@ -1,0 +1,32 @@
+meta {
+  name: Create Account
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/v1/accounts
+  body: json
+  auth: bearer
+}
+
+headers {
+  Idempotency-Key: {{idempotencyKey}}
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "name": "Savings Account",
+    "type": "CHECKING",
+    "initial_balance": 100000
+  }
+}
+
+script:pre-request {
+  const { v4: uuidv4 } = require('uuid');
+  bru.setVar("idempotencyKey", uuidv4());
+}

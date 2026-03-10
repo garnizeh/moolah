@@ -112,11 +112,33 @@ jobs:
         env:
           TESTCONTAINERS_RYUK_DISABLED: "false"
 
-  # ─── Stage 5: Build & Push Docker Image ─────────────────────────────────
+  # ─── Stage 5: Smoke Tests (Phase 1 end-to-end) ───────────────────────────
+  smoke-tests:
+    name: Phase 1 Smoke Tests
+    runs-on: ubuntu-latest
+    needs: integration-tests
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: 'go.mod'
+          cache: true
+
+      - name: Run Phase 1 smoke test (testcontainers-go starts Postgres + Redis)
+        run: |
+          go test -v -race -count=1 -timeout=300s \
+            -tags=integration \
+            -run TestSmoke_Phase1HappyPath \
+            ./internal/server/...
+        env:
+          TESTCONTAINERS_RYUK_DISABLED: "false"
+
+  # ─── Stage 6: Build & Push Docker Image ─────────────────────────────────
   build:
     name: Build & Push Docker Image
     runs-on: ubuntu-latest
-    needs: [unit-tests, integration-tests, security]
+    needs: [unit-tests, integration-tests, smoke-tests, security]
     if: |
       (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
       (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v'))
@@ -158,11 +180,11 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  # ─── Stage 6: Automatic Release (release-please) ─────────────────────────
+  # ─── Stage 7: Automatic Release (release-please) ─────────────────────────
   release:
     name: Release Please
     runs-on: ubuntu-latest
-    needs: [unit-tests, integration-tests, security]
+    needs: [unit-tests, integration-tests, smoke-tests, security]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     permissions:
       contents: write

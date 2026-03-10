@@ -9,36 +9,26 @@ import (
 
 type Config struct {
 	// Database
-	DatabaseURL string
+	DatabaseURL        string
+	RedisAddr          string
+	RedisPassword      string
+	PasetoSecretKey    string
+	SMTPHost           string
+	SMTPUser           string
+	SMTPPassword       string
+	EmailFrom          string
+	HTTPPort           string
+	LogLevel           string
+	LogFormat          string
+	SysadminEmail      string
+	SysadminTenantName string
 
-	// Redis
-	RedisAddr     string
-	RedisPassword string
-
-	// PASETO
-	PasetoSecretKey string // 32-byte hex-encoded symmetric key
-
-	// SMTP / Mailer
-	SMTPHost     string
-	SMTPUser     string
-	SMTPPassword string
-	EmailFrom    string
-
-	// Logging
-	LogLevel  string // debug | info | warn | error
-	LogFormat string // json | text
-
-	// Server
-	HTTPPort        string
+	// Time/Numeric
 	ReadTimeout     time.Duration
 	WriteTimeout    time.Duration
 	ShutdownTimeout time.Duration
-
-	// PASETO TTL
-	TokenTTL time.Duration
-
-	// Mailer Port
-	SMTPPort int
+	TokenTTL        time.Duration
+	SMTPPort        int
 }
 
 // Load reads environment variables and returns a populated Config.
@@ -66,6 +56,9 @@ func Load() *Config {
 
 		LogLevel:  getEnv("LOG_LEVEL", "info"),
 		LogFormat: getEnv("LOG_FORMAT", "json"),
+
+		SysadminEmail:      getRequiredEnv("SYSADMIN_EMAIL"),
+		SysadminTenantName: getEnv("SYSADMIN_TENANT_NAME", "System"),
 	}
 }
 

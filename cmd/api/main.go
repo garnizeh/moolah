@@ -20,6 +20,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/garnizeh/moolah/internal/platform/bootstrap"
 	"github.com/garnizeh/moolah/internal/platform/db"
 	"github.com/garnizeh/moolah/internal/platform/idempotency"
 	"github.com/garnizeh/moolah/internal/platform/mailer"
@@ -57,6 +58,11 @@ func run(ctx context.Context, cfg *config.Config) error {
 		return fmt.Errorf("database initialization failed: %w", err)
 	}
 	defer pool.Close()
+
+	// Bootstrap Sysadmin
+	if err := bootstrap.EnsureSysadmin(ctx, querier, cfg); err != nil {
+		return fmt.Errorf("sysadmin bootstrap failed: %w", err)
+	}
 
 	// Connect Redis
 	rdb, err := redis.NewClient(ctx, cfg.RedisAddr, cfg.RedisPassword, 0)

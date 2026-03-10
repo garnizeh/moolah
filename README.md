@@ -46,13 +46,24 @@ Following a Pragmatic DDD approach:
    cd moolah
    ```
 
-2. **Spin up infrastructure:**
+2. **Configure environment variables:**
+
+   Copy the sample environment file and set the required variables:
+
+   ```bash
+   cp .env.example .env
+   ```
+
+   **Required variables for first-run bootstrap:**
+   - `SYSADMIN_EMAIL`: The email address of the first system administrator. This is required to break the OTP bootstrap cycle.
+
+3. **Spin up infrastructure:**
 
    ```bash
    docker-compose up -d
    ```
 
-3. **Run the application:**
+4. **Run the application:**
 
    ```bash
    make run
@@ -64,6 +75,27 @@ Following a Pragmatic DDD approach:
 - `make test`: Run unit tests.
 - `make lint`: Run the linter.
 - `make generate`: Generate code from SQL queries using `sqlc`.
+- `make swagger`: Generate Swagger documentation.
+
+## 🧪 Testing & API Exploration
+
+### Bruno Collection
+
+We use [Bruno](https://www.usebruno.com/) for API exploration and manual testing. The collection is located in `docs/bruno/`.
+
+To use the collection:
+
+1. Install Bruno.
+2. Open Bruno and select "Open Collection".
+3. Navigate to `docs/bruno/` and open the folder.
+4. Select the `moolah` environment (usually `local`).
+5. Start with the **Auth > Request OTP** request.
+
+### Swagger UI
+
+API documentation is also available via Swagger UI when the server is running:
+
+- **URL:** [http://localhost:8080/swagger/](http://localhost:8080/swagger/)
 
 ## 📈 Roadmap
 

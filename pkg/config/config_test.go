@@ -18,6 +18,7 @@ func TestLoad(t *testing.T) {
 		t.Setenv("SMTP_USER", "user")
 		t.Setenv("SMTP_PASSWORD", "pass")
 		t.Setenv("EMAIL_FROM", "no-reply@moolah.io")
+		t.Setenv("SYSADMIN_EMAIL", "admin@moolah.io")
 	}
 
 	t.Run("success with all required and default optional", func(t *testing.T) {
@@ -55,6 +56,7 @@ func TestLoad(t *testing.T) {
 		"SMTP_USER",
 		"SMTP_PASSWORD",
 		"EMAIL_FROM",
+		"SYSADMIN_EMAIL",
 	}
 
 	for _, v := range requiredVars {
