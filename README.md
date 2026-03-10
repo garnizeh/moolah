@@ -91,6 +91,10 @@ To use the collection:
 4. Select the `moolah` environment (usually `local`).
 5. Start with the **Auth > Request OTP** request.
 
+### Playbook
+
+See the full API playbook with usage scenarios and ready-to-run curl examples in [docs/PLAYBOOK.md](docs/PLAYBOOK.md).
+
 ### Swagger UI
 
 API documentation is also available via Swagger UI when the server is running:
