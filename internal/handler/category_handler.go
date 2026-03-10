@@ -2,8 +2,6 @@ package handler
 
 import (
 	"encoding/json"
-	"errors"
-	"log/slog"
 	"net/http"
 
 	"github.com/garnizeh/moolah/internal/domain"
@@ -58,8 +56,7 @@ func (h *CategoryHandler) List(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err != nil {
-		slog.ErrorContext(r.Context(), "failed to list categories", "error", err, "tenant_id", tenantID)
-		respondError(w, r, "internal server error", http.StatusInternalServerError)
+		handleError(w, r, err, "failed to list categories")
 		return
 	}
 
@@ -113,15 +110,7 @@ func (h *CategoryHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	category, err := h.service.Create(r.Context(), tenantID, input)
 	if err != nil {
-		switch {
-		case errors.Is(err, domain.ErrConflict):
-			respondError(w, r, "category already exists", http.StatusConflict)
-		case errors.Is(err, domain.ErrInvalidInput):
-			respondError(w, r, err.Error(), http.StatusUnprocessableEntity)
-		default:
-			slog.ErrorContext(r.Context(), "failed to create category", "error", err, "tenant_id", tenantID)
-			respondError(w, r, "internal server error", http.StatusInternalServerError)
-		}
+		handleError(w, r, err, "failed to create category")
 		return
 	}
 
@@ -144,12 +133,7 @@ func (h *CategoryHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 
 	category, err := h.service.GetByID(r.Context(), tenantID, id)
 	if err != nil {
-		if errors.Is(err, domain.ErrNotFound) {
-			respondError(w, r, "category not found", http.StatusNotFound)
-			return
-		}
-		slog.ErrorContext(r.Context(), "failed to get category", "error", err, "tenant_id", tenantID, "category_id", id)
-		respondError(w, r, "internal server error", http.StatusInternalServerError)
+		handleError(w, r, err, "failed to get category")
 		return
 	}
 
@@ -189,15 +173,7 @@ func (h *CategoryHandler) Update(w http.ResponseWriter, r *http.Request) {
 
 	category, err := h.service.Update(r.Context(), tenantID, id, input)
 	if err != nil {
-		switch {
-		case errors.Is(err, domain.ErrNotFound):
-			respondError(w, r, "category not found", http.StatusNotFound)
-		case errors.Is(err, domain.ErrConflict):
-			respondError(w, r, "category name conflict", http.StatusConflict)
-		default:
-			slog.ErrorContext(r.Context(), "failed to update category", "error", err, "tenant_id", tenantID, "category_id", id)
-			respondError(w, r, "internal server error", http.StatusInternalServerError)
-		}
+		handleError(w, r, err, "failed to update category")
 		return
 	}
 
@@ -219,12 +195,7 @@ func (h *CategoryHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.service.Delete(r.Context(), tenantID, id); err != nil {
-		if errors.Is(err, domain.ErrNotFound) {
-			respondError(w, r, "category not found", http.StatusNotFound)
-			return
-		}
-		slog.ErrorContext(r.Context(), "failed to delete category", "error", err, "tenant_id", tenantID, "category_id", id)
-		respondError(w, r, "internal server error", http.StatusInternalServerError)
+		handleError(w, r, err, "failed to delete category")
 		return
 	}
 

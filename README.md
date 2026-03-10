@@ -2,7 +2,7 @@
 
 [![Go Version](https://img.shields.io/badge/Go-1.26.1-00ADD8?logo=go&logoColor=white)](https://go.dev/dl/)
 [![Build Status](https://img.shields.io/github/actions/workflow/status/garnizeh/moolah/ci.yml?branch=main&label=build&logo=github)](https://github.com/garnizeh/moolah/actions)
-[![codecov](https://codecov.io/gh/garnizeh/moolah/graph/badge.svg)](https://codecov.io/gh/garnizeh/moolah)
+[![codecov](https://codecov.io/gh/garnizeh/moolah/graph/badge.svg?v=3)](https://codecov.io/gh/garnizeh/moolah)
 [![Go Report Card](https://goreportcard.com/badge/github.com/garnizeh/moolah)](https://goreportcard.com/report/github.com/garnizeh/moolah)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 

@@ -119,7 +119,7 @@
 | 1.5.6 | `handler/account_handler.go` — full CRUD | ✅ `done` | 2026-03-09 | |
 | 1.5.7 | `handler/category_handler.go` — CRUD | ✅ `done` | 2026-03-09 | 100% test coverage |
 | 1.5.8 | `handler/transaction_handler.go` — full CRUD + list with filters | ✅ `done` | 2026-03-09 | 100% test coverage; fixed validation tags |
-| 1.5.9 | `handler/admin_handler.go` — sysadmin routes | 🔵 `backlog` | 2026-03-07 | |
+| 1.5.9 | `handler/admin_handler.go` — sysadmin routes | � `in-progress` | 2026-03-09 | |
 | 1.5.10 | Swaggo annotations on all handlers; `swag init` verified in CI | 🔵 `backlog` | 2026-03-07 | `docs/swagger/` |
 | 1.5.11 | Wire `Idempotency` middleware on all mutating `POST` routes | 🔵 `backlog` | 2026-03-07 | Depends on 1.1.14 + 1.1.15; apply after `RequireAuth` in the chain |
 

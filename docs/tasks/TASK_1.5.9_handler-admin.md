@@ -1,9 +1,9 @@
 # Task 1.5.9 — `handler/admin_handler.go` — sysadmin routes
 
 > **Roadmap Ref:** Phase 1 — MVP › 1.5 HTTP Handler Layer
-> **Status:** 🔵 `backlog`
-> **Last Updated:** 2026-03-07
-> **Assignee:** —
+> **Status:** � `in-progress`
+> **Last Updated:** 2026-03-09
+> **Assignee:** GitHub Copilot
 > **Estimated Effort:** M
 
 ---
