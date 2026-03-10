@@ -57,8 +57,9 @@ type TokenResponse struct {
 // @Tags			auth
 // @Accept			json
 // @Produce		json
-// @Param			request	body	RequestOTPRequest	true	"Email address"
-// @Success		202		"OTP requested successfully (Accepted)"
+// @Param			Idempotency-Key	header	string				false	"Optional idempotency key (ULID format recommended)"
+// @Param			request			body	RequestOTPRequest	true	"Email address"
+// @Success		202				"OTP requested successfully (Accepted)"
 // @Failure		400		{object}	map[string]string	"Invalid request body"
 // @Failure		422		{object}	map[string]string	"Validation error"
 // @Failure		429		{object}	map[string]string	"Rate limit exceeded"
@@ -101,8 +102,9 @@ func (h *AuthHandler) RequestOTP(w http.ResponseWriter, r *http.Request) {
 // @Tags			auth
 // @Accept			json
 // @Produce		json
-// @Param			request	body		VerifyOTPRequest	true	"Email and Code"
-// @Success		200		{object}	TokenResponse
+// @Param			Idempotency-Key	header	string				false	"Optional idempotency key (ULID format recommended)"
+// @Param			request			body	VerifyOTPRequest	true	"Email and verification code"
+// @Success		200				{object}	TokenResponse
 // @Failure		400		{object}	map[string]string	"Invalid request body"
 // @Failure		401		{object}	map[string]string	"Invalid or expired OTP"
 // @Failure		422		{object}	map[string]string	"Validation error"

@@ -78,6 +78,12 @@
                 "summary": "Create account",
                 "parameters": [
                     {
+                        "type": "string",
+                        "description": "Optional idempotency key (ULID format recommended)",
+                        "name": "Idempotency-Key",
+                        "in": "header"
+                    },
+                    {
                         "description": "Account details",
                         "name": "request",
                         "in": "body",
@@ -279,6 +285,12 @@
                         "name": "id",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Optional idempotency key (ULID format recommended)",
+                        "name": "Idempotency-Key",
+                        "in": "header"
                     },
                     {
                         "description": "Update fields",
@@ -1065,6 +1077,12 @@
                 "summary": "Request OTP",
                 "parameters": [
                     {
+                        "type": "string",
+                        "description": "Optional idempotency key (ULID format recommended)",
+                        "name": "Idempotency-Key",
+                        "in": "header"
+                    },
+                    {
                         "description": "Email address",
                         "name": "request",
                         "in": "body",
@@ -1132,7 +1150,13 @@
                 "summary": "Verify OTP",
                 "parameters": [
                     {
-                        "description": "Email and Code",
+                        "type": "string",
+                        "description": "Optional idempotency key (ULID format recommended)",
+                        "name": "Idempotency-Key",
+                        "in": "header"
+                    },
+                    {
+                        "description": "Email and verification code",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -1313,6 +1337,12 @@
                 ],
                 "summary": "Create category",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Optional idempotency key (ULID format recommended)",
+                        "name": "Idempotency-Key",
+                        "in": "header"
+                    },
                     {
                         "description": "Category details",
                         "name": "request",
@@ -1517,6 +1547,12 @@
                         "required": true
                     },
                     {
+                        "type": "string",
+                        "description": "Optional idempotency key (ULID format recommended)",
+                        "name": "Idempotency-Key",
+                        "in": "header"
+                    },
+                    {
                         "description": "Update fields",
                         "name": "request",
                         "in": "body",
@@ -1654,6 +1690,12 @@
                 "summary": "Update current tenant",
                 "parameters": [
                     {
+                        "type": "string",
+                        "description": "Optional idempotency key (ULID format recommended)",
+                        "name": "Idempotency-Key",
+                        "in": "header"
+                    },
+                    {
                         "description": "Update fields",
                         "name": "request",
                         "in": "body",
@@ -1728,6 +1770,12 @@
                 ],
                 "summary": "Invite user",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Optional idempotency key (ULID format recommended)",
+                        "name": "Idempotency-Key",
+                        "in": "header"
+                    },
                     {
                         "description": "Invite details",
                         "name": "request",
@@ -1903,6 +1951,12 @@
                 ],
                 "summary": "Create transaction",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Optional idempotency key (ULID format recommended)",
+                        "name": "Idempotency-Key",
+                        "in": "header"
+                    },
                     {
                         "description": "Transaction details",
                         "name": "request",
@@ -2105,6 +2159,12 @@
                         "name": "id",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Optional idempotency key (ULID format recommended)",
+                        "name": "Idempotency-Key",
+                        "in": "header"
                     },
                     {
                         "description": "Update fields",

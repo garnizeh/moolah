@@ -84,6 +84,12 @@ const docTemplate = `{
                 "summary": "Create account",
                 "parameters": [
                     {
+                        "type": "string",
+                        "description": "Optional idempotency key (ULID format recommended)",
+                        "name": "Idempotency-Key",
+                        "in": "header"
+                    },
+                    {
                         "description": "Account details",
                         "name": "request",
                         "in": "body",
@@ -285,6 +291,12 @@ const docTemplate = `{
                         "name": "id",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Optional idempotency key (ULID format recommended)",
+                        "name": "Idempotency-Key",
+                        "in": "header"
                     },
                     {
                         "description": "Update fields",
@@ -1071,6 +1083,12 @@ const docTemplate = `{
                 "summary": "Request OTP",
                 "parameters": [
                     {
+                        "type": "string",
+                        "description": "Optional idempotency key (ULID format recommended)",
+                        "name": "Idempotency-Key",
+                        "in": "header"
+                    },
+                    {
                         "description": "Email address",
                         "name": "request",
                         "in": "body",
@@ -1138,7 +1156,13 @@ const docTemplate = `{
                 "summary": "Verify OTP",
                 "parameters": [
                     {
-                        "description": "Email and Code",
+                        "type": "string",
+                        "description": "Optional idempotency key (ULID format recommended)",
+                        "name": "Idempotency-Key",
+                        "in": "header"
+                    },
+                    {
+                        "description": "Email and verification code",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -1319,6 +1343,12 @@ const docTemplate = `{
                 ],
                 "summary": "Create category",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Optional idempotency key (ULID format recommended)",
+                        "name": "Idempotency-Key",
+                        "in": "header"
+                    },
                     {
                         "description": "Category details",
                         "name": "request",
@@ -1523,6 +1553,12 @@ const docTemplate = `{
                         "required": true
                     },
                     {
+                        "type": "string",
+                        "description": "Optional idempotency key (ULID format recommended)",
+                        "name": "Idempotency-Key",
+                        "in": "header"
+                    },
+                    {
                         "description": "Update fields",
                         "name": "request",
                         "in": "body",
@@ -1660,6 +1696,12 @@ const docTemplate = `{
                 "summary": "Update current tenant",
                 "parameters": [
                     {
+                        "type": "string",
+                        "description": "Optional idempotency key (ULID format recommended)",
+                        "name": "Idempotency-Key",
+                        "in": "header"
+                    },
+                    {
                         "description": "Update fields",
                         "name": "request",
                         "in": "body",
@@ -1734,6 +1776,12 @@ const docTemplate = `{
                 ],
                 "summary": "Invite user",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Optional idempotency key (ULID format recommended)",
+                        "name": "Idempotency-Key",
+                        "in": "header"
+                    },
                     {
                         "description": "Invite details",
                         "name": "request",
@@ -1909,6 +1957,12 @@ const docTemplate = `{
                 ],
                 "summary": "Create transaction",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Optional idempotency key (ULID format recommended)",
+                        "name": "Idempotency-Key",
+                        "in": "header"
+                    },
                     {
                         "description": "Transaction details",
                         "name": "request",
@@ -2111,6 +2165,12 @@ const docTemplate = `{
                         "name": "id",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Optional idempotency key (ULID format recommended)",
+                        "name": "Idempotency-Key",
+                        "in": "header"
                     },
                     {
                         "description": "Update fields",
