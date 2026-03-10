@@ -23,8 +23,8 @@ func (s *Server) routes() http.Handler {
 	idempotency := middleware.Idempotency(s.idempotencyStore)
 
 	// Auth routes (Task 1.5.4)
-	mux.Handle("POST /v1/auth/otp/request", rateLimit(http.HandlerFunc(s.authHandler.RequestOTP)))
-	mux.Handle("POST /v1/auth/otp/verify", rateLimit(http.HandlerFunc(s.authHandler.VerifyOTP)))
+	mux.Handle("POST /v1/auth/otp/request", rateLimit(idempotency(http.HandlerFunc(s.authHandler.RequestOTP))))
+	mux.Handle("POST /v1/auth/otp/verify", rateLimit(idempotency(http.HandlerFunc(s.authHandler.VerifyOTP))))
 	mux.Handle("POST /v1/auth/token/refresh", requireAuth(http.HandlerFunc(s.authHandler.RefreshToken)))
 
 	// 2. Tenant Routes (Task 1.5.5)

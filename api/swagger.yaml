@@ -380,6 +380,10 @@ paths:
       - application/json
       description: Creates a new financial account for the current tenant.
       parameters:
+      - description: Optional idempotency key (ULID format recommended)
+        in: header
+        name: Idempotency-Key
+        type: string
       - description: Account details
         in: body
         name: request
@@ -510,6 +514,10 @@ paths:
         in: path
         name: id
         required: true
+        type: string
+      - description: Optional idempotency key (ULID format recommended)
+        in: header
+        name: Idempotency-Key
         type: string
       - description: Update fields
         in: body
@@ -1025,6 +1033,10 @@ paths:
       description: Validates email and generates a 6-digit verification code sent
         via email.
       parameters:
+      - description: Optional idempotency key (ULID format recommended)
+        in: header
+        name: Idempotency-Key
+        type: string
       - description: Email address
         in: body
         name: request
@@ -1069,7 +1081,11 @@ paths:
       - application/json
       description: Validates the 6-digit code and returns a PASETO token pair.
       parameters:
-      - description: Email and Code
+      - description: Optional idempotency key (ULID format recommended)
+        in: header
+        name: Idempotency-Key
+        type: string
+      - description: Email and verification code
         in: body
         name: request
         required: true
@@ -1184,6 +1200,10 @@ paths:
       - application/json
       description: Creates a new category for the current tenant.
       parameters:
+      - description: Optional idempotency key (ULID format recommended)
+        in: header
+        name: Idempotency-Key
+        type: string
       - description: Category details
         in: body
         name: request
@@ -1316,6 +1336,10 @@ paths:
         name: id
         required: true
         type: string
+      - description: Optional idempotency key (ULID format recommended)
+        in: header
+        name: Idempotency-Key
+        type: string
       - description: Update fields
         in: body
         name: request
@@ -1405,6 +1429,10 @@ paths:
       - application/json
       description: Updates the details of the current tenant (e.g., household name).
       parameters:
+      - description: Optional idempotency key (ULID format recommended)
+        in: header
+        name: Idempotency-Key
+        type: string
       - description: Update fields
         in: body
         name: request
@@ -1453,6 +1481,10 @@ paths:
       - application/json
       description: Invites a new user (family member) to the current tenant.
       parameters:
+      - description: Optional idempotency key (ULID format recommended)
+        in: header
+        name: Idempotency-Key
+        type: string
       - description: Invite details
         in: body
         name: request
@@ -1567,6 +1599,10 @@ paths:
       - application/json
       description: Creates a new financial transaction (income, expense, or transfer).
       parameters:
+      - description: Optional idempotency key (ULID format recommended)
+        in: header
+        name: Idempotency-Key
+        type: string
       - description: Transaction details
         in: body
         name: request
@@ -1697,6 +1733,10 @@ paths:
         in: path
         name: id
         required: true
+        type: string
+      - description: Optional idempotency key (ULID format recommended)
+        in: header
+        name: Idempotency-Key
         type: string
       - description: Update fields
         in: body

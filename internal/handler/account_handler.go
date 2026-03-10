@@ -73,8 +73,9 @@ func (h *AccountHandler) List(w http.ResponseWriter, r *http.Request) {
 // @Accept			json
 // @Produce		json
 // @Security		BearerAuth
-// @Param			request	body		CreateAccountRequest	true	"Account details"
-// @Success		201		{object}	domain.Account
+// @Param			Idempotency-Key	header	string					false	"Optional idempotency key (ULID format recommended)"
+// @Param			request			body	CreateAccountRequest	true	"Account details"
+// @Success		201				{object}	domain.Account
 // @Failure		400		{object}	map[string]string	"Invalid request body"
 // @Failure		401		{object}	map[string]string	"Unauthorized"
 // @Failure		422		{object}	map[string]string	"Validation error"
@@ -160,9 +161,10 @@ func (h *AccountHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 // @Accept			json
 // @Produce		json
 // @Security		BearerAuth
-// @Param			id		path		string					true	"Account ULID"
-// @Param			request	body		UpdateAccountRequest	true	"Update fields"
-// @Success		200		{object}	domain.Account
+// @Param			id				path	string					true	"Account ULID"
+// @Param			Idempotency-Key	header	string					false	"Optional idempotency key (ULID format recommended)"
+// @Param			request			body	UpdateAccountRequest	true	"Update fields"
+// @Success		200				{object}	domain.Account
 // @Failure		400		{object}	map[string]string	"Invalid request body"
 // @Failure		401		{object}	map[string]string	"Unauthorized"
 // @Failure		404		{object}	map[string]string		"Account not found"

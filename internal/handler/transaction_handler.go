@@ -52,8 +52,9 @@ type UpdateTransactionRequest struct {
 // @Accept			json
 // @Produce		json
 // @Security		BearerAuth
-// @Param			request	body		CreateTransactionRequest	true	"Transaction details"
-// @Success		201		{object}	domain.Transaction
+// @Param			Idempotency-Key	header	string						false	"Optional idempotency key (ULID format recommended)"
+// @Param			request			body	CreateTransactionRequest	true	"Transaction details"
+// @Success		201				{object}	domain.Transaction
 // @Failure		400		{object}	map[string]string	"Invalid request body"
 // @Failure		401		{object}	map[string]string	"Unauthorized"
 // @Failure		422		{object}	map[string]string	"Validation error"
@@ -143,9 +144,10 @@ func (h *TransactionHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 // @Accept			json
 // @Produce		json
 // @Security		BearerAuth
-// @Param			id		path		string						true	"Transaction ULID"
-// @Param			request	body		UpdateTransactionRequest	true	"Update fields"
-// @Success		200		{object}	domain.Transaction
+// @Param			id				path	string						true	"Transaction ULID"
+// @Param			Idempotency-Key	header	string						false	"Optional idempotency key (ULID format recommended)"
+// @Param			request			body	UpdateTransactionRequest	true	"Update fields"
+// @Success		200				{object}	domain.Transaction
 // @Failure		400		{object}	map[string]string	"Invalid request body"
 // @Failure		401		{object}	map[string]string	"Unauthorized"
 // @Failure		404		{object}	map[string]string		"Transaction not found"

@@ -71,8 +71,9 @@ func (h *TenantHandler) GetMe(w http.ResponseWriter, r *http.Request) {
 // @Accept			json
 // @Produce		json
 // @Security		BearerAuth
-// @Param			request	body		UpdateTenantRequest	true	"Update fields"
-// @Success		200		{object}	domain.Tenant
+// @Param			Idempotency-Key	header	string				false	"Optional idempotency key (ULID format recommended)"
+// @Param			request			body	UpdateTenantRequest	true	"Update fields"
+// @Success		200				{object}	domain.Tenant
 // @Failure		400		{object}	map[string]string	"Invalid request body"
 // @Failure		401		{object}	map[string]string	"Unauthorized"
 // @Failure		422		{object}	map[string]string	"Validation error"
@@ -117,8 +118,9 @@ func (h *TenantHandler) UpdateMe(w http.ResponseWriter, r *http.Request) {
 // @Accept			json
 // @Produce		json
 // @Security		BearerAuth
-// @Param			request	body		InviteUserRequest	true	"Invite details"
-// @Success		201		{object}	domain.User
+// @Param			Idempotency-Key	header	string				false	"Optional idempotency key (ULID format recommended)"
+// @Param			request			body	InviteUserRequest	true	"Invite details"
+// @Success		201				{object}	domain.User
 // @Failure		400		{object}	map[string]string	"Invalid request body"
 // @Failure		401		{object}	map[string]string	"Unauthorized"
 // @Failure		403		{object}	map[string]string	"Forbidden (admin only)"

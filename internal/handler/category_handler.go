@@ -95,8 +95,9 @@ func (h *CategoryHandler) List(w http.ResponseWriter, r *http.Request) {
 // @Accept			json
 // @Produce		json
 // @Security		BearerAuth
-// @Param			request	body		CreateCategoryRequest	true	"Category details"
-// @Success		201		{object}	domain.Category
+// @Param			Idempotency-Key	header	string					false	"Optional idempotency key (ULID format recommended)"
+// @Param			request			body	CreateCategoryRequest	true	"Category details"
+// @Success		201				{object}	domain.Category
 // @Failure		400		{object}	map[string]string	"Invalid request body"
 // @Failure		401		{object}	map[string]string	"Unauthorized"
 // @Failure		422		{object}	map[string]string	"Validation error"
@@ -188,9 +189,10 @@ func (h *CategoryHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 // @Accept			json
 // @Produce		json
 // @Security		BearerAuth
-// @Param			id		path		string					true	"Category ULID"
-// @Param			request	body		UpdateCategoryRequest	true	"Update fields"
-// @Success		200		{object}	domain.Category
+// @Param			id				path	string					true	"Category ULID"
+// @Param			Idempotency-Key	header	string					false	"Optional idempotency key (ULID format recommended)"
+// @Param			request			body	UpdateCategoryRequest	true	"Update fields"
+// @Success		200				{object}	domain.Category
 // @Failure		400		{object}	map[string]string	"Invalid request body"
 // @Failure		401		{object}	map[string]string	"Unauthorized"
 // @Failure		404		{object}	map[string]string		"Category not found"
