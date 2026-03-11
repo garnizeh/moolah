@@ -78,6 +78,10 @@ linters:
       - path: pkg/config/config_test\.go
         linters:
           - paralleltest
+      - path: internal/server/smoke_test\.go
+        linters:
+          - paralleltest
+          - tparallel
 
 issues:
   max-issues-per-linter: 0

@@ -1,0 +1,35 @@
+meta {
+  name: Create Transaction
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/v1/transactions
+  body: json
+  auth: bearer
+}
+
+headers {
+  Idempotency-Key: {{idempotencyKey}}
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "account_id": "01H9X...",
+    "category_id": "01H9Y...",
+    "amount": 5000,
+    "type": "EXPENSE",
+    "description": "Lunch at work",
+    "occurred_at": "2024-03-10T12:00:00Z"
+  }
+}
+
+script:pre-request {
+  const { v4: uuidv4 } = require('uuid');
+  bru.setVar("idempotencyKey", uuidv4());
+}

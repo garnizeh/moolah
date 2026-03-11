@@ -1,0 +1,31 @@
+meta {
+  name: Create Category
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/v1/categories
+  body: json
+  auth: bearer
+}
+
+headers {
+  Idempotency-Key: {{idempotencyKey}}
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "name": "Food",
+    "type": "EXPENSE"
+  }
+}
+
+script:pre-request {
+  const { v4: uuidv4 } = require('uuid');
+  bru.setVar("idempotencyKey", uuidv4());
+}

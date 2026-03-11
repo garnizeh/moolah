@@ -24,7 +24,12 @@ type Server struct {
 	httpServer *http.Server
 
 	// Handlers
-	authHandler *handler.AuthHandler
+	authHandler        *handler.AuthHandler
+	tenantHandler      *handler.TenantHandler
+	accountHandler     *handler.AccountHandler
+	categoryHandler    *handler.CategoryHandler
+	transactionHandler *handler.TransactionHandler
+	adminHandler       *handler.AdminHandler
 
 	// Services passed to routes.go
 	authSvc        domain.AuthService
@@ -56,22 +61,32 @@ func New(
 	tokenParser middleware.TokenParser,
 ) *Server {
 	s := &Server{
-		addr:             ":" + port,
-		authHandler:      handler.NewAuthHandler(authSvc),
-		authSvc:          authSvc,
-		tenantSvc:        tenantSvc,
-		accountSvc:       accountSvc,
-		categorySvc:      categorySvc,
-		transactionSvc:   transactionSvc,
-		adminSvc:         adminSvc,
-		idempotencyStore: idempotencyStore,
-		rateLimiterStore: rateLimiterStore,
-		tokenParser:      tokenParser,
+		addr:               ":" + port,
+		authHandler:        handler.NewAuthHandler(authSvc),
+		tenantHandler:      handler.NewTenantHandler(tenantSvc),
+		accountHandler:     handler.NewAccountHandler(accountSvc),
+		categoryHandler:    handler.NewCategoryHandler(categorySvc),
+		transactionHandler: handler.NewTransactionHandler(transactionSvc),
+		adminHandler:       handler.NewAdminHandler(adminSvc),
+		authSvc:            authSvc,
+		tenantSvc:          tenantSvc,
+		accountSvc:         accountSvc,
+		categorySvc:        categorySvc,
+		transactionSvc:     transactionSvc,
+		adminSvc:           adminSvc,
+		idempotencyStore:   idempotencyStore,
+		rateLimiterStore:   rateLimiterStore,
+		tokenParser:        tokenParser,
 	}
 
 	s.handler = middleware.RequestLogger()(s.routes())
 
 	return s
+}
+
+// Handler returns the underlying http.Handler for testing purposes.
+func (s *Server) Handler() http.Handler {
+	return s.handler
 }
 
 // ListenAndServe starts the HTTP server with the configured address and handler. It also sets the read and write timeouts.

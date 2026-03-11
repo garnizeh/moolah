@@ -98,6 +98,13 @@ test-integration:
 	@echo "Running integration tests..."
 	$(GO) test -v -tags=integration ./...
 
+## smoke-test: Run Phase 1 end-to-end smoke test (docker required)
+smoke-test:
+	@echo "Running Phase 1 smoke test..."
+	$(GO) test -v -race -count=1 -tags=integration -timeout=300s \
+		-run TestSmoke_Phase1HappyPath \
+		./internal/server/...
+
 ## lint: Run golangci-lint
 lint:
 	@echo "Running linter..."

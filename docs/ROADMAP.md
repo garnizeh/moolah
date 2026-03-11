@@ -1,6 +1,6 @@
 # Moolah — Project Roadmap
 
-> **Version:** 1.0.0 | **Last Updated:** 2026-03-09 | **Status:** 🟡 In Progress
+> **Version:** 1.0.0 | **Last Updated:** 2026-03-10 | **Status:** 🟡 In Progress
 | 1.5.2 | `cmd/api/server.go` — `http.Server` factory, middleware chain | ✅ `done` | 2026-03-08 | Implemented in `internal/server`: global logger middleware applied; `/healthz` route fixed. |
 
 ---
@@ -65,6 +65,7 @@
 | 1.1.16 | `internal/testutil/containers` — centralized testcontainers-go helpers (Postgres, Redis, Mailhog) | ✅ `done` | 2026-03-07 | Shared via `TestMain`; `//go:build integration`; eliminates per-test container setup |
 | 1.1.17 | `internal/testutil/mocks` — centralized testify/mock implementations (Querier, IdempotencyStore, Mailer) | ✅ `done` | 2026-03-07 | Centralized mocks implemented; tests updated to use `internal/testutil/mocks`. |
 | 1.1.18 | `internal/testutil/seeds` — canonical test-data factories (tenant, user, account, category, transaction) | ✅ `done` | 2026-03-07 | `//go:build integration`; used by repository and service integration tests |
+| 1.1.19 | `internal/platform/bootstrap/sysadmin.go` — idempotent sysadmin bootstrap on startup (`SYSADMIN_EMAIL` env var) | ✅ `done` | 2026-03-10 | Breaks bootstrap paradox: creates system tenant + sysadmin user if absent; no-op on subsequent starts |
 
 ### 1.2 Domain Layer
 
@@ -119,7 +120,7 @@
 | 1.5.6 | `handler/account_handler.go` — full CRUD | ✅ `done` | 2026-03-09 | |
 | 1.5.7 | `handler/category_handler.go` — CRUD | ✅ `done` | 2026-03-09 | 100% test coverage |
 | 1.5.8 | `handler/transaction_handler.go` — full CRUD + list with filters | ✅ `done` | 2026-03-09 | 100% test coverage; fixed validation tags |
-| 1.5.9 | `handler/admin_handler.go` — sysadmin routes | � `in-progress` | 2026-03-09 | |
+| 1.5.9 | `handler/admin_handler.go` — sysadmin routes | ✅ `done` | 2026-03-11 | |
 | 1.5.10 | Swaggo annotations on all handlers; `swag init` verified in CI | ✅ `done` | 2026-03-09 | `cmd/api/docs/` |
 | 1.5.11 | Wire `Idempotency` middleware on all mutating `POST` routes | ✅ `done` | 2026-03-09 | All POST/PATCH handlers updated |
 
@@ -127,12 +128,12 @@
 
 | # | Task | Status | Last Updated | Notes |
 | --- | --- | --- | --- | --- |
-| 1.6.1 | ≥ 80% unit test coverage enforced in CI | 🔵 `backlog` | 2026-03-06 | |
-| 1.6.2 | `govulncheck` passing in CI | 🔵 `backlog` | 2026-03-06 | |
-| 1.6.3 | `gosec` passing in CI | 🔵 `backlog` | 2026-03-06 | |
-| 1.6.4 | Full Phase 1 API smoke test (Postman / httpie collection) | 🔵 `backlog` | 2026-03-06 | |
-| 1.6.5 | Generate Swagger documentation via Swaggo | 🔵 `backlog` | 2026-03-08 | Includes Makefile rule and CI check |
-| 1.6.6 | Generate Bruno collection for API calls | 🔵 `backlog` | 2026-03-08 | Replacement for Postman in Phase 1 |
+| 1.6.1 | ≥ 80% unit test coverage enforced in CI | ✅ `done` | 2026-03-10 | CI `unit-tests` job + `make test-coverage`; Codecov upload |
+| 1.6.2 | `govulncheck` passing in CI | ✅ `done` | 2026-03-10 | CI `security` job + `make security-check` |
+| 1.6.3 | `gosec` passing in CI | ✅ `done` | 2026-03-10 | CI `security` job + `make security-check`; pinned to v2.24.7 |
+| 1.6.4 | Full Phase 1 API smoke test | ✅ `done` | 2026-03-11 | `TestSmoke_Phase1HappyPath`; `testcontainers` + `httptest.NewServer`; 26-step journey |
+| 1.6.5 | Generate Swagger documentation via Swaggo | ✅ `done` | 2026-03-10 | Documentation served at `/swagger/` |
+| 1.6.6 | Generate Bruno collection for API calls | ✅ `done` | 2026-03-10 | Collection created in `docs/bruno/` |
 
 ---
 

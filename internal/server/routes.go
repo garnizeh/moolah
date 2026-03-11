@@ -68,35 +68,113 @@ func (s *Server) routes() http.Handler {
 	return mux
 }
 
-// TODO: Implement handlers in Tasks 1.5.4 - 1.5.9
+func (s *Server) handleGetTenantMe(w http.ResponseWriter, r *http.Request) {
+	s.tenantHandler.GetMe(w, r)
+}
 
-func (s *Server) handleGetTenantMe(w http.ResponseWriter, r *http.Request)           {}
-func (s *Server) handleUpdateTenantMe(w http.ResponseWriter, r *http.Request)        {}
-func (s *Server) handleInviteUser(w http.ResponseWriter, r *http.Request)            {}
-func (s *Server) handleListAccounts(w http.ResponseWriter, r *http.Request)          {}
-func (s *Server) handleCreateAccount(w http.ResponseWriter, r *http.Request)         {}
-func (s *Server) handleGetAccountByID(w http.ResponseWriter, r *http.Request)        {}
-func (s *Server) handleUpdateAccount(w http.ResponseWriter, r *http.Request)         {}
-func (s *Server) handleDeleteAccount(w http.ResponseWriter, r *http.Request)         {}
-func (s *Server) handleListCategories(w http.ResponseWriter, r *http.Request)        {}
-func (s *Server) handleCreateCategory(w http.ResponseWriter, r *http.Request)        {}
-func (s *Server) handleGetCategoryByID(w http.ResponseWriter, r *http.Request)       {}
-func (s *Server) handleUpdateCategory(w http.ResponseWriter, r *http.Request)        {}
-func (s *Server) handleDeleteCategory(w http.ResponseWriter, r *http.Request)        {}
-func (s *Server) handleListTransactions(w http.ResponseWriter, r *http.Request)      {}
-func (s *Server) handleCreateTransaction(w http.ResponseWriter, r *http.Request)     {}
-func (s *Server) handleGetTransactionByID(w http.ResponseWriter, r *http.Request)    {}
-func (s *Server) handleUpdateTransaction(w http.ResponseWriter, r *http.Request)     {}
-func (s *Server) handleDeleteTransaction(w http.ResponseWriter, r *http.Request)     {}
-func (s *Server) handleAdminListTenants(w http.ResponseWriter, r *http.Request)      {}
-func (s *Server) handleAdminGetTenant(w http.ResponseWriter, r *http.Request)        {}
-func (s *Server) handleAdminUpdatePlan(w http.ResponseWriter, r *http.Request)       {}
-func (s *Server) handleAdminSuspendTenant(w http.ResponseWriter, r *http.Request)    {}
-func (s *Server) handleAdminRestoreTenant(w http.ResponseWriter, r *http.Request)    {}
-func (s *Server) handleAdminHardDeleteTenant(w http.ResponseWriter, r *http.Request) {}
-func (s *Server) handleAdminListUsers(w http.ResponseWriter, r *http.Request)        {}
-func (s *Server) handleAdminForceDeleteUser(w http.ResponseWriter, r *http.Request)  {}
-func (s *Server) handleAdminListAuditLogs(w http.ResponseWriter, r *http.Request)    {}
+func (s *Server) handleUpdateTenantMe(w http.ResponseWriter, r *http.Request) {
+	s.tenantHandler.UpdateMe(w, r)
+}
+
+func (s *Server) handleInviteUser(w http.ResponseWriter, r *http.Request) {
+	s.tenantHandler.InviteUser(w, r)
+}
+
+func (s *Server) handleListAccounts(w http.ResponseWriter, r *http.Request) {
+	s.accountHandler.List(w, r)
+}
+
+func (s *Server) handleCreateAccount(w http.ResponseWriter, r *http.Request) {
+	s.accountHandler.Create(w, r)
+}
+
+func (s *Server) handleGetAccountByID(w http.ResponseWriter, r *http.Request) {
+	s.accountHandler.GetByID(w, r)
+}
+
+func (s *Server) handleUpdateAccount(w http.ResponseWriter, r *http.Request) {
+	s.accountHandler.Update(w, r)
+}
+
+func (s *Server) handleDeleteAccount(w http.ResponseWriter, r *http.Request) {
+	s.accountHandler.Delete(w, r)
+}
+
+func (s *Server) handleListCategories(w http.ResponseWriter, r *http.Request) {
+	s.categoryHandler.List(w, r)
+}
+
+func (s *Server) handleCreateCategory(w http.ResponseWriter, r *http.Request) {
+	s.categoryHandler.Create(w, r)
+}
+
+func (s *Server) handleGetCategoryByID(w http.ResponseWriter, r *http.Request) {
+	s.categoryHandler.GetByID(w, r)
+}
+
+func (s *Server) handleUpdateCategory(w http.ResponseWriter, r *http.Request) {
+	s.categoryHandler.Update(w, r)
+}
+
+func (s *Server) handleDeleteCategory(w http.ResponseWriter, r *http.Request) {
+	s.categoryHandler.Delete(w, r)
+}
+
+func (s *Server) handleListTransactions(w http.ResponseWriter, r *http.Request) {
+	s.transactionHandler.List(w, r)
+}
+
+func (s *Server) handleCreateTransaction(w http.ResponseWriter, r *http.Request) {
+	s.transactionHandler.Create(w, r)
+}
+
+func (s *Server) handleGetTransactionByID(w http.ResponseWriter, r *http.Request) {
+	s.transactionHandler.GetByID(w, r)
+}
+
+func (s *Server) handleUpdateTransaction(w http.ResponseWriter, r *http.Request) {
+	s.transactionHandler.Update(w, r)
+}
+
+func (s *Server) handleDeleteTransaction(w http.ResponseWriter, r *http.Request) {
+	s.transactionHandler.Delete(w, r)
+}
+
+func (s *Server) handleAdminListTenants(w http.ResponseWriter, r *http.Request) {
+	s.adminHandler.ListTenants(w, r)
+}
+
+func (s *Server) handleAdminGetTenant(w http.ResponseWriter, r *http.Request) {
+	s.adminHandler.GetTenant(w, r)
+}
+
+func (s *Server) handleAdminUpdatePlan(w http.ResponseWriter, r *http.Request) {
+	s.adminHandler.UpdateTenantPlan(w, r)
+}
+
+func (s *Server) handleAdminSuspendTenant(w http.ResponseWriter, r *http.Request) {
+	s.adminHandler.SuspendTenant(w, r)
+}
+
+func (s *Server) handleAdminRestoreTenant(w http.ResponseWriter, r *http.Request) {
+	s.adminHandler.RestoreTenant(w, r)
+}
+
+func (s *Server) handleAdminHardDeleteTenant(w http.ResponseWriter, r *http.Request) {
+	s.adminHandler.HardDeleteTenant(w, r)
+}
+
+func (s *Server) handleAdminListUsers(w http.ResponseWriter, r *http.Request) {
+	s.adminHandler.ListUsers(w, r)
+}
+
+func (s *Server) handleAdminForceDeleteUser(w http.ResponseWriter, r *http.Request) {
+	s.adminHandler.ForceDeleteUser(w, r)
+}
+
+func (s *Server) handleAdminListAuditLogs(w http.ResponseWriter, r *http.Request) {
+	s.adminHandler.ListAuditLogs(w, r)
+}
 
 func (s *Server) handleHealthz(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {

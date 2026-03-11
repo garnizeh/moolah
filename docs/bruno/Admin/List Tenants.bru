@@ -1,0 +1,15 @@
+meta {
+  name: List Tenants
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/v1/admin/tenants
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
