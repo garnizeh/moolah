@@ -12,8 +12,9 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+//nolint:paralleltest // uses t.Setenv which cannot be used with t.Parallel
 func TestLoad(t *testing.T) {
-	// Helper to clear env vars after test
+	// Helper to set required env vars for the test
 	setFullEnv := func(t *testing.T) {
 		t.Helper()
 		t.Setenv("DATABASE_URL", "postgres://user:pass@localhost:5432/db")
@@ -139,5 +140,10 @@ func TestConfig_Log_JSON(t *testing.T) {
 	assert.Equal(t, cfg.RedisAddr, data["RedisAddr"])
 	assert.Equal(t, cfg.EmailFrom, data["EmailFrom"])
 	assert.Equal(t, cfg.HTTPPort, data["HTTPPort"])
-	assert.Equal(t, float64(cfg.SMTPPort), data["SMTPPort"])
+
+	// JSON numbers unmarshal to float64
+	smtpVal, ok := data["SMTPPort"].(float64)
+	require.True(t, ok, "SMTPPort should be a number")
+	// use InEpsilon to satisfy floating-point comparison guidance
+	assert.InEpsilon(t, float64(cfg.SMTPPort), smtpVal, 1e-6)
 }
