@@ -6,9 +6,9 @@ import (
 	"context"
 	"testing"
 
+	"github.com/garnizeh/moolah/internal/config"
 	"github.com/garnizeh/moolah/internal/platform/db/sqlc"
 	"github.com/garnizeh/moolah/internal/testutil/containers"
-	"github.com/garnizeh/moolah/pkg/config"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

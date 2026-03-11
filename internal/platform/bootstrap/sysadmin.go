@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"log/slog"
 
+	"github.com/garnizeh/moolah/internal/config"
 	"github.com/garnizeh/moolah/internal/domain"
 	"github.com/garnizeh/moolah/internal/platform/db/sqlc"
 	"github.com/garnizeh/moolah/internal/platform/repository"
-	"github.com/garnizeh/moolah/pkg/config"
 	"github.com/garnizeh/moolah/pkg/ulid"
 )
 

@@ -21,6 +21,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/garnizeh/moolah/internal/config"
 	"github.com/garnizeh/moolah/internal/platform/bootstrap"
 	"github.com/garnizeh/moolah/internal/platform/db"
 	"github.com/garnizeh/moolah/internal/platform/idempotency"
@@ -30,7 +31,6 @@ import (
 	"github.com/garnizeh/moolah/internal/platform/repository"
 	"github.com/garnizeh/moolah/internal/server"
 	"github.com/garnizeh/moolah/internal/service"
-	"github.com/garnizeh/moolah/pkg/config"
 	"github.com/garnizeh/moolah/pkg/logger"
 	"github.com/garnizeh/moolah/pkg/paseto"
 )
