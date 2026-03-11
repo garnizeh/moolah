@@ -33,22 +33,6 @@ func makeServerWithTenantHandler(tsvc *mocks.TenantService) *Server {
 	}
 }
 
-func makeServerWithAdminHandler(asvc *mocks.AdminService) *Server {
-	tokenParser := func(token string) (*paseto.Claims, error) {
-		return &paseto.Claims{TenantID: "t1", UserID: "u1", Role: "sysadmin"}, nil
-	}
-	rateLimiterStore := middleware.NewRateLimiterStore()
-	idemp := new(mocks.IdempotencyStore)
-
-	return &Server{
-		adminHandler:     handler.NewAdminHandler(asvc),
-		authHandler:      handler.NewAuthHandler(nil),
-		tokenParser:      tokenParser,
-		rateLimiterStore: rateLimiterStore,
-		idempotencyStore: idemp,
-	}
-}
-
 func TestServer_handleInviteUser_DelegatesToTenantHandler(t *testing.T) {
 	t.Parallel()
 	svc := new(mocks.TenantService)
