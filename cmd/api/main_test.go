@@ -43,7 +43,7 @@ func Test_run(t *testing.T) {
 	// Run application in a goroutine
 	errCh := make(chan error, 1)
 	go func() {
-		errCh <- run(ctx, cfg)
+		errCh <- run(ctx, cfg, true)
 	}()
 
 	// Give the server a moment to start
@@ -120,7 +120,7 @@ func Test_run_Errors(t *testing.T) {
 			cfg := *baseCfg
 			tt.setup(&cfg)
 
-			err := run(context.Background(), &cfg)
+			err := run(context.Background(), &cfg, true)
 			require.Error(t, err)
 			require.Contains(t, err.Error(), tt.wantErr)
 		})

@@ -32,7 +32,7 @@ func EnsureSysadmin(ctx context.Context, q sqlc.Querier, cfg *config.Config) err
 		return fmt.Errorf("bootstrap: failed to check existing sysadmin: %w", err)
 	}
 
-	slog.Info("bootstrapping sysadmin...", "email", cfg.SysadminEmail, "tenant", cfg.SysadminTenantName)
+	slog.Info("bootstrapping sysadmin", "email", cfg.SysadminEmail, "tenant", cfg.SysadminTenantName)
 
 	// 2. Create system tenant
 	tenantID := ulid.New()
@@ -57,6 +57,6 @@ func EnsureSysadmin(ctx context.Context, q sqlc.Querier, cfg *config.Config) err
 		return fmt.Errorf("bootstrap: failed to create sysadmin user: %w", err)
 	}
 
-	slog.Info("sysadmin bootstrapped successfully", "email", cfg.SysadminEmail, "tenant", cfg.SysadminTenantName)
+	slog.Info("sysadmin bootstrapped successfully")
 	return nil
 }

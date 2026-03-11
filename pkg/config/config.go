@@ -1,12 +1,16 @@
+// Package config provides functionality to load and manage application configuration from environment variables.
 package config
 
 import (
+	"context"
 	"fmt"
+	"log/slog"
 	"os"
 	"strconv"
 	"time"
 )
 
+// Config holds all the configuration values for the application.
 type Config struct {
 	// Database
 	DatabaseURL        string
@@ -29,6 +33,30 @@ type Config struct {
 	ShutdownTimeout time.Duration
 	TokenTTL        time.Duration
 	SMTPPort        int
+}
+
+// Log outputs the current configuration values at the info level.
+func (c *Config) Log(ctx context.Context) {
+	slog.InfoContext(ctx, "configuration details",
+		"DatabaseURL", c.DatabaseURL,
+		"RedisAddr", c.RedisAddr,
+		"RedisPassword", c.RedisPassword,
+		"PasetoSecretKey", c.PasetoSecretKey,
+		"SMTPHost", c.SMTPHost,
+		"SMTPUser", c.SMTPUser,
+		"SMTPPassword", c.SMTPPassword,
+		"EmailFrom", c.EmailFrom,
+		"HTTPPort", c.HTTPPort,
+		"LogLevel", c.LogLevel,
+		"LogFormat", c.LogFormat,
+		"SysadminEmail", c.SysadminEmail,
+		"SysadminTenantName", c.SysadminTenantName,
+		"ReadTimeout", c.ReadTimeout,
+		"WriteTimeout", c.WriteTimeout,
+		"ShutdownTimeout", c.ShutdownTimeout,
+		"TokenTTL", c.TokenTTL,
+		"SMTPPort", c.SMTPPort,
+	)
 }
 
 // Load reads environment variables and returns a populated Config.

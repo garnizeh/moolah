@@ -5,9 +5,12 @@ BINARY_NAME=moolah-api
 CMD_DIR=./cmd/api
 OUT_DIR=bin
 SWAGGER_OUT=api
-
-# Default Go toolchain command
 GO=go
+
+BUILD_TIME := $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
+COMMIT_HASH := $(shell git rev-parse HEAD)
+GO_VERSION := $(shell go version | cut -c 14-)
+VERSION_TAG := $(shell git describe --tags --match "v*" --abbrev=0 2>/dev/null || echo "v0.0.0-dev")
 
 all: deps lint generate test build swagger
 
@@ -82,7 +85,7 @@ test-coverage:
 build:
 	@echo "Building binary..."
 	@mkdir -p $(OUT_DIR)
-	$(GO) build -o $(OUT_DIR)/$(BINARY_NAME) $(CMD_DIR)
+	$(GO) build -mod=vendor -ldflags="-s -w -X 'main.tagVersion=$(VERSION_TAG)' -X 'main.buildTime=$(BUILD_TIME)' -X 'main.commitHash=$(COMMIT_HASH)' -X 'main.goVersion=$(GO_VERSION)'" -o $(OUT_DIR)/$(BINARY_NAME) $(CMD_DIR)
 
 ## run: Run the API application
 run:

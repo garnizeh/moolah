@@ -107,10 +107,8 @@ func (s *Server) ListenAndServe(ctx context.Context, readTimeout, writeTimeout t
 		ErrorLog:          slog.NewLogLogger(slog.Default().Handler(), slog.LevelError),
 	}
 
-	slog.InfoContext(ctx, "starting server", "addr", s.addr)
 	err := s.httpServer.ListenAndServe()
 	if err != nil && err != http.ErrServerClosed {
-		slog.ErrorContext(ctx, "server failed", "err", err)
 		return fmt.Errorf("server failed: %w", err)
 	}
 
@@ -124,15 +122,12 @@ func (s *Server) Shutdown(ctx context.Context) error {
 		s.rateLimiterStore.Close()
 	}
 
-	slog.InfoContext(ctx, "shutting down server", "addr", s.addr)
-
 	if s.httpServer == nil {
 		return nil
 	}
 
 	err := s.httpServer.Shutdown(ctx)
 	if err != nil {
-		slog.ErrorContext(ctx, "server shutdown failed", "err", err)
 		return fmt.Errorf("server shutdown failed: %w", err)
 	}
 

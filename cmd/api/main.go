@@ -13,6 +13,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -34,8 +35,19 @@ import (
 	"github.com/garnizeh/moolah/pkg/paseto"
 )
 
+var (
+	tagVersion = "v0.0.0-dev"
+	buildTime  = "development"
+	commitHash = "development"
+	goVersion  = "development"
+)
+
 func main() {
 	ctx := context.Background()
+
+	// CLI flags
+	showConfig := flag.Bool("show-config", false, "print loaded config and exit")
+	flag.Parse()
 
 	// Load Config
 	cfg := config.Load()
@@ -44,14 +56,25 @@ func main() {
 	log := logger.New(nil, cfg.LogLevel, cfg.LogFormat)
 	slog.SetDefault(log)
 
-	err := run(ctx, cfg)
+	err := run(ctx, cfg, *showConfig)
 	if err != nil {
-		slog.Error("application error", "err", err)
+		slog.ErrorContext(ctx, "application error", "err", err)
 		os.Exit(1)
 	}
 }
 
-func run(ctx context.Context, cfg *config.Config) error {
+func run(ctx context.Context, cfg *config.Config, showConfig bool) error {
+	slog.InfoContext(ctx, "starting application",
+		"version", tagVersion,
+		"buildTime", buildTime,
+		"commitHash", commitHash,
+		"goVersion", goVersion,
+	)
+
+	if showConfig {
+		cfg.Log(ctx)
+	}
+
 	// Connect DB, run migrations, and create sqlc querier
 	pool, querier, err := db.Querier(ctx, cfg.DatabaseURL)
 	if err != nil {
@@ -130,26 +153,24 @@ func run(ctx context.Context, cfg *config.Config) error {
 		signal.Notify(sigint, os.Interrupt, syscall.SIGTERM)
 		<-sigint
 
-		slog.Info("shutting down server...")
-
-		ctx, cancel := context.WithTimeout(ctx, cfg.ShutdownTimeout)
+		ctxwt, cancel := context.WithTimeout(ctx, cfg.ShutdownTimeout)
 		defer cancel()
 
-		if err := srv.Shutdown(ctx); err != nil {
-			slog.Error("server shutdown failed", "err", err)
+		slog.InfoContext(ctxwt, "shutting down server")
+		if err := srv.Shutdown(ctxwt); err != nil {
+			slog.ErrorContext(ctxwt, "server shutdown failed", "err", err)
 		}
 		close(idleConnsClosed)
 	}()
 
 	// Start Server
-	slog.Info("starting server", "port", cfg.HTTPPort)
+	slog.InfoContext(ctx, "starting server", "port", cfg.HTTPPort)
 	if err := srv.ListenAndServe(ctx, cfg.ReadTimeout, cfg.WriteTimeout); err != nil && err != http.ErrServerClosed {
-		slog.Error("server failed", "err", err)
 		return fmt.Errorf("server failed: %w", err)
 	}
 
 	<-idleConnsClosed
-	slog.Info("server stopped")
+	slog.InfoContext(ctx, "server stopped")
 
 	return nil
 }
