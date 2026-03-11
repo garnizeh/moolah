@@ -1,10 +1,15 @@
 package config
 
 import (
+	"bytes"
+	"encoding/json"
+	"log/slog"
 	"testing"
 	"time"
 
+	"github.com/garnizeh/moolah/pkg/logger"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestLoad(t *testing.T) {
@@ -87,4 +92,52 @@ func TestLoad(t *testing.T) {
 			Load()
 		})
 	})
+}
+
+func TestConfig_Log_JSON(t *testing.T) {
+	t.Parallel()
+
+	var buf bytes.Buffer
+	// create a test logger and set as default
+	l := logger.New(&buf, "info", "json")
+	prev := slog.Default()
+	slog.SetDefault(l)
+	defer slog.SetDefault(prev)
+
+	cfg := &Config{
+		DatabaseURL:        "postgres://user:pass@localhost:5432/db",
+		RedisAddr:          "localhost:6379",
+		RedisPassword:      "rpass",
+		PasetoSecretKey:    "deadbeef",
+		SMTPHost:           "mail.local",
+		SMTPUser:           "smtp-user",
+		SMTPPassword:       "smtp-pass",
+		EmailFrom:          "noreply@example.com",
+		HTTPPort:           "8080",
+		LogLevel:           "info",
+		LogFormat:          "json",
+		SysadminEmail:      "admin@example.com",
+		SysadminTenantName: "System",
+		ReadTimeout:        1 * time.Second,
+		WriteTimeout:       2 * time.Second,
+		ShutdownTimeout:    3 * time.Second,
+		TokenTTL:           4 * time.Second,
+		SMTPPort:           587,
+	}
+
+	cfg.Log(t.Context())
+
+	out := buf.Bytes()
+	require.NotEmpty(t, out)
+
+	var data map[string]any
+	err := json.Unmarshal(out, &data)
+	require.NoError(t, err)
+
+	// check a few representative fields were logged
+	assert.Equal(t, cfg.DatabaseURL, data["DatabaseURL"])
+	assert.Equal(t, cfg.RedisAddr, data["RedisAddr"])
+	assert.Equal(t, cfg.EmailFrom, data["EmailFrom"])
+	assert.Equal(t, cfg.HTTPPort, data["HTTPPort"])
+	assert.Equal(t, float64(cfg.SMTPPort), data["SMTPPort"])
 }
