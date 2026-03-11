@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.7.0](https://github.com/garnizeh/moolah/compare/v1.6.0...v1.7.0) (2026-03-11)
+
+
+### Features
+
+* Implement sysadmin bootstrap functionality ([da59e1a](https://github.com/garnizeh/moolah/commit/da59e1ac50275a5290edde6bf3cdc3d03f533349))
+* Implement sysadmin bootstrap functionality ([ee7e786](https://github.com/garnizeh/moolah/commit/ee7e78641a30d1eca72a10ac4bbd6568dccc48ee))
+
 ## [1.6.0](https://github.com/garnizeh/moolah/compare/v1.5.0...v1.6.0) (2026-03-10)
 
 
