@@ -151,6 +151,7 @@ func TestRateLimiterStore_Cleanup(t *testing.T) {
 // Test that Close stops the cleanup goroutine promptly and does not prevent the
 // rate-limiter middleware from functioning afterwards.
 func TestRateLimiterStore_Close(t *testing.T) {
+	t.Parallel()
 	// Create a store with a fast cleanup interval for the test.
 	store := NewRateLimiterStoreWithInterval(10 * time.Millisecond)
 
