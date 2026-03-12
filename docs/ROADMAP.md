@@ -144,9 +144,9 @@
 
 | # | Task | Status | Last Updated | Notes |
 | --- | --- | --- | --- | --- |
-| 2.1 | `domain/master_purchase.go` — entity + `MasterPurchaseRepository` interface | 🔵 `backlog` | 2026-03-06 | |
-| 2.2 | Goose migration — `master_purchases` table | 🔵 `backlog` | 2026-03-06 | |
-| 2.3 | `sqlc` queries for `master_purchases` | 🔵 `backlog` | 2026-03-06 | |
+| 2.1 | `domain/master_purchase.go` — entity + `MasterPurchaseRepository` interface | ✅ `done` | 2026-03-12 | Entity, value objects, and repository/service interfaces defined. |
+| 2.2 | [DB Migration: `master_purchases`](tasks/TASK_2.2_db-migration-master-purchases.md) | ✅ `done` | 2026-03-12 |
+| 2.3 | [SQLC Queries for Master Purchases](tasks/TASK_2.3_sqlc-queries-master-purchases.md) | 🟡 `in-progress` | 2026-03-12 | |
 | 2.4 | `repository/master_purchase_repo.go` + integration tests | 🔵 `backlog` | 2026-03-06 | |
 | 2.5 | `service/master_purchase_service.go` + unit tests | 🔵 `backlog` | 2026-03-06 | Create, project installments at runtime |
 | 2.6 | `handler/master_purchase_handler.go` — `POST /v1/master-purchases` | 🔵 `backlog` | 2026-03-06 | Returns projected installments in response |
@@ -156,6 +156,7 @@
 | 2.10 | Audit trail for `SYSTEM` actor on auto-generated transactions | 🔵 `backlog` | 2026-03-06 | `actor_id = "SYSTEM"` |
 | 2.11 | Update Swagger docs; `swag init` in CI | 🔵 `backlog` | 2026-03-06 | |
 | 2.12 | Integration tests for invoice closing flow | 🔵 `backlog` | 2026-03-06 | |
+| 2.13 | Phase 2 API smoke test — `internal/server/smoke_test.go` | 🔵 `backlog` | 2026-03-12 | `TestSmoke_Phase2HappyPath`; full journey: credit card account → master purchase → close-invoice → materialised transaction |
 
 ---
 
