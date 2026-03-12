@@ -5,9 +5,9 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/garnizeh/moolah/internal/config"
 	"github.com/garnizeh/moolah/internal/platform/db/sqlc"
 	"github.com/garnizeh/moolah/internal/testutil/mocks"
-	"github.com/garnizeh/moolah/pkg/config"
 	"github.com/jackc/pgx/v5"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"

@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"log/slog"
 
+	"github.com/garnizeh/moolah/internal/config"
 	"github.com/garnizeh/moolah/internal/domain"
 	"github.com/garnizeh/moolah/internal/platform/db/sqlc"
 	"github.com/garnizeh/moolah/internal/platform/repository"
-	"github.com/garnizeh/moolah/pkg/config"
 	"github.com/garnizeh/moolah/pkg/ulid"
 )
 
@@ -20,7 +20,7 @@ func EnsureSysadmin(ctx context.Context, q sqlc.Querier, cfg *config.Config) err
 	existing, err := q.GetUserByEmail(ctx, cfg.SysadminEmail)
 	if err == nil {
 		if existing.Role == sqlc.UserRoleSysadmin {
-			slog.Info("sysadmin already exists, skipping bootstrap", "email", cfg.SysadminEmail)
+			slog.InfoContext(ctx, "sysadmin already exists, skipping bootstrap", "email", cfg.SysadminEmail)
 			return nil
 		}
 		// If user exists but is not sysadmin, we should probably warn or error,
@@ -32,7 +32,7 @@ func EnsureSysadmin(ctx context.Context, q sqlc.Querier, cfg *config.Config) err
 		return fmt.Errorf("bootstrap: failed to check existing sysadmin: %w", err)
 	}
 
-	slog.Info("bootstrapping sysadmin...", "email", cfg.SysadminEmail, "tenant", cfg.SysadminTenantName)
+	slog.InfoContext(ctx, "bootstrapping sysadmin", "email", cfg.SysadminEmail, "tenant", cfg.SysadminTenantName)
 
 	// 2. Create system tenant
 	tenantID := ulid.New()
@@ -57,6 +57,6 @@ func EnsureSysadmin(ctx context.Context, q sqlc.Querier, cfg *config.Config) err
 		return fmt.Errorf("bootstrap: failed to create sysadmin user: %w", err)
 	}
 
-	slog.Info("sysadmin bootstrapped successfully", "email", cfg.SysadminEmail, "tenant", cfg.SysadminTenantName)
+	slog.InfoContext(ctx, "sysadmin bootstrapped successfully")
 	return nil
 }

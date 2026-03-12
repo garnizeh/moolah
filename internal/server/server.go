@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/garnizeh/moolah/internal/domain"
@@ -45,6 +46,7 @@ type Server struct {
 	tokenParser      middleware.TokenParser
 
 	addr string
+	mu   sync.Mutex
 }
 
 // NewServer is a factory function that creates and configures a new Server instance.
@@ -97,7 +99,7 @@ func (s *Server) ListenAndServe(ctx context.Context, readTimeout, writeTimeout t
 		defaultIdleTimeout       = 120 * time.Second
 	)
 
-	s.httpServer = &http.Server{
+	srv := &http.Server{
 		Addr:              s.addr,
 		Handler:           s.handler,
 		ReadTimeout:       readTimeout,
@@ -107,10 +109,12 @@ func (s *Server) ListenAndServe(ctx context.Context, readTimeout, writeTimeout t
 		ErrorLog:          slog.NewLogLogger(slog.Default().Handler(), slog.LevelError),
 	}
 
-	slog.InfoContext(ctx, "starting server", "addr", s.addr)
-	err := s.httpServer.ListenAndServe()
+	s.mu.Lock()
+	s.httpServer = srv
+	s.mu.Unlock()
+
+	err := srv.ListenAndServe()
 	if err != nil && err != http.ErrServerClosed {
-		slog.ErrorContext(ctx, "server failed", "err", err)
 		return fmt.Errorf("server failed: %w", err)
 	}
 
@@ -124,15 +128,17 @@ func (s *Server) Shutdown(ctx context.Context) error {
 		s.rateLimiterStore.Close()
 	}
 
-	slog.InfoContext(ctx, "shutting down server", "addr", s.addr)
+	s.mu.Lock()
+	srv := s.httpServer
+	// avoid leaving a stale pointer; set to nil to indicate shutdown in progress/completed
+	s.httpServer = nil
+	s.mu.Unlock()
 
-	if s.httpServer == nil {
+	if srv == nil {
 		return nil
 	}
 
-	err := s.httpServer.Shutdown(ctx)
-	if err != nil {
-		slog.ErrorContext(ctx, "server shutdown failed", "err", err)
+	if err := srv.Shutdown(ctx); err != nil {
 		return fmt.Errorf("server shutdown failed: %w", err)
 	}
 

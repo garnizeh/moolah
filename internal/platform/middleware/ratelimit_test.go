@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strconv"
+	"strings"
 	"testing"
 	"time"
 
@@ -145,4 +146,45 @@ func TestRateLimiterStore_Cleanup(t *testing.T) {
 	store.mu.RUnlock()
 
 	assert.False(t, exists, "stale email should have been cleaned up")
+}
+
+// Test that Close stops the cleanup goroutine promptly and does not prevent the
+// rate-limiter middleware from functioning afterwards.
+func TestRateLimiterStore_Close(t *testing.T) {
+	t.Parallel()
+	// Create a store with a fast cleanup interval for the test.
+	store := NewRateLimiterStoreWithInterval(10 * time.Millisecond)
+
+	// Build a simple handler chain using the OTPRateLimiter middleware.
+	h := store.OTPRateLimiter()(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	}))
+
+	// Prepare a POST request with an email payload to exercise the limiter.
+	req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(`{"email":"test@example.com"}`))
+	req.Header.Set("Content-Type", "application/json")
+
+	// First call should succeed (200).
+	rr := httptest.NewRecorder()
+	h.ServeHTTP(rr, req)
+	require.Equal(t, http.StatusOK, rr.Code)
+
+	// Call Close in a goroutine and ensure it returns quickly (does not block).
+	done := make(chan struct{})
+	go func() {
+		store.Close()
+		close(done)
+	}()
+
+	select {
+	case <-done:
+		// ok
+	case <-time.After(500 * time.Millisecond):
+		t.Fatal("Close() blocked or took too long")
+	}
+
+	// After Close, middleware should still be callable (cleanup goroutine stopped).
+	rr = httptest.NewRecorder()
+	h.ServeHTTP(rr, req)
+	assert.Equal(t, http.StatusOK, rr.Code)
 }

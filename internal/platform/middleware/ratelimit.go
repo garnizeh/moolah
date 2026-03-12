@@ -81,10 +81,12 @@ func (s *RateLimiterStore) OTPRateLimiter() func(http.Handler) http.Handler {
 				return
 			}
 
+			ctx := r.Context()
+
 			// Read and buffer the body
 			body, err := io.ReadAll(r.Body)
 			if err != nil {
-				slog.Error("failed to read request body in rate limiter", "error", err)
+				slog.ErrorContext(ctx, "failed to read request body in rate limiter", "error", err)
 				next.ServeHTTP(w, r)
 				return
 			}
@@ -140,7 +142,7 @@ func (s *RateLimiterStore) OTPRateLimiter() func(http.Handler) http.Handler {
 					// Fallback if JSON encoding fails
 					_, err = w.Write([]byte(`{"error":{"code":"INTERNAL_ERROR","message":"failed to encode rate limit error"}}`))
 					if err != nil {
-						slog.Error("failed to write fallback rate limit response", "error", err)
+						slog.ErrorContext(ctx, "failed to write fallback rate limit response", "error", err)
 					}
 				}
 				return
