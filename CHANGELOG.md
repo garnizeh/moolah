@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.9.0](https://github.com/garnizeh/moolah/compare/v1.8.0...v1.9.0) (2026-03-12)
+
+
+### Features
+
+* add master_purchases table migration and domain model ([f5c819b](https://github.com/garnizeh/moolah/commit/f5c819b6ed1bc4f61b4e4a6ae3b1074960a2d5b1))
+* add master_purchases table migration and domain model ([20608ac](https://github.com/garnizeh/moolah/commit/20608ac8da6430dc5d900e87894525a18d6b6798))
+
 ## [1.8.0](https://github.com/garnizeh/moolah/compare/v1.7.0...v1.8.0) (2026-03-12)
 
 
