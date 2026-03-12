@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.8.0](https://github.com/garnizeh/moolah/compare/v1.7.0...v1.8.0) (2026-03-12)
+
+
+### Features
+
+* Add configuration management and build metadata to the application ([9f54071](https://github.com/garnizeh/moolah/commit/9f54071527540c33036fa3c2befeac51dc6c479e))
+* Add configuration management and build metadata to the application ([0e546ba](https://github.com/garnizeh/moolah/commit/0e546ba9be447e95788c81ee60660bb5f0cef077))
+* Add GitHub Action for automatic author assignment on pull requests ([567899c](https://github.com/garnizeh/moolah/commit/567899ce720394939c98804a49739086ef358161))
+* Implement configuration management and update imports across the application ([113d1dc](https://github.com/garnizeh/moolah/commit/113d1dc687fd6c532e288199217126d9c824aa51))
+
 ## [1.7.0](https://github.com/garnizeh/moolah/compare/v1.6.0...v1.7.0) (2026-03-11)
 
 
