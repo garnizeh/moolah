@@ -53,7 +53,15 @@ func (s *Server) routes() http.Handler {
 	mux.Handle("PATCH /v1/transactions/{id}", requireAuth(idempotency(http.HandlerFunc(s.handleUpdateTransaction))))
 	mux.Handle("DELETE /v1/transactions/{id}", requireAuth(http.HandlerFunc(s.handleDeleteTransaction)))
 
-	// 6. Admin Routes (Task 1.5.9)
+	// 6. Master Purchase Routes (Phase 2)
+	mux.Handle("GET /v1/master-purchases", requireAuth(http.HandlerFunc(s.handleListMasterPurchases)))
+	mux.Handle("POST /v1/master-purchases", requireAuth(idempotency(http.HandlerFunc(s.handleCreateMasterPurchase))))
+	mux.Handle("GET /v1/master-purchases/{id}", requireAuth(http.HandlerFunc(s.handleGetMasterPurchaseByID)))
+	mux.Handle("GET /v1/master-purchases/{id}/projection", requireAuth(http.HandlerFunc(s.handleProjectMasterPurchase)))
+	mux.Handle("PATCH /v1/master-purchases/{id}", requireAuth(idempotency(http.HandlerFunc(s.handleUpdateMasterPurchase))))
+	mux.Handle("DELETE /v1/master-purchases/{id}", requireAuth(http.HandlerFunc(s.handleDeleteMasterPurchase)))
+
+	// 7. Admin Routes (Task 1.5.9)
 	sysadminOnly := middleware.RequireRole(domain.RoleSysadmin)
 	mux.Handle("GET /v1/admin/tenants", requireAuth(sysadminOnly(http.HandlerFunc(s.handleAdminListTenants))))
 	mux.Handle("GET /v1/admin/tenants/{id}", requireAuth(sysadminOnly(http.HandlerFunc(s.handleAdminGetTenant))))
@@ -184,4 +192,28 @@ func (s *Server) handleHealthz(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintln(w, "OK")
+}
+
+func (s *Server) handleListMasterPurchases(w http.ResponseWriter, r *http.Request) {
+	s.masterPurchaseHandler.ListByTenant(w, r)
+}
+
+func (s *Server) handleCreateMasterPurchase(w http.ResponseWriter, r *http.Request) {
+	s.masterPurchaseHandler.Create(w, r)
+}
+
+func (s *Server) handleGetMasterPurchaseByID(w http.ResponseWriter, r *http.Request) {
+	s.masterPurchaseHandler.GetByID(w, r)
+}
+
+func (s *Server) handleProjectMasterPurchase(w http.ResponseWriter, r *http.Request) {
+	s.masterPurchaseHandler.Project(w, r)
+}
+
+func (s *Server) handleUpdateMasterPurchase(w http.ResponseWriter, r *http.Request) {
+	s.masterPurchaseHandler.Update(w, r)
+}
+
+func (s *Server) handleDeleteMasterPurchase(w http.ResponseWriter, r *http.Request) {
+	s.masterPurchaseHandler.Delete(w, r)
 }

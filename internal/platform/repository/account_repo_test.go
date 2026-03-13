@@ -158,6 +158,18 @@ func TestAccountRepository_ListByUser(t *testing.T) {
 		require.NoError(t, err)
 		assert.Len(t, got, 1)
 	})
+
+	t.Run("error", func(t *testing.T) {
+		t.Parallel()
+		mockQuerier := new(mocks.Querier)
+		repo := NewAccountRepository(mockQuerier)
+
+		mockQuerier.On("ListAccountsByUser", ctx, mock.Anything).Return(nil, pgx.ErrNoRows)
+
+		got, err := repo.ListByUser(ctx, tenantID, userID)
+		require.ErrorIs(t, err, domain.ErrNotFound)
+		assert.Nil(t, got)
+	})
 }
 
 func TestAccountRepository_Update(t *testing.T) {
@@ -208,6 +220,18 @@ func TestAccountRepository_Update(t *testing.T) {
 		require.ErrorIs(t, err, domain.ErrConflict)
 		assert.Nil(t, got)
 	})
+
+	t.Run("get for update error", func(t *testing.T) {
+		t.Parallel()
+		mockQuerier := new(mocks.Querier)
+		repo := NewAccountRepository(mockQuerier)
+
+		mockQuerier.On("GetAccountByID", ctx, mock.Anything).Return(sqlc.Account{}, pgx.ErrNoRows)
+
+		got, err := repo.Update(ctx, tenantID, id, input)
+		require.ErrorIs(t, err, domain.ErrNotFound)
+		assert.Nil(t, got)
+	})
 }
 
 func TestAccountRepository_UpdateBalance(t *testing.T) {
@@ -231,6 +255,17 @@ func TestAccountRepository_UpdateBalance(t *testing.T) {
 
 		err := repo.UpdateBalance(ctx, tenantID, id, delta)
 		require.NoError(t, err)
+	})
+
+	t.Run("error", func(t *testing.T) {
+		t.Parallel()
+		mockQuerier := new(mocks.Querier)
+		repo := NewAccountRepository(mockQuerier)
+
+		mockQuerier.On("UpdateAccountBalance", ctx, mock.Anything).Return(pgx.ErrNoRows)
+
+		err := repo.UpdateBalance(ctx, tenantID, id, delta)
+		require.ErrorIs(t, err, domain.ErrNotFound)
 	})
 }
 

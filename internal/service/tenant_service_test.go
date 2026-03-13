@@ -120,6 +120,19 @@ func TestTenantService_List(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, tenants, result)
 	})
+
+	t.Run("Error", func(t *testing.T) {
+		t.Parallel()
+
+		tenantRepo := new(mocks.TenantRepository)
+		tenantRepo.On("List", ctx).Return(([]domain.Tenant)(nil), errors.New("db error"))
+
+		svc := service.NewTenantService(tenantRepo, nil, nil)
+		result, err := svc.List(ctx)
+
+		require.Error(t, err)
+		require.Nil(t, result)
+	})
 }
 
 func TestTenantService_Update(t *testing.T) {
@@ -164,6 +177,83 @@ func TestTenantService_Update(t *testing.T) {
 
 		require.ErrorIs(t, err, domain.ErrNotFound)
 	})
+
+	t.Run("UpdateError", func(t *testing.T) {
+		t.Parallel()
+
+		tenantRepo := new(mocks.TenantRepository)
+		tenantRepo.On("GetByID", ctx, id).Return(oldTenant, nil)
+		tenantRepo.On("Update", ctx, id, input).Return(nil, errors.New("db error"))
+
+		svc := service.NewTenantService(tenantRepo, nil, nil)
+		_, err := svc.Update(ctx, id, input)
+
+		require.Error(t, err)
+	})
+
+	t.Run("UpdateNoChanges", func(t *testing.T) {
+		t.Parallel()
+
+		tenantRepo := new(mocks.TenantRepository)
+		auditRepo := new(mocks.AuditRepository)
+
+		// No changes in input
+		inputNoChanges := domain.UpdateTenantInput{}
+
+		tenantRepo.On("GetByID", ctx, id).Return(oldTenant, nil)
+		tenantRepo.On("Update", ctx, id, inputNoChanges).Return(oldTenant, nil)
+
+		svc := service.NewTenantService(tenantRepo, nil, auditRepo)
+		result, err := svc.Update(ctx, id, inputNoChanges)
+
+		require.NoError(t, err)
+		require.Equal(t, oldTenant, result)
+		// auditRepo.Create should NOT be called
+		auditRepo.AssertNotCalled(t, "Create", mock.Anything, mock.Anything)
+		tenantRepo.AssertExpectations(t)
+	})
+
+	t.Run("AuditError_Update", func(t *testing.T) {
+		t.Parallel()
+
+		tenantRepo := new(mocks.TenantRepository)
+		auditRepo := new(mocks.AuditRepository)
+
+		tenantRepo.On("GetByID", ctx, id).Return(oldTenant, nil)
+		tenantRepo.On("Update", ctx, id, input).Return(newTenant, nil)
+		auditRepo.On("Create", ctx, mock.Anything).Return(nil, errors.New("audit fail"))
+
+		svc := service.NewTenantService(tenantRepo, nil, auditRepo)
+		_, err := svc.Update(ctx, id, input)
+
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "failed to create audit log")
+	})
+
+	t.Run("UpdatePlan", func(t *testing.T) {
+		t.Parallel()
+
+		tenantRepo := new(mocks.TenantRepository)
+		auditRepo := new(mocks.AuditRepository)
+
+		newPlan := domain.TenantPlanPremium
+		inputPlan := domain.UpdateTenantInput{Plan: &newPlan}
+		proTenant := &domain.Tenant{ID: id, Name: "Old Tenant", Plan: domain.TenantPlanPremium}
+
+		tenantRepo.On("GetByID", ctx, id).Return(oldTenant, nil)
+		tenantRepo.On("Update", ctx, id, inputPlan).Return(proTenant, nil)
+		auditRepo.On("Create", ctx, mock.MatchedBy(func(in domain.CreateAuditLogInput) bool {
+			return in.Action == domain.AuditActionUpdate && in.EntityID == id
+		})).Return(&domain.AuditLog{}, nil)
+
+		svc := service.NewTenantService(tenantRepo, nil, auditRepo)
+		result, err := svc.Update(ctx, id, inputPlan)
+
+		require.NoError(t, err)
+		require.Equal(t, domain.TenantPlanPremium, result.Plan)
+		tenantRepo.AssertExpectations(t)
+		auditRepo.AssertExpectations(t)
+	})
 }
 
 func TestTenantService_Delete(t *testing.T) {
@@ -201,6 +291,22 @@ func TestTenantService_Delete(t *testing.T) {
 		err := svc.Delete(ctx, id)
 
 		require.Error(t, err)
+	})
+
+	t.Run("RepoError", func(t *testing.T) {
+		t.Parallel()
+
+		tenantRepo := new(mocks.TenantRepository)
+		auditRepo := new(mocks.AuditRepository)
+
+		auditRepo.On("Create", ctx, mock.Anything).Return(&domain.AuditLog{}, nil)
+		tenantRepo.On("Delete", ctx, id).Return(errors.New("db error"))
+
+		svc := service.NewTenantService(tenantRepo, nil, auditRepo)
+		err := svc.Delete(ctx, id)
+
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "failed to delete tenant")
 	})
 }
 
@@ -248,5 +354,21 @@ func TestTenantService_InviteUser(t *testing.T) {
 		_, err := svc.InviteUser(ctx, tenantID, input)
 
 		require.Error(t, err)
+	})
+
+	t.Run("AuditError_Invite", func(t *testing.T) {
+		t.Parallel()
+
+		userRepo := new(mocks.UserRepository)
+		auditRepo := new(mocks.AuditRepository)
+
+		userRepo.On("Create", ctx, mock.Anything).Return(&domain.User{ID: "U1"}, nil)
+		auditRepo.On("Create", ctx, mock.Anything).Return(nil, errors.New("audit fail"))
+
+		svc := service.NewTenantService(nil, userRepo, auditRepo)
+		_, err := svc.InviteUser(ctx, tenantID, input)
+
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "failed to create audit log")
 	})
 }

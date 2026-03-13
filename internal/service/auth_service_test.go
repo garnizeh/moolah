@@ -305,6 +305,53 @@ func TestAuthService_VerifyOTP(t *testing.T) {
 		require.Contains(t, err.Error(), "failed to create audit log")
 	})
 
+	t.Run("OTPNotFound_AuditLogFailure", func(t *testing.T) {
+		t.Parallel()
+		authRepo := new(mocks.AuthRepository)
+		userRepo := new(mocks.UserRepository)
+		auditRepo := new(mocks.AuditRepository)
+
+		authRepo.On("GetActiveOTPRequest", ctx, email).Return(nil, domain.ErrInvalidOTP)
+		userRepo.On("GetByEmail", ctx, email).Return(user, nil)
+		auditRepo.On("Create", ctx, mock.Anything).Return(nil, errors.New("audit log failure"))
+
+		svc := service.NewAuthService(authRepo, userRepo, auditRepo, nil, paseto.NewV4SymmetricKey())
+		_, err := svc.VerifyOTP(ctx, email, "111111")
+		require.Error(t, err)
+		require.ErrorIs(t, err, domain.ErrInvalidOTP)
+	})
+
+	t.Run("InvalidOTPCode_AuditLogFailure", func(t *testing.T) {
+		t.Parallel()
+		authRepo := new(mocks.AuthRepository)
+		userRepo := new(mocks.UserRepository)
+		auditRepo := new(mocks.AuditRepository)
+
+		authRepo.On("GetActiveOTPRequest", ctx, email).Return(otpReq, nil)
+		userRepo.On("GetByEmail", ctx, email).Return(user, nil)
+		auditRepo.On("Create", ctx, mock.Anything).Return(nil, errors.New("audit log failure"))
+
+		svc := service.NewAuthService(authRepo, userRepo, auditRepo, nil, paseto.NewV4SymmetricKey())
+		_, err := svc.VerifyOTP(ctx, email, "wrong")
+
+		require.Error(t, err)
+		require.ErrorIs(t, err, domain.ErrInvalidOTP)
+	})
+
+	t.Run("UserSuddenlyMissing", func(t *testing.T) {
+		t.Parallel()
+		authRepo := new(mocks.AuthRepository)
+		userRepo := new(mocks.UserRepository)
+
+		authRepo.On("GetActiveOTPRequest", ctx, email).Return(otpReq, nil)
+		userRepo.On("GetByEmail", ctx, email).Return(nil, errors.New("suddenly missing"))
+
+		svc := service.NewAuthService(authRepo, userRepo, nil, nil, paseto.NewV4SymmetricKey())
+		_, err := svc.VerifyOTP(ctx, email, plainCode)
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "user suddenly missing")
+	})
+
 	t.Run("AuditCreationError_FailedLogin", func(t *testing.T) {
 		t.Parallel()
 		authRepo := new(mocks.AuthRepository)
@@ -363,7 +410,41 @@ func TestAuthService_RefreshToken(t *testing.T) {
 		userRepo.AssertExpectations(t)
 	})
 
-	t.Run("UserNotFound", func(t *testing.T) {
+	t.Run("UserLookupError", func(t *testing.T) {
+		t.Parallel()
+
+		userRepo := new(mocks.UserRepository)
+		svc := service.NewAuthService(nil, userRepo, nil, nil, key)
+
+		now := time.Now()
+		refreshToken, err := pkgpaseto.Seal(pkgpaseto.Claims{
+			IssuedAt:  now,
+			ExpiresAt: now.Add(7 * 24 * time.Hour),
+			TenantID:  user.TenantID,
+			UserID:    user.ID,
+			Role:      string(user.Role),
+		}, key)
+		require.NoError(t, err)
+
+		userRepo.On("GetByID", ctx, user.TenantID, user.ID).Return(nil, errors.New("db error"))
+
+		_, err = svc.RefreshToken(ctx, refreshToken)
+
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "user lookup failed")
+	})
+
+	t.Run("InvalidToken", func(t *testing.T) {
+		t.Parallel()
+
+		svc := service.NewAuthService(nil, nil, nil, nil, key)
+		_, err := svc.RefreshToken(ctx, "v4.local.invalid-token")
+
+		require.Error(t, err)
+		require.ErrorIs(t, err, domain.ErrUnauthorized)
+	})
+
+	t.Run("UserDeleted", func(t *testing.T) {
 		t.Parallel()
 		userRepo := new(mocks.UserRepository)
 		svc := service.NewAuthService(nil, userRepo, nil, nil, key)

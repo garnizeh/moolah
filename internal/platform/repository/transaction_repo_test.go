@@ -191,6 +191,28 @@ func TestTransactionRepository_List(t *testing.T) {
 		assert.Empty(t, got)
 	})
 
+	t.Run("success with end date filter", func(t *testing.T) {
+		t.Parallel()
+		mockQuerier := new(mocks.Querier)
+		repo := NewTransactionRepository(mockQuerier)
+
+		endDate := time.Now()
+		filter := domain.ListTransactionsParams{
+			EndDate: &endDate,
+		}
+
+		mockQuerier.On("ListTransactionsByTenant", ctx, mock.MatchedBy(func(p sqlc.ListTransactionsByTenantParams) bool {
+			return p.TenantID == tenantID &&
+				p.EndDate.Valid && p.EndDate.Time.Equal(endDate)
+		})).Return([]sqlc.Transaction{
+			{ID: "1", TenantID: tenantID},
+		}, nil)
+
+		got, err := repo.List(ctx, tenantID, filter)
+		require.NoError(t, err)
+		assert.Len(t, got, 1)
+	})
+
 	t.Run("error", func(t *testing.T) {
 		t.Parallel()
 		mockQuerier := new(mocks.Querier)

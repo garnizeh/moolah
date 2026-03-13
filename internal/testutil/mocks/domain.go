@@ -3,6 +3,7 @@ package mocks
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/garnizeh/moolah/internal/domain"
 	"github.com/stretchr/testify/mock"
@@ -798,3 +799,128 @@ func (m *TransactionRepository) Delete(ctx context.Context, tenantID, id string)
 	}
 	return nil
 }
+
+// MasterPurchaseRepository is a testify/mock implementation of domain.MasterPurchaseRepository.
+type MasterPurchaseRepository struct {
+	mock.Mock
+}
+
+func (m *MasterPurchaseRepository) Create(ctx context.Context, tenantID string, input domain.CreateMasterPurchaseInput) (*domain.MasterPurchase, error) {
+	args := m.Called(ctx, tenantID, input)
+	var err error
+	if e := args.Error(1); e != nil {
+		err = fmt.Errorf("mock MasterPurchaseRepository.Create: %w", e)
+	}
+	if args.Get(0) == nil {
+		return nil, err
+	}
+
+	res, ok := args.Get(0).(*domain.MasterPurchase)
+	if !ok {
+		return nil, fmt.Errorf("mock MasterPurchaseRepository.Create: unexpected type %T", args.Get(0))
+	}
+	return res, err
+}
+
+func (m *MasterPurchaseRepository) GetByID(ctx context.Context, tenantID, id string) (*domain.MasterPurchase, error) {
+	args := m.Called(ctx, tenantID, id)
+	var err error
+	if e := args.Error(1); e != nil {
+		err = fmt.Errorf("mock MasterPurchaseRepository.GetByID: %w", e)
+	}
+	if args.Get(0) == nil {
+		return nil, err
+	}
+
+	res, ok := args.Get(0).(*domain.MasterPurchase)
+	if !ok {
+		return nil, fmt.Errorf("mock MasterPurchaseRepository.GetByID: unexpected type %T", args.Get(0))
+	}
+	return res, err
+}
+
+func (m *MasterPurchaseRepository) ListByTenant(ctx context.Context, tenantID string) ([]domain.MasterPurchase, error) {
+	args := m.Called(ctx, tenantID)
+	var err error
+	if e := args.Error(1); e != nil {
+		err = fmt.Errorf("mock MasterPurchaseRepository.ListByTenant: %w", e)
+	}
+	if args.Get(0) == nil {
+		return nil, err
+	}
+
+	res, ok := args.Get(0).([]domain.MasterPurchase)
+	if !ok {
+		return nil, fmt.Errorf("mock MasterPurchaseRepository.ListByTenant: unexpected type %T", args.Get(0))
+	}
+	return res, err
+}
+
+func (m *MasterPurchaseRepository) ListByAccount(ctx context.Context, tenantID, accountID string) ([]domain.MasterPurchase, error) {
+	args := m.Called(ctx, tenantID, accountID)
+	var err error
+	if e := args.Error(1); e != nil {
+		err = fmt.Errorf("mock MasterPurchaseRepository.ListByAccount: %w", e)
+	}
+	if args.Get(0) == nil {
+		return nil, err
+	}
+
+	res, ok := args.Get(0).([]domain.MasterPurchase)
+	if !ok {
+		return nil, fmt.Errorf("mock MasterPurchaseRepository.ListByAccount: unexpected type %T", args.Get(0))
+	}
+	return res, err
+}
+
+func (m *MasterPurchaseRepository) ListPendingClose(ctx context.Context, tenantID string, cutoffDate time.Time) ([]domain.MasterPurchase, error) {
+	args := m.Called(ctx, tenantID, cutoffDate)
+	var err error
+	if e := args.Error(1); e != nil {
+		err = fmt.Errorf("mock MasterPurchaseRepository.ListPendingClose: %w", e)
+	}
+	if args.Get(0) == nil {
+		return nil, err
+	}
+
+	res, ok := args.Get(0).([]domain.MasterPurchase)
+	if !ok {
+		return nil, fmt.Errorf("mock MasterPurchaseRepository.ListPendingClose: unexpected type %T", args.Get(0))
+	}
+	return res, err
+}
+
+func (m *MasterPurchaseRepository) Update(ctx context.Context, tenantID, id string, input domain.UpdateMasterPurchaseInput) (*domain.MasterPurchase, error) {
+	args := m.Called(ctx, tenantID, id, input)
+	var err error
+	if e := args.Error(1); e != nil {
+		err = fmt.Errorf("mock MasterPurchaseRepository.Update: %w", e)
+	}
+	if args.Get(0) == nil {
+		return nil, err
+	}
+
+	res, ok := args.Get(0).(*domain.MasterPurchase)
+	if !ok {
+		return nil, fmt.Errorf("mock MasterPurchaseRepository.Update: unexpected type %T", args.Get(0))
+	}
+	return res, err
+}
+
+func (m *MasterPurchaseRepository) IncrementPaidInstallments(ctx context.Context, tenantID, id string) error {
+	args := m.Called(ctx, tenantID, id)
+	if e := args.Error(0); e != nil {
+		return fmt.Errorf("mock MasterPurchaseRepository.IncrementPaidInstallments: %w", e)
+	}
+	return nil
+}
+
+func (m *MasterPurchaseRepository) Delete(ctx context.Context, tenantID, id string) error {
+	args := m.Called(ctx, tenantID, id)
+	if e := args.Error(0); e != nil {
+		return fmt.Errorf("mock MasterPurchaseRepository.Delete: %w", e)
+	}
+	return nil
+}
+
+var _ domain.MasterPurchaseRepository = (*MasterPurchaseRepository)(nil)

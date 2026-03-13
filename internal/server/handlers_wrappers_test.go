@@ -104,5 +104,215 @@ func TestServer_adminWrappers_DelegateToAdminHandler(t *testing.T) {
 	s.handleAdminForceDeleteUser(rr, req)
 	require.Equal(t, http.StatusNoContent, rr.Code)
 
+	// Direct calls for remaining coverage
+	// Admin List Tenants
+	t.Run("handleAdminListTenants", func(t *testing.T) {
+		t.Parallel()
+		svc.On("ListAllTenants", mock.Anything, false).Return([]domain.Tenant{}, nil).Once()
+		req := httptest.NewRequest(http.MethodGet, "/v1/admin/tenants", nil)
+		rr := httptest.NewRecorder()
+		s.handleAdminListTenants(rr, req)
+		require.Equal(t, http.StatusOK, rr.Code)
+	})
+
+	// Admin Get Tenant
+	t.Run("handleAdminGetTenant", func(t *testing.T) {
+		t.Parallel()
+		svc.On("GetTenantByID", mock.Anything, "t1").Return(&domain.Tenant{ID: "t1"}, nil).Once()
+		req := httptest.NewRequest(http.MethodGet, "/v1/admin/tenants/t1", nil)
+		req.SetPathValue("id", "t1")
+		rr := httptest.NewRecorder()
+		s.handleAdminGetTenant(rr, req)
+		require.Equal(t, http.StatusOK, rr.Code)
+	})
+
+	// Admin List Users
+	t.Run("handleAdminListUsers", func(t *testing.T) {
+		t.Parallel()
+		svc.On("ListAllUsers", mock.Anything).Return([]domain.User{}, nil).Once()
+		req := httptest.NewRequest(http.MethodGet, "/v1/admin/users", nil)
+		rr := httptest.NewRecorder()
+		s.handleAdminListUsers(rr, req)
+		require.Equal(t, http.StatusOK, rr.Code)
+	})
+
+	// Admin List Audit Logs
+	t.Run("handleAdminListAuditLogs", func(t *testing.T) {
+		t.Parallel()
+		svc.On("ListAuditLogs", mock.Anything, mock.Anything).Return([]domain.AuditLog{}, nil).Once()
+		req := httptest.NewRequest(http.MethodGet, "/v1/admin/audit-logs", nil)
+		rr := httptest.NewRecorder()
+		s.handleAdminListAuditLogs(rr, req)
+		require.Equal(t, http.StatusOK, rr.Code)
+	})
+
 	svc.AssertExpectations(t)
+}
+
+func TestServer_TenantWrappers_DelegateToHandler(t *testing.T) {
+	t.Parallel()
+	svc := new(mocks.TenantService)
+	h := handler.NewTenantHandler(svc)
+	s := &Server{tenantHandler: h}
+
+	t.Run("handleGetTenantMe", func(t *testing.T) {
+		t.Parallel()
+		req := httptest.NewRequest(http.MethodGet, "/v1/tenants/me", nil)
+		rr := httptest.NewRecorder()
+		s.handleGetTenantMe(rr, req)
+		require.Equal(t, http.StatusUnauthorized, rr.Code)
+	})
+
+	t.Run("handleUpdateTenantMe", func(t *testing.T) {
+		t.Parallel()
+		req := httptest.NewRequest(http.MethodPatch, "/v1/tenants/me", nil)
+		rr := httptest.NewRecorder()
+		s.handleUpdateTenantMe(rr, req)
+		require.Equal(t, http.StatusUnauthorized, rr.Code)
+	})
+}
+
+func TestServer_AccountWrappers_DelegateToHandler(t *testing.T) {
+	t.Parallel()
+	svc := new(mocks.AccountService)
+	h := handler.NewAccountHandler(svc)
+	s := &Server{accountHandler: h}
+
+	wrappers := []struct {
+		fn     func(http.ResponseWriter, *http.Request)
+		name   string
+		method string
+		path   string
+	}{
+		{fn: s.handleListAccounts, name: "handleListAccounts", method: http.MethodGet, path: "/v1/accounts"},
+		{fn: s.handleCreateAccount, name: "handleCreateAccount", method: http.MethodPost, path: "/v1/accounts"},
+		{fn: s.handleGetAccountByID, name: "handleGetAccountByID", method: http.MethodGet, path: "/v1/accounts/1"},
+		{fn: s.handleUpdateAccount, name: "handleUpdateAccount", method: http.MethodPatch, path: "/v1/accounts/1"},
+		{fn: s.handleDeleteAccount, name: "handleDeleteAccount", method: http.MethodDelete, path: "/v1/accounts/1"},
+	}
+
+	for _, w := range wrappers {
+		t.Run(w.name, func(t *testing.T) {
+			t.Parallel()
+			req := httptest.NewRequest(w.method, w.path, nil)
+			rr := httptest.NewRecorder()
+			w.fn(rr, req)
+			require.Equal(t, http.StatusUnauthorized, rr.Code)
+		})
+	}
+}
+
+func TestServer_CategoryWrappers_DelegateToHandler(t *testing.T) {
+	t.Parallel()
+	svc := new(mocks.CategoryService)
+	h := handler.NewCategoryHandler(svc)
+	s := &Server{categoryHandler: h}
+
+	wrappers := []struct {
+		fn     func(http.ResponseWriter, *http.Request)
+		name   string
+		method string
+		path   string
+	}{
+		{fn: s.handleListCategories, name: "handleListCategories", method: http.MethodGet, path: "/v1/categories"},
+		{fn: s.handleCreateCategory, name: "handleCreateCategory", method: http.MethodPost, path: "/v1/categories"},
+		{fn: s.handleGetCategoryByID, name: "handleGetCategoryByID", method: http.MethodGet, path: "/v1/categories/1"},
+		{fn: s.handleUpdateCategory, name: "handleUpdateCategory", method: http.MethodPatch, path: "/v1/categories/1"},
+		{fn: s.handleDeleteCategory, name: "handleDeleteCategory", method: http.MethodDelete, path: "/v1/categories/1"},
+	}
+
+	for _, w := range wrappers {
+		t.Run(w.name, func(t *testing.T) {
+			t.Parallel()
+			req := httptest.NewRequest(w.method, w.path, nil)
+			rr := httptest.NewRecorder()
+			w.fn(rr, req)
+			require.Equal(t, http.StatusUnauthorized, rr.Code)
+		})
+	}
+}
+
+func TestServer_TransactionWrappers_DelegateToHandler(t *testing.T) {
+	t.Parallel()
+	svc := new(mocks.TransactionService)
+	h := handler.NewTransactionHandler(svc)
+	s := &Server{transactionHandler: h}
+
+	wrappers := []struct {
+		fn     func(http.ResponseWriter, *http.Request)
+		name   string
+		method string
+		path   string
+	}{
+		{fn: s.handleListTransactions, name: "handleListTransactions", method: http.MethodGet, path: "/v1/transactions"},
+		{fn: s.handleCreateTransaction, name: "handleCreateTransaction", method: http.MethodPost, path: "/v1/transactions"},
+		{fn: s.handleGetTransactionByID, name: "handleGetTransactionByID", method: http.MethodGet, path: "/v1/transactions/1"},
+		{fn: s.handleUpdateTransaction, name: "handleUpdateTransaction", method: http.MethodPatch, path: "/v1/transactions/1"},
+		{fn: s.handleDeleteTransaction, name: "handleDeleteTransaction", method: http.MethodDelete, path: "/v1/transactions/1"},
+	}
+
+	for _, w := range wrappers {
+		t.Run(w.name, func(t *testing.T) {
+			t.Parallel()
+			req := httptest.NewRequest(w.method, w.path, nil)
+			rr := httptest.NewRecorder()
+			w.fn(rr, req)
+			require.Equal(t, http.StatusUnauthorized, rr.Code)
+		})
+	}
+}
+
+func TestServer_MasterPurchaseWrappers_DelegateToHandler(t *testing.T) {
+	t.Parallel()
+	svc := new(mocks.MasterPurchaseService)
+	h := handler.NewMasterPurchaseHandler(svc)
+	s := &Server{masterPurchaseHandler: h}
+
+	t.Run("handleListMasterPurchases", func(t *testing.T) {
+		t.Parallel()
+		req := httptest.NewRequest(http.MethodGet, "/v1/master-purchases", nil)
+		rr := httptest.NewRecorder()
+		s.handleListMasterPurchases(rr, req)
+		require.Equal(t, http.StatusUnauthorized, rr.Code)
+	})
+
+	t.Run("handleCreateMasterPurchase", func(t *testing.T) {
+		t.Parallel()
+		req := httptest.NewRequest(http.MethodPost, "/v1/master-purchases", nil)
+		rr := httptest.NewRecorder()
+		s.handleCreateMasterPurchase(rr, req)
+		require.Equal(t, http.StatusUnauthorized, rr.Code)
+	})
+
+	t.Run("handleGetMasterPurchaseByID", func(t *testing.T) {
+		t.Parallel()
+		req := httptest.NewRequest(http.MethodGet, "/v1/master-purchases/1", nil)
+		rr := httptest.NewRecorder()
+		s.handleGetMasterPurchaseByID(rr, req)
+		require.Equal(t, http.StatusUnauthorized, rr.Code)
+	})
+
+	t.Run("handleProjectMasterPurchase", func(t *testing.T) {
+		t.Parallel()
+		req := httptest.NewRequest(http.MethodGet, "/v1/master-purchases/1/projection", nil)
+		rr := httptest.NewRecorder()
+		s.handleProjectMasterPurchase(rr, req)
+		require.Equal(t, http.StatusUnauthorized, rr.Code)
+	})
+
+	t.Run("handleUpdateMasterPurchase", func(t *testing.T) {
+		t.Parallel()
+		req := httptest.NewRequest(http.MethodPatch, "/v1/master-purchases/1", nil)
+		rr := httptest.NewRecorder()
+		s.handleUpdateMasterPurchase(rr, req)
+		require.Equal(t, http.StatusUnauthorized, rr.Code)
+	})
+
+	t.Run("handleDeleteMasterPurchase", func(t *testing.T) {
+		t.Parallel()
+		req := httptest.NewRequest(http.MethodDelete, "/v1/master-purchases/1", nil)
+		rr := httptest.NewRecorder()
+		s.handleDeleteMasterPurchase(rr, req)
+		require.Equal(t, http.StatusUnauthorized, rr.Code)
+	})
 }

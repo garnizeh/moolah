@@ -22,6 +22,7 @@ func TestRoutes(t *testing.T) {
 
 	// Initialize mocks
 	authSvc := new(mocks.AuthService)
+	masterPurchaseSvc := new(mocks.MasterPurchaseService)
 	// Other services can be nil as we are just checking routing table presence
 
 	// Middleware dependencies
@@ -31,10 +32,11 @@ func TestRoutes(t *testing.T) {
 
 	// Create Server
 	s := &Server{
-		authHandler:      handler.NewAuthHandler(authSvc),
-		tokenParser:      tokenParser,
-		rateLimiterStore: rateLimiterStore,
-		idempotencyStore: idempotencyStore,
+		authHandler:           handler.NewAuthHandler(authSvc),
+		masterPurchaseHandler: handler.NewMasterPurchaseHandler(masterPurchaseSvc),
+		tokenParser:           tokenParser,
+		rateLimiterStore:      rateLimiterStore,
+		idempotencyStore:      idempotencyStore,
 	}
 
 	mux := s.routes()
@@ -74,6 +76,42 @@ func TestRoutes(t *testing.T) {
 			method:         http.MethodGet,
 			path:           "/v1/non-existent",
 			expectedStatus: http.StatusNotFound,
+		},
+		{
+			name:           "List Master Purchases",
+			method:         http.MethodGet,
+			path:           "/v1/master-purchases",
+			expectedStatus: http.StatusUnauthorized,
+		},
+		{
+			name:           "Create Master Purchase",
+			method:         http.MethodPost,
+			path:           "/v1/master-purchases",
+			expectedStatus: http.StatusUnauthorized,
+		},
+		{
+			name:           "Get Master Purchase",
+			method:         http.MethodGet,
+			path:           "/v1/master-purchases/1",
+			expectedStatus: http.StatusUnauthorized,
+		},
+		{
+			name:           "Project Master Purchase",
+			method:         http.MethodGet,
+			path:           "/v1/master-purchases/1/projection",
+			expectedStatus: http.StatusUnauthorized,
+		},
+		{
+			name:           "Update Master Purchase",
+			method:         http.MethodPatch,
+			path:           "/v1/master-purchases/1",
+			expectedStatus: http.StatusUnauthorized,
+		},
+		{
+			name:           "Delete Master Purchase",
+			method:         http.MethodDelete,
+			path:           "/v1/master-purchases/1",
+			expectedStatus: http.StatusUnauthorized,
 		},
 	}
 

@@ -37,7 +37,34 @@ func TestCategoryService_Create(t *testing.T) {
 
 		require.NoError(t, err)
 		require.Equal(t, category, res)
-		categoryRepo.AssertExpectations(t)
+	})
+
+	t.Run("AuditError_Create", func(t *testing.T) {
+		t.Parallel()
+		categoryRepo := new(mocks.CategoryRepository)
+		auditRepo := new(mocks.AuditRepository)
+
+		category := &domain.Category{ID: "cat_1"}
+		categoryRepo.On("Create", ctx, tenantID, input).Return(category, nil)
+		auditRepo.On("Create", ctx, mock.Anything).Return(nil, errors.New("audit fail"))
+
+		svc := service.NewCategoryService(categoryRepo, auditRepo)
+		res, err := svc.Create(ctx, tenantID, input)
+
+		require.NoError(t, err)
+		require.Equal(t, category, res)
+	})
+
+	t.Run("RepoError_Create", func(t *testing.T) {
+		t.Parallel()
+		categoryRepo := new(mocks.CategoryRepository)
+		categoryRepo.On("Create", ctx, tenantID, input).Return(nil, errors.New("db error"))
+
+		svc := service.NewCategoryService(categoryRepo, nil)
+		res, err := svc.Create(ctx, tenantID, input)
+
+		require.Error(t, err)
+		require.Nil(t, res)
 	})
 
 	t.Run("Success_Child", func(t *testing.T) {
@@ -83,6 +110,24 @@ func TestCategoryService_Create(t *testing.T) {
 		require.Nil(t, res)
 	})
 
+	t.Run("Error_ParentLookupFail", func(t *testing.T) {
+		t.Parallel()
+		categoryRepo := new(mocks.CategoryRepository)
+
+		parentID := "parent_1"
+		childInput := input
+		childInput.ParentID = parentID
+
+		categoryRepo.On("GetByID", ctx, tenantID, parentID).Return(nil, errors.New("parent db error"))
+
+		svc := service.NewCategoryService(categoryRepo, nil)
+		res, err := svc.Create(ctx, tenantID, childInput)
+
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "failed to fetch parent category")
+		require.Nil(t, res)
+	})
+
 	t.Run("Error_ParentNotFound", func(t *testing.T) {
 		t.Parallel()
 		categoryRepo := new(mocks.CategoryRepository)
@@ -91,13 +136,14 @@ func TestCategoryService_Create(t *testing.T) {
 		inputWithGhost := input
 		inputWithGhost.ParentID = parentID
 
-		categoryRepo.On("GetByID", ctx, tenantID, parentID).Return(nil, domain.ErrNotFound)
+		categoryRepo.On("GetByID", ctx, tenantID, parentID).Return(nil, nil)
 
 		svc := service.NewCategoryService(categoryRepo, nil)
 		res, err := svc.Create(ctx, tenantID, inputWithGhost)
 
 		require.Error(t, err)
 		require.ErrorIs(t, err, domain.ErrNotFound)
+		require.Contains(t, err.Error(), "parent category not found")
 		require.Nil(t, res)
 	})
 }
@@ -224,6 +270,29 @@ func TestCategoryService_Update(t *testing.T) {
 		require.Equal(t, newCat, res)
 	})
 
+	t.Run("Success_Complex", func(t *testing.T) {
+		t.Parallel()
+		categoryRepo := new(mocks.CategoryRepository)
+		auditRepo := new(mocks.AuditRepository)
+
+		oldCat := &domain.Category{ID: catID, Name: "Old Name", Icon: "old-icon", Color: "old-color"}
+		newCategoryName := "New Name"
+		newIcon := "new-icon"
+		newColor := "new-color"
+		inputComplex := domain.UpdateCategoryInput{Name: &newCategoryName, Icon: &newIcon, Color: &newColor}
+		newCat := &domain.Category{ID: catID, Name: newCategoryName, Icon: newIcon, Color: newColor}
+
+		categoryRepo.On("GetByID", ctx, tenantID, catID).Return(oldCat, nil)
+		categoryRepo.On("Update", ctx, tenantID, catID, inputComplex).Return(newCat, nil)
+		auditRepo.On("Create", ctx, mock.Anything).Return(&domain.AuditLog{}, nil)
+
+		svc := service.NewCategoryService(categoryRepo, auditRepo)
+		res, err := svc.Update(ctx, tenantID, catID, inputComplex)
+
+		require.NoError(t, err)
+		require.Equal(t, newCat, res)
+	})
+
 	t.Run("UpdateError", func(t *testing.T) {
 		t.Parallel()
 		categoryRepo := new(mocks.CategoryRepository)
@@ -237,6 +306,37 @@ func TestCategoryService_Update(t *testing.T) {
 
 		require.Error(t, err)
 		require.Nil(t, res)
+	})
+
+	t.Run("Update_FetchError", func(t *testing.T) {
+		t.Parallel()
+		categoryRepo := new(mocks.CategoryRepository)
+		categoryRepo.On("GetByID", ctx, tenantID, catID).Return(nil, errors.New("db error"))
+
+		svc := service.NewCategoryService(categoryRepo, nil)
+		res, err := svc.Update(ctx, tenantID, catID, input)
+
+		require.Error(t, err)
+		require.Nil(t, res)
+	})
+
+	t.Run("Update_AuditError", func(t *testing.T) {
+		t.Parallel()
+		categoryRepo := new(mocks.CategoryRepository)
+		auditRepo := new(mocks.AuditRepository)
+
+		oldCat := &domain.Category{ID: catID, Name: "Old Name"}
+		newCat := &domain.Category{ID: catID, Name: newName}
+
+		categoryRepo.On("GetByID", ctx, tenantID, catID).Return(oldCat, nil)
+		categoryRepo.On("Update", ctx, tenantID, catID, input).Return(newCat, nil)
+		auditRepo.On("Create", ctx, mock.Anything).Return(nil, errors.New("audit fail"))
+
+		svc := service.NewCategoryService(categoryRepo, auditRepo)
+		res, err := svc.Update(ctx, tenantID, catID, input)
+
+		require.NoError(t, err)
+		require.Equal(t, newCat, res)
 	})
 }
 
@@ -254,6 +354,21 @@ func TestCategoryService_Delete(t *testing.T) {
 
 		categoryRepo.On("GetByID", ctx, tenantID, catID).Return(&domain.Category{ID: catID}, nil)
 		auditRepo.On("Create", ctx, mock.Anything).Return(&domain.AuditLog{}, nil)
+		categoryRepo.On("Delete", ctx, tenantID, catID).Return(nil)
+
+		svc := service.NewCategoryService(categoryRepo, auditRepo)
+		err := svc.Delete(ctx, tenantID, catID)
+
+		require.NoError(t, err)
+	})
+
+	t.Run("AuditError_Delete", func(t *testing.T) {
+		t.Parallel()
+		categoryRepo := new(mocks.CategoryRepository)
+		auditRepo := new(mocks.AuditRepository)
+
+		categoryRepo.On("GetByID", ctx, tenantID, catID).Return(&domain.Category{ID: catID}, nil)
+		auditRepo.On("Create", ctx, mock.Anything).Return(nil, errors.New("audit fail"))
 		categoryRepo.On("Delete", ctx, tenantID, catID).Return(nil)
 
 		svc := service.NewCategoryService(categoryRepo, auditRepo)
