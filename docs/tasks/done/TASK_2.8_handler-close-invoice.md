@@ -1,10 +1,8 @@
 # Task 2.8 — Handler: `POST /v1/accounts/{id}/close-invoice` (Manual Trigger)
 
 > **Roadmap Ref:** Phase 2 — Credit Card & Installment Tracking › HTTP Handler Layer
-> **Status:** 🔵 `backlog`
+> **Status:** ✅ `done`
 > **Last Updated:** 2026-03-12
-> **Assignee:** —
-> **Estimated Effort:** S
 
 ---
 
@@ -24,13 +22,13 @@ While a scheduled ticker will eventually automate invoice closing (Phase 5), the
 
 ### In scope
 
-- [ ] `CloseInvoice` handler method on `AccountHandler` (extends existing `account_handler.go`), or a new `InvoiceCloserHandler`.
-- [ ] Route `POST /v1/accounts/{id}/close-invoice` registered in `internal/server/routes.go`.
-- [ ] Optional request body with `closing_date` (defaults to `time.Now()` if omitted).
-- [ ] Response body with `processed_count` and any partial errors.
-- [ ] Idempotency middleware applied (idempotency key scoped to `userID + accountID + date`).
-- [ ] Swaggo annotations.
-- [ ] Unit tests.
+- [x] `CloseInvoice` handler method on `AccountHandler` (extends existing `account_handler.go`), or a new `InvoiceCloserHandler`.
+- [x] Route `POST /v1/accounts/{id}/close-invoice` registered in `internal/server/routes.go`.
+- [x] Optional request body with `closing_date` (defaults to `time.Now()` if omitted).
+- [x] Response body with `processed_count` and any partial errors.
+- [x] Idempotency middleware applied (idempotency key scoped to `userID + accountID + date`).
+- [x] Swaggo annotations.
+- [x] Unit tests.
 
 ### Out of scope
 

@@ -73,6 +73,60 @@ definitions:
     - CategoryTypeIncome
     - CategoryTypeExpense
     - CategoryTypeTransfer
+  domain.MasterPurchase:
+    properties:
+      account_id:
+        description: must be AccountTypeCreditCard
+        type: string
+      category_id:
+        type: string
+      closing_day:
+        description: day-of-month invoice closes (1–28)
+        type: integer
+      created_at:
+        type: string
+      deleted_at:
+        type: string
+      description:
+        type: string
+      first_installment_date:
+        type: string
+      id:
+        type: string
+      installment_count:
+        type: integer
+      paid_installments:
+        description: incremented each close cycle
+        type: integer
+      status:
+        $ref: '#/definitions/domain.MasterPurchaseStatus'
+      tenant_id:
+        type: string
+      total_amount_cents:
+        type: integer
+      updated_at:
+        type: string
+      user_id:
+        type: string
+    type: object
+  domain.MasterPurchaseStatus:
+    enum:
+    - open
+    - closed
+    type: string
+    x-enum-varnames:
+    - MasterPurchaseStatusOpen
+    - MasterPurchaseStatusClosed
+  domain.ProjectedInstallment:
+    properties:
+      amount_cents:
+        description: last installment absorbs remainder
+        type: integer
+      due_date:
+        type: string
+      installment_number:
+        type: integer
+    type: object
   domain.Role:
     enum:
     - sysadmin
@@ -170,6 +224,23 @@ definitions:
       updatedAt:
         type: string
     type: object
+  handler.CloseInvoiceRequest:
+    properties:
+      closing_date:
+        description: ClosingDate defaults to today if omitted.
+        type: string
+    type: object
+  handler.CloseInvoiceResponse:
+    properties:
+      account_id:
+        type: string
+      errors:
+        items:
+          type: string
+        type: array
+      processed_count:
+        type: integer
+    type: object
   handler.CreateAccountRequest:
     properties:
       currency:
@@ -212,6 +283,37 @@ definitions:
     - name
     - type
     type: object
+  handler.CreateMasterPurchaseRequest:
+    properties:
+      account_id:
+        type: string
+      category_id:
+        type: string
+      closing_day:
+        maximum: 28
+        minimum: 1
+        type: integer
+      description:
+        maxLength: 255
+        minLength: 1
+        type: string
+      first_installment_date:
+        type: string
+      installment_count:
+        maximum: 48
+        minimum: 2
+        type: integer
+      total_amount_cents:
+        type: integer
+    required:
+    - account_id
+    - category_id
+    - closing_day
+    - description
+    - first_installment_date
+    - installment_count
+    - total_amount_cents
+    type: object
   handler.CreateTransactionRequest:
     properties:
       account_id:
@@ -240,6 +342,12 @@ definitions:
     - description
     - occurred_at
     - type
+    type: object
+  handler.ErrorResponse:
+    properties:
+      error:
+        example: error message
+        type: string
     type: object
   handler.InviteUserRequest:
     properties:
@@ -291,6 +399,15 @@ definitions:
         type: string
       name:
         maxLength: 100
+        minLength: 1
+        type: string
+    type: object
+  handler.UpdateMasterPurchaseRequest:
+    properties:
+      category_id:
+        type: string
+      description:
+        maxLength: 255
         minLength: 1
         type: string
     type: object
@@ -565,6 +682,68 @@ paths:
       security:
       - BearerAuth: []
       summary: Update account
+      tags:
+      - accounts
+  /v1/accounts/{id}/close-invoice:
+    post:
+      consumes:
+      - application/json
+      description: Manually triggers invoice closing for a credit card account.
+      parameters:
+      - description: Account ULID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Required idempotency key
+        in: header
+        name: Idempotency-Key
+        type: string
+      - description: Manual closing details
+        in: body
+        name: request
+        schema:
+          $ref: '#/definitions/handler.CloseInvoiceRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.CloseInvoiceResponse'
+        "400":
+          description: Invalid request body
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Account not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "422":
+          description: Validation error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Close invoice
       tags:
       - accounts
   /v1/admin/audit-logs:
@@ -1388,6 +1567,220 @@ paths:
       summary: Update category
       tags:
       - categories
+  /v1/master-purchases:
+    get:
+      consumes:
+      - application/json
+      description: List all master purchases for the current tenant. Optionally filter
+        by account_id.
+      parameters:
+      - description: Optional account ID to filter by
+        in: query
+        name: account_id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/domain.MasterPurchase'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: List master purchases
+      tags:
+      - master-purchases
+    post:
+      consumes:
+      - application/json
+      description: Register a new credit card instalment purchase. Returns the record.
+      parameters:
+      - description: Master purchase payload
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/handler.CreateMasterPurchaseRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/domain.MasterPurchase'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create a master purchase
+      tags:
+      - master-purchases
+  /v1/master-purchases/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Soft-deletes a master purchase record.
+      parameters:
+      - description: Master Purchase ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete a master purchase
+      tags:
+      - master-purchases
+    get:
+      consumes:
+      - application/json
+      description: Retrieves details of a specific master purchase record.
+      parameters:
+      - description: Master Purchase ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.MasterPurchase'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get a master purchase by ID
+      tags:
+      - master-purchases
+    patch:
+      consumes:
+      - application/json
+      description: Partially updates a master purchase record (category and description
+        only).
+      parameters:
+      - description: Master Purchase ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Update payload
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/handler.UpdateMasterPurchaseRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.MasterPurchase'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update a master purchase
+      tags:
+      - master-purchases
+  /v1/master-purchases/{id}/projection:
+    get:
+      consumes:
+      - application/json
+      description: Computes and returns the projected installment schedule for a master
+        purchase.
+      parameters:
+      - description: Master Purchase ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/domain.ProjectedInstallment'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get installment projection
+      tags:
+      - master-purchases
   /v1/tenants/me:
     get:
       consumes:

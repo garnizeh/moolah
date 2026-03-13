@@ -1,9 +1,9 @@
 # Task 2.9 — Remainder-Cent Handling in Instalment Calculation
 
 > **Roadmap Ref:** Phase 2 — Credit Card & Installment Tracking › Service Layer
-> **Status:** 🔵 `backlog`
+> **Status:** ✅ `done`
 > **Last Updated:** 2026-03-12
-> **Assignee:** —
+> **Assignee:** GitHub Copilot
 > **Estimated Effort:** S
 
 ---
@@ -26,9 +26,9 @@ Using `float64` for this would introduce floating-point drift. The `int64` integ
 
 ### In scope
 
-- [ ] Document the remainder-cent algorithm in code comments within `master_purchase_service.go`.
-- [ ] Dedicated unit test file (or section) with table-driven tests covering edge cases.
-- [ ] Verify the invariant: `sum(ProjectedInstallments.AmountCents) == mp.TotalAmountCents` for all valid inputs.
+- [x] Document the remainder-cent algorithm in code comments within `master_purchase_service.go`.
+- [x] Dedicated unit test file (or section) with table-driven tests covering edge cases.
+- [x] Verify the invariant: `sum(ProjectedInstallments.AmountCents) == mp.TotalAmountCents` for all valid inputs.
 
 ### Out of scope
 
@@ -96,14 +96,14 @@ func (s *masterPurchaseService) ProjectInstallments(mp *domain.MasterPurchase) [
 
 ## 5. Acceptance Criteria
 
-- [ ] `ProjectInstallments` has a doc comment explaining the remainder-cent rule with examples.
-- [ ] Unit tests cover all table cases above.
-- [ ] Invariant test: for all entries, `sum(AmountCents) == TotalAmountCents`.
-- [ ] No `float64` appears anywhere in the instalment calculation path.
-- [ ] Edge case: `remainder == 0` → all instalments equal, last is not inflated.
-- [ ] `golangci-lint run ./...` passes.
-- [ ] `gosec ./...` passes.
-- [ ] `docs/ROADMAP.md` row 2.9 updated to ✅ `done`.
+- [x] `ProjectInstallments` has a doc comment explaining the remainder-cent rule with examples.
+- [x] Unit tests cover all table cases above.
+- [x] Invariant test: for all entries, `sum(AmountCents) == TotalAmountCents`.
+- [x] No `float64` appears anywhere in the instalment calculation path.
+- [x] Edge case: `remainder == 0` → all instalments equal, last is not inflated.
+- [x] `golangci-lint run ./...` passes.
+- [x] `gosec ./...` passes.
+- [x] `docs/ROADMAP.md` row 2.9 updated to ✅ `done`.
 
 ---
 

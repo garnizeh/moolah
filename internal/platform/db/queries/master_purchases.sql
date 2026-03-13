@@ -38,8 +38,10 @@ WHERE tenant_id = $1
 -- name: UpdateMasterPurchase :one
 UPDATE master_purchases
 SET 
-    category_id = COALESCE(sqlc.narg('category_id'), category_id),
+    category_id = COALESCE(NULLIF(sqlc.arg('category_id'), ''), category_id),
     description = COALESCE(sqlc.narg('description'), description),
+    status = COALESCE(sqlc.narg('status'), status),
+    paid_installments = COALESCE(sqlc.narg('paid_installments'), paid_installments),
     updated_at = NOW()
 WHERE id = $1 AND tenant_id = $2 AND deleted_at IS NULL
 RETURNING *;

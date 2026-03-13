@@ -40,6 +40,7 @@ type Server struct {
 	categorySvc       domain.CategoryService
 	transactionSvc    domain.TransactionService
 	masterPurchaseSvc domain.MasterPurchaseService
+	invoiceCloser     domain.InvoiceCloser
 	adminSvc          domain.AdminService
 
 	// Additional providers for middleware
@@ -60,6 +61,7 @@ func New(
 	categorySvc domain.CategoryService,
 	transactionSvc domain.TransactionService,
 	masterPurchaseSvc domain.MasterPurchaseService,
+	invoiceCloser domain.InvoiceCloser,
 	adminSvc domain.AdminService,
 	idempotencyStore domain.IdempotencyStore,
 	rateLimiterStore *middleware.RateLimiterStore,
@@ -69,7 +71,7 @@ func New(
 		addr:                  ":" + port,
 		authHandler:           handler.NewAuthHandler(authSvc),
 		tenantHandler:         handler.NewTenantHandler(tenantSvc),
-		accountHandler:        handler.NewAccountHandler(accountSvc),
+		accountHandler:        handler.NewAccountHandler(accountSvc, invoiceCloser),
 		categoryHandler:       handler.NewCategoryHandler(categorySvc),
 		transactionHandler:    handler.NewTransactionHandler(transactionSvc),
 		masterPurchaseHandler: handler.NewMasterPurchaseHandler(masterPurchaseSvc),
@@ -80,6 +82,7 @@ func New(
 		categorySvc:           categorySvc,
 		transactionSvc:        transactionSvc,
 		masterPurchaseSvc:     masterPurchaseSvc,
+		invoiceCloser:         invoiceCloser,
 		adminSvc:              adminSvc,
 		idempotencyStore:      idempotencyStore,
 		rateLimiterStore:      rateLimiterStore,

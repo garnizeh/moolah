@@ -1,6 +1,6 @@
 # Moolah — Project Roadmap
 
-> **Version:** 1.0.0 | **Last Updated:** 2026-03-12 | **Status:** 🟡 In Progress
+> **Version:** 1.0.0 | **Last Updated:** 2026-03-13 | **Status:** 🟡 In Progress
 
 ---
 
@@ -71,7 +71,7 @@
 ## Phase 2 — Credit Card & Installment Tracking
 
 > **Goal:** Introduce credit card accounts with the "Master Purchase" installment model — one record per purchase, physical transaction rows created only at invoice-close time. Keeps the DB lean and projections at runtime.
-> **Status:** 🟡 `in-progress` | **Last Updated:** 2026-03-12
+> **Status:** ✅ `done` | **Last Updated:** 2026-03-13
 
 | # | Task | Status | Last Updated | Notes |
 | --- | --- | --- | --- | --- |
@@ -82,29 +82,81 @@
 | 2.5 | [MasterPurchase Service Layer](tasks/TASK_2.5_service-master-purchase.md) | ✅ `done` | 2026-03-12 | Task 2.5 |
 | 2.6 | [MasterPurchase HTTP Handlers](tasks/TASK_2.6_handler-master-purchase.md) | ✅ `done` | 2026-03-12 | Task 2.6 |
 | 2.7 | [InvoiceCloser Service & System Actor](tasks/TASK_2.7_service-invoice-closer.md) | ✅ `done` | 2026-03-12 | Task 2.7 |
-| 2.8 | Endpoint `POST /v1/accounts/:id/close-invoice` (manual trigger) | 🔵 `backlog` | 2026-03-12 | |
-| 2.9 | Integration tests for invoice closing flow | 🔵 `backlog` | 2026-03-12 | |
-| 2.10 | Phase 2 API smoke test — `internal/server/smoke_test.go` | 🔵 `backlog` | 2026-03-12 | |
+| 2.8 | Endpoint `POST /v1/accounts/:id/close-invoice` (manual trigger) | ✅ `done` | 2026-03-12 | |
+| 2.9 | [Remainder-Cent Handling](tasks/TASK_2.9_installment-remainder-cent.md) | ✅ `done` | 2026-03-12 | |
+| 2.10 | [Audit System Actor Integration](tasks/TASK_2.10_audit-system-actor.md) | ✅ `done` | 2026-03-12 | |
+| 2.11 | [Swagger Documentation Update](tasks/TASK_2.11_swagger-update.md) | ✅ `done` | 2026-03-13 | |
+| 2.12 | [Integration tests for invoice closing flow](tasks/done/TASK_2.12_integration-tests-invoice.md) | ✅ `done` | 2026-03-13 | |
+| 2.13 | [Smoke Tests Phase 2](tasks/TASK_2.13_smoke-test-phase2.md) | ✅ `done` | 2026-03-13 | |
 
 ---
 
 ## Phase 3 — Investment Portfolio Tracking
 
-> **Goal:** Add investment accounts with position tracking, asset allocation views, and monthly performance snapshots.
+> **Goal:** Add investment accounts with position tracking, asset allocation views, and monthly performance snapshots. Read-heavy; no monetary mutation beyond deposits/withdrawals recorded as transactions.
 > **Status:** 🔵 `backlog` | **Last Updated:** 2026-03-06
 
 | # | Task | Status | Last Updated | Notes |
 | --- | --- | --- | --- | --- |
-| 3.1 | ADR: investment data model | 🔵 `backlog` | 2026-03-06 | |
-| 3.2 | Goose migrations — `assets`, `positions` | 🔵 `backlog` | 2026-03-06 | |
+| 3.1 | [ADR: investment data model](tasks/TASK_3.1_adr-investment-data-model.md) | 🔵 `backlog` | 2026-03-13 | |
+| 3.2 | [Goose migrations — `assets`, `positions`, `portfolio_snapshots`](tasks/TASK_3.2_db-migrations-investment.md) | 🔵 `backlog` | 2026-03-13 | |
+| 3.3 | [`domain/investment.go` — entities + repository interfaces](tasks/TASK_3.3_domain-investment.md) | 🔵 `backlog` | 2026-03-13 | |
+| 3.4 | [`sqlc` query files for investment entities](tasks/TASK_3.4_sqlc-queries-investment.md) | 🔵 `backlog` | 2026-03-13 | |
+| 3.5 | [`repository/investment_repo.go` + integration tests](tasks/TASK_3.5_repository-investment.md) | 🔵 `backlog` | 2026-03-13 | |
+| 3.6 | [`service/investment_service.go` + unit tests](tasks/TASK_3.6_service-investment.md) | 🔵 `backlog` | 2026-03-13 | Position upsert, allocation calc |
+| 3.7 | [`handler/investment_handler.go` — positions, allocation, history](tasks/TASK_3.7_handler-investment.md) | 🔵 `backlog` | 2026-03-13 | |
+| 3.8 | [Monthly snapshot job (`portfolio_snapshots`)](tasks/TASK_3.8_snapshot-job.md) | 🔵 `backlog` | 2026-03-13 | Triggered by scheduler or cron |
+| 3.9 | [`GET /v1/investments/summary` — net worth + allocation breakdown](tasks/TASK_3.9_summary-endpoint.md) | 🔵 `backlog` | 2026-03-13 | |
+| 3.10 | [Currency conversion hook (extensible; no external API in MVP)](tasks/TASK_3.10_currency-conversion-hook.md) | 🔵 `backlog` | 2026-03-13 | Static rate table for MVP; hook ready for live feed |
 
 ---
 
 ## Phase 4 — Billing, Plans & Monetisation
 
-> **Goal:** Subscriptions and plan enforcement.
+> **Goal:** Implement subscription plan enforcement (`free`/`basic`/`premium` tiers), usage quotas, and integration with a payment gateway (Stripe or equivalent).
 > **Status:** 🔵 `backlog` | **Last Updated:** 2026-03-06
+
+| # | Task | Status | Last Updated | Notes |
+| --- | --- | --- | --- | --- |
+| 4.1 | ADR: billing strategy (Stripe / Paddle / manual invoice) | 🔵 `backlog` | 2026-03-06 | |
+| 4.2 | Plan quota enforcement middleware (account/transaction limits) | 🔵 `backlog` | 2026-03-06 | |
+| 4.3 | Webhook handler for payment gateway events | 🔵 `backlog` | 2026-03-06 | |
+| 4.4 | `POST /v1/tenants/me/subscription` — upgrade/downgrade | 🔵 `backlog` | 2026-03-06 | |
+| 4.5 | Grace-period logic on plan downgrade | 🔵 `backlog` | 2026-03-06 | |
+| 4.6 | Admin dashboard endpoint: MRR, churn, plan distribution | 🔵 `backlog` | 2026-03-06 | |
 
 ---
 
 ## Phase 5 — Observability & Production Hardening
+
+> **Goal:** Ship the monitoring, alerting, and reliability features required to operate at scale with confidence.
+> **Status:** 🔵 `backlog` | **Last Updated:** 2026-03-06
+
+| # | Task | Status | Last Updated | Notes |
+| --- | --- | --- | --- | --- |
+| 5.1 | `/healthz` and `/readyz` endpoints | 🔵 `backlog` | 2026-03-06 | Readiness checks DB + Redis |
+| 5.2 | Prometheus metrics middleware (`/metrics` scrape endpoint) | 🔵 `backlog` | 2026-03-06 | Request count, latency histograms |
+| 5.3 | OpenTelemetry tracing (OTLP exporter) | 🔵 `backlog` | 2026-03-06 | |
+| 5.4 | Centralized error tracking (Sentry or equivalent) | 🔵 `backlog` | 2026-03-06 | |
+| 5.5 | PgBouncer connection pooling config | 🔵 `backlog` | 2026-03-06 | Phase 2 scaling path from ARCHITECTURE.md |
+| 5.6 | Redis Sentinel config for HA | 🔵 `backlog` | 2026-03-06 | |
+| 5.7 | PostgreSQL read replicas for report queries | 🔵 `backlog` | 2026-03-06 | |
+| 5.8 | Runbook + on-call playbook in `docs/` | 🔵 `backlog` | 2026-03-06 | |
+
+---
+
+## Decisions & Deferred Items
+
+| Item | Decision | Rationale | Status |
+| --- | --- | --- | --- |
+| External router (chi, gorilla/mux) | ❌ **Rejected** | Go 1.22 stdlib routing covers all needs; zero-dependency preferred | ❌ `canceled` |
+| GraphQL API | ⏸️ **Deferred** | REST covers Phase 1–3 requirements; revisit if client demand justifies complexity | ⏸️ `postponed` |
+| gRPC internal transport | ⏸️ **Deferred** | Monolith for now; re-evaluate at Phase 5 if microservices split occurs | ⏸️ `postponed` |
+| Real-time push (WebSocket / SSE) | ⏸️ **Deferred** | Phase 3+ feature for live portfolio updates | ⏸️ `postponed` |
+| Mobile SDK / OpenAPI client gen | ⏸️ **Deferred** | Swagger spec is generated; client gen tooling deferred | ⏸️ `postponed` |
+| GORM / heavy ORM | ❌ **Rejected** | `sqlc` + raw SQL is explicit, auditable, and type-safe | ❌ `canceled` |
+| Float for monetary values | ❌ **Rejected** | `int64` cents only; floating-point drift is unacceptable for finance | ❌ `canceled` |
+
+---
+
+> ⚠️ **Maintenance Contract:** This document **must** be updated whenever a task or phase changes state. Every row must carry an accurate `Last Updated` date. Stale roadmap entries are treated as bugs.

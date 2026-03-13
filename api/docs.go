@@ -363,6 +363,102 @@ const docTemplate = `{
                 }
             }
         },
+        "/v1/accounts/{id}/close-invoice": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Manually triggers invoice closing for a credit card account.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "accounts"
+                ],
+                "summary": "Close invoice",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Account ULID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Required idempotency key",
+                        "name": "Idempotency-Key",
+                        "in": "header"
+                    },
+                    {
+                        "description": "Manual closing details",
+                        "name": "request",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/handler.CloseInvoiceRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.CloseInvoiceResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Account not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/v1/admin/audit-logs": {
             "get": {
                 "security": [
@@ -1623,6 +1719,337 @@ const docTemplate = `{
                 }
             }
         },
+        "/v1/master-purchases": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "List all master purchases for the current tenant. Optionally filter by account_id.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "master-purchases"
+                ],
+                "summary": "List master purchases",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Optional account ID to filter by",
+                        "name": "account_id",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/domain.MasterPurchase"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Register a new credit card instalment purchase. Returns the record.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "master-purchases"
+                ],
+                "summary": "Create a master purchase",
+                "parameters": [
+                    {
+                        "description": "Master purchase payload",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handler.CreateMasterPurchaseRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/domain.MasterPurchase"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ErrorResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/master-purchases/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieves details of a specific master purchase record.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "master-purchases"
+                ],
+                "summary": "Get a master purchase by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Master Purchase ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/domain.MasterPurchase"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Soft-deletes a master purchase record.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "master-purchases"
+                ],
+                "summary": "Delete a master purchase",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Master Purchase ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Partially updates a master purchase record (category and description only).",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "master-purchases"
+                ],
+                "summary": "Update a master purchase",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Master Purchase ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Update payload",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handler.UpdateMasterPurchaseRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/domain.MasterPurchase"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ErrorResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/master-purchases/{id}/projection": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Computes and returns the projected installment schedule for a master purchase.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "master-purchases"
+                ],
+                "summary": "Get installment projection",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Master Purchase ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/domain.ProjectedInstallment"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/tenants/me": {
             "get": {
                 "security": [
@@ -2342,6 +2769,85 @@ const docTemplate = `{
                 "CategoryTypeTransfer"
             ]
         },
+        "domain.MasterPurchase": {
+            "type": "object",
+            "properties": {
+                "account_id": {
+                    "description": "must be AccountTypeCreditCard",
+                    "type": "string"
+                },
+                "category_id": {
+                    "type": "string"
+                },
+                "closing_day": {
+                    "description": "day-of-month invoice closes (1–28)",
+                    "type": "integer"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "deleted_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "first_installment_date": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "installment_count": {
+                    "type": "integer"
+                },
+                "paid_installments": {
+                    "description": "incremented each close cycle",
+                    "type": "integer"
+                },
+                "status": {
+                    "$ref": "#/definitions/domain.MasterPurchaseStatus"
+                },
+                "tenant_id": {
+                    "type": "string"
+                },
+                "total_amount_cents": {
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.MasterPurchaseStatus": {
+            "type": "string",
+            "enum": [
+                "open",
+                "closed"
+            ],
+            "x-enum-varnames": [
+                "MasterPurchaseStatusOpen",
+                "MasterPurchaseStatusClosed"
+            ]
+        },
+        "domain.ProjectedInstallment": {
+            "type": "object",
+            "properties": {
+                "amount_cents": {
+                    "description": "last installment absorbs remainder",
+                    "type": "integer"
+                },
+                "due_date": {
+                    "type": "string"
+                },
+                "installment_number": {
+                    "type": "integer"
+                }
+            }
+        },
         "domain.Role": {
             "type": "string",
             "enum": [
@@ -2482,6 +2988,32 @@ const docTemplate = `{
                 }
             }
         },
+        "handler.CloseInvoiceRequest": {
+            "type": "object",
+            "properties": {
+                "closing_date": {
+                    "description": "ClosingDate defaults to today if omitted.",
+                    "type": "string"
+                }
+            }
+        },
+        "handler.CloseInvoiceResponse": {
+            "type": "object",
+            "properties": {
+                "account_id": {
+                    "type": "string"
+                },
+                "errors": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "processed_count": {
+                    "type": "integer"
+                }
+            }
+        },
         "handler.CreateAccountRequest": {
             "type": "object",
             "required": [
@@ -2543,6 +3075,47 @@ const docTemplate = `{
                 }
             }
         },
+        "handler.CreateMasterPurchaseRequest": {
+            "type": "object",
+            "required": [
+                "account_id",
+                "category_id",
+                "closing_day",
+                "description",
+                "first_installment_date",
+                "installment_count",
+                "total_amount_cents"
+            ],
+            "properties": {
+                "account_id": {
+                    "type": "string"
+                },
+                "category_id": {
+                    "type": "string"
+                },
+                "closing_day": {
+                    "type": "integer",
+                    "maximum": 28,
+                    "minimum": 1
+                },
+                "description": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 1
+                },
+                "first_installment_date": {
+                    "type": "string"
+                },
+                "installment_count": {
+                    "type": "integer",
+                    "maximum": 48,
+                    "minimum": 2
+                },
+                "total_amount_cents": {
+                    "type": "integer"
+                }
+            }
+        },
         "handler.CreateTransactionRequest": {
             "type": "object",
             "required": [
@@ -2582,6 +3155,15 @@ const docTemplate = `{
                             "$ref": "#/definitions/domain.TransactionType"
                         }
                     ]
+                }
+            }
+        },
+        "handler.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string",
+                    "example": "error message"
                 }
             }
         },
@@ -2661,6 +3243,19 @@ const docTemplate = `{
                 "name": {
                     "type": "string",
                     "maxLength": 100,
+                    "minLength": 1
+                }
+            }
+        },
+        "handler.UpdateMasterPurchaseRequest": {
+            "type": "object",
+            "properties": {
+                "category_id": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string",
+                    "maxLength": 255,
                     "minLength": 1
                 }
             }

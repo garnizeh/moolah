@@ -1,9 +1,9 @@
 # Task 2.12 — Integration Tests: Invoice Closing Flow
 
 > **Roadmap Ref:** Phase 2 — Credit Card & Installment Tracking › Quality Gate
-> **Status:** 🔵 `backlog`
-> **Last Updated:** 2026-03-12
-> **Assignee:** —
+> **Status:** ✅ `done`
+> **Last Updated:** 2026-03-13
+> **Assignee:** GitHub Copilot
 > **Estimated Effort:** M
 
 ---
@@ -26,13 +26,13 @@ This test file also serves as the acceptance gate for Tasks 2.7, 2.9, and 2.10 c
 
 ### In scope
 
-- [ ] Integration test file `internal/service/invoice_closer_integration_test.go` (build tag `integration`).
-- [ ] Happy-path: single instalment materialised correctly.
-- [ ] Happy-path: all instalments closed → `status=closed`.
-- [ ] Remainder-cent invariant verified in DB (last instalment = correct amount).
-- [ ] Audit log contains `SYSTEM` actor row.
-- [ ] Partial failure: simulate DB error on second master purchase → first committed, second rolled back.
-- [ ] Cross-tenant isolation: closing one tenant's account does not affect another tenant's master purchases.
+- [x] Integration test file `internal/service/invoice_closer_integration_test.go` (build tag `integration`).
+- [x] Happy-path: single instalment materialised correctly.
+- [x] Happy-path: all instalments closed → `status=closed`.
+- [x] Remainder-cent invariant verified in DB (last instalment = correct amount).
+- [x] Audit log contains `SYSTEM` actor row.
+- [x] Partial failure: simulate DB error on second master purchase → first committed, second rolled back.
+- [x] Cross-tenant isolation: closing one tenant's account does not affect another tenant's master purchases.
 
 ### Out of scope
 
@@ -130,16 +130,16 @@ Then:  Sum of all materialised transaction amounts == 1001
 
 ## 5. Acceptance Criteria
 
-- [ ] All 5 scenarios above have passing test cases.
-- [ ] Remainder-cent invariant test verifies exact cent values in DB.
-- [ ] Audit log `actor_id = "SYSTEM"` verified in DB rows.
-- [ ] Cross-tenant isolation verified against a real PG container.
-- [ ] `TestMain` uses the shared `testutil/containers.SetupPostgres` helper.
-- [ ] All subtests call `t.Parallel()`.
-- [ ] Test coverage for new integration code ≥ 80%.
-- [ ] `golangci-lint run ./...` passes with zero issues.
-- [ ] `gosec ./...` passes with zero issues.
-- [ ] `docs/ROADMAP.md` row 2.12 updated to ✅ `done`.
+- [x] All 5 scenarios above have passing test cases.
+- [x] Remainder-cent invariant test verifies exact cent values in DB.
+- [x] Audit log `actor_id = "SYSTEM"` verified in DB rows.
+- [x] Cross-tenant isolation verified against a real PG container.
+- [x] `TestMain` uses the shared `testutil/containers.SetupPostgres` helper.
+- [x] All subtests call `t.Parallel()`.
+- [x] Test coverage for new integration code ≥ 80%.
+- [x] `golangci-lint run ./...` passes with zero issues.
+- [x] `gosec ./...` passes with zero issues.
+- [x] `docs/ROADMAP.md` row 2.12 updated to ✅ `done`.
 
 ---
 
@@ -147,10 +147,10 @@ Then:  Sum of all materialised transaction amounts == 1001
 
 | Dependency                                       | Type     | Status       |
 | ------------------------------------------------ | -------- | ------------ |
-| Task 2.7 — `InvoiceCloser` service               | Upstream | 🔵 backlog   |
-| Task 2.9 — Remainder-cent implementation         | Upstream | 🔵 backlog   |
-| Task 2.10 — `domain.ActorSystem` constant        | Upstream | 🔵 backlog   |
-| Task 2.4 — `MasterPurchaseRepository`            | Upstream | 🔵 backlog   |
+| Task 2.7 — `InvoiceCloser` service               | Upstream | ✅ done      |
+| Task 2.9 — Remainder-cent implementation         | Upstream | ✅ done      |
+| Task 2.10 — `domain.ActorSystem` constant        | Upstream | ✅ done      |
+| Task 2.4 — `MasterPurchaseRepository`            | Upstream | ✅ done      |
 | `internal/testutil/containers` (Phase 1)         | Upstream | ✅ done      |
 | `internal/testutil/seeds` (Phase 1)              | Upstream | ✅ done      |
 

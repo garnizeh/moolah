@@ -18,6 +18,7 @@ const (
 // MasterPurchase is a credit-card purchase that generates installment transactions
 // one at a time at each invoice-close cycle, rather than all at once.
 // All monetary values are stored in cents (int64).
+// @name MasterPurchase
 type MasterPurchase struct {
 	FirstInstallmentDate time.Time            `json:"first_installment_date"`
 	CreatedAt            time.Time            `json:"created_at"`
@@ -55,6 +56,7 @@ type UpdateMasterPurchaseInput struct {
 }
 
 // ProjectedInstallment is a runtime-computed installment — never stored in the DB directly.
+// @name ProjectedInstallment
 type ProjectedInstallment struct {
 	DueDate           time.Time `json:"due_date"`
 	AmountCents       int64     `json:"amount_cents"` // last installment absorbs remainder

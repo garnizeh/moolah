@@ -108,32 +108,35 @@ func (s *masterPurchaseService) Delete(ctx context.Context, tenantID, id string)
 	return nil
 }
 
+// ProjectInstallments computes each instalment's due date and amount.
+//
+// Remainder-cent rule: when TotalAmountCents is not evenly divisible by
+// InstallmentCount, the LAST instalment absorbs all remaining cents so that:
+//
+//	sum(result[i].AmountCents for i in 0..N-1) == mp.TotalAmountCents
+//
+// Example: total=1000, count=3 → base=333, remainder=1 → [333, 333, 334]
+// Example: total=1001, count=3 → base=333, remainder=2 → [333, 333, 335]
+// Example: total=1200, count=3 → base=400, remainder=0 → [400, 400, 400]
 func (s *masterPurchaseService) ProjectInstallments(mp *domain.MasterPurchase) []domain.ProjectedInstallment {
 	if mp.InstallmentCount <= 0 {
 		return nil
 	}
 
-	installments := make([]domain.ProjectedInstallment, 0, mp.InstallmentCount)
-	baseAmount := mp.TotalAmountCents / int64(mp.InstallmentCount)
+	result := make([]domain.ProjectedInstallment, mp.InstallmentCount)
+	base := mp.TotalAmountCents / int64(mp.InstallmentCount)
 	remainder := mp.TotalAmountCents % int64(mp.InstallmentCount)
 
-	startDate := mp.FirstInstallmentDate
-
-	for i := int32(1); i <= mp.InstallmentCount; i++ {
-		amount := baseAmount
-		if i == mp.InstallmentCount {
+	for i := range result {
+		amount := base
+		if i == int(mp.InstallmentCount)-1 {
 			amount += remainder
 		}
-
-		// Calculate due date (simplistic: add i-1 months to start date).
-		dueDate := startDate.AddDate(0, int(i-1), 0)
-
-		installments = append(installments, domain.ProjectedInstallment{
-			InstallmentNumber: i,
+		result[i] = domain.ProjectedInstallment{
+			InstallmentNumber: int32(i + 1),
+			DueDate:           mp.FirstInstallmentDate.AddDate(0, i, 0),
 			AmountCents:       amount,
-			DueDate:           dueDate,
-		})
+		}
 	}
-
-	return installments
+	return result
 }

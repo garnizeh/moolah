@@ -42,8 +42,8 @@ func (r *responseRecorder) Write(b []byte) (int, error) {
 func Idempotency(store domain.IdempotencyStore) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			// Only apply idempotency logic to POST requests (standard practice for mutations).
-			if r.Method != http.MethodPost {
+			// Only apply idempotency logic to mutation requests.
+			if r.Method != http.MethodPost && r.Method != http.MethodPatch && r.Method != http.MethodDelete {
 				next.ServeHTTP(w, r)
 				return
 			}

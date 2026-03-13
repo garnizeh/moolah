@@ -42,6 +42,18 @@ type UpdateMasterPurchaseRequest struct {
 }
 
 // Create handles POST /v1/master-purchases
+// @Summary      Create a master purchase
+// @Description  Register a new credit card instalment purchase. Returns the record.
+// @Tags         master-purchases
+// @Accept       json
+// @Produce      json
+// @Param        body body CreateMasterPurchaseRequest true "Master purchase payload"
+// @Success      201 {object} domain.MasterPurchase
+// @Failure      400 {object} ErrorResponse
+// @Failure      401 {object} ErrorResponse
+// @Failure      422 {object} ErrorResponse
+// @Security     BearerAuth
+// @Router       /v1/master-purchases [post]
 func (h *MasterPurchaseHandler) Create(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	tenantID, ok := middleware.TenantIDFromCtx(ctx)
@@ -83,6 +95,18 @@ func (h *MasterPurchaseHandler) Create(w http.ResponseWriter, r *http.Request) {
 }
 
 // GetByID handles GET /v1/master-purchases/{id}
+// @Summary      Get a master purchase by ID
+// @Description  Retrieves details of a specific master purchase record.
+// @Tags         master-purchases
+// @Accept       json
+// @Produce      json
+// @Param        id   path      string  true  "Master Purchase ID"
+// @Success      200 {object} domain.MasterPurchase
+// @Failure      400 {object} ErrorResponse
+// @Failure      401 {object} ErrorResponse
+// @Failure      404 {object} ErrorResponse
+// @Security     BearerAuth
+// @Router       /v1/master-purchases/{id} [get]
 func (h *MasterPurchaseHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	tenantID, ok := middleware.TenantIDFromCtx(ctx)
@@ -107,6 +131,16 @@ func (h *MasterPurchaseHandler) GetByID(w http.ResponseWriter, r *http.Request) 
 }
 
 // ListByTenant handles GET /v1/master-purchases
+// @Summary      List master purchases
+// @Description  List all master purchases for the current tenant. Optionally filter by account_id.
+// @Tags         master-purchases
+// @Accept       json
+// @Produce      json
+// @Param        account_id  query  string  false  "Optional account ID to filter by"
+// @Success      200 {array}  domain.MasterPurchase
+// @Failure      401 {object} ErrorResponse
+// @Security     BearerAuth
+// @Router       /v1/master-purchases [get]
 func (h *MasterPurchaseHandler) ListByTenant(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	tenantID, ok := middleware.TenantIDFromCtx(ctx)
@@ -135,6 +169,18 @@ func (h *MasterPurchaseHandler) ListByTenant(w http.ResponseWriter, r *http.Requ
 }
 
 // Project handles GET /v1/master-purchases/{id}/projection
+// @Summary      Get installment projection
+// @Description  Computes and returns the projected installment schedule for a master purchase.
+// @Tags         master-purchases
+// @Accept       json
+// @Produce      json
+// @Param        id   path   string  true  "Master Purchase ID"
+// @Success      200 {array}  domain.ProjectedInstallment
+// @Failure      400 {object} ErrorResponse
+// @Failure      401 {object} ErrorResponse
+// @Failure      404 {object} ErrorResponse
+// @Security     BearerAuth
+// @Router       /v1/master-purchases/{id}/projection [get]
 func (h *MasterPurchaseHandler) Project(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	tenantID, ok := middleware.TenantIDFromCtx(ctx)
@@ -155,6 +201,20 @@ func (h *MasterPurchaseHandler) Project(w http.ResponseWriter, r *http.Request) 
 }
 
 // Update handles PATCH /v1/master-purchases/{id}
+// @Summary      Update a master purchase
+// @Description  Partially updates a master purchase record (category and description only).
+// @Tags         master-purchases
+// @Accept       json
+// @Produce      json
+// @Param        id   path   string  true  "Master Purchase ID"
+// @Param        body body   UpdateMasterPurchaseRequest true "Update payload"
+// @Success      200 {object} domain.MasterPurchase
+// @Failure      400 {object} ErrorResponse
+// @Failure      401 {object} ErrorResponse
+// @Failure      404 {object} ErrorResponse
+// @Failure      422 {object} ErrorResponse
+// @Security     BearerAuth
+// @Router       /v1/master-purchases/{id} [patch]
 func (h *MasterPurchaseHandler) Update(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	tenantID, ok := middleware.TenantIDFromCtx(ctx)
@@ -190,6 +250,18 @@ func (h *MasterPurchaseHandler) Update(w http.ResponseWriter, r *http.Request) {
 }
 
 // Delete handles DELETE /v1/master-purchases/{id}
+// @Summary      Delete a master purchase
+// @Description  Soft-deletes a master purchase record.
+// @Tags         master-purchases
+// @Accept       json
+// @Produce      json
+// @Param        id   path   string  true  "Master Purchase ID"
+// @Success      204 "No Content"
+// @Failure      400 {object} ErrorResponse
+// @Failure      401 {object} ErrorResponse
+// @Failure      404 {object} ErrorResponse
+// @Security     BearerAuth
+// @Router       /v1/master-purchases/{id} [delete]
 func (h *MasterPurchaseHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	tenantID, ok := middleware.TenantIDFromCtx(ctx)

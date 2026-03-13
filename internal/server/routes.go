@@ -38,6 +38,7 @@ func (s *Server) routes() http.Handler {
 	mux.Handle("GET /v1/accounts/{id}", requireAuth(http.HandlerFunc(s.handleGetAccountByID)))
 	mux.Handle("PATCH /v1/accounts/{id}", requireAuth(idempotency(http.HandlerFunc(s.handleUpdateAccount))))
 	mux.Handle("DELETE /v1/accounts/{id}", requireAuth(http.HandlerFunc(s.handleDeleteAccount)))
+	mux.Handle("POST /v1/accounts/{id}/close-invoice", requireAuth(idempotency(http.HandlerFunc(s.handleCloseInvoice))))
 
 	// 4. Category Routes (Task 1.5.7)
 	mux.Handle("GET /v1/categories", requireAuth(http.HandlerFunc(s.handleListCategories)))
@@ -106,6 +107,10 @@ func (s *Server) handleUpdateAccount(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) handleDeleteAccount(w http.ResponseWriter, r *http.Request) {
 	s.accountHandler.Delete(w, r)
+}
+
+func (s *Server) handleCloseInvoice(w http.ResponseWriter, r *http.Request) {
+	s.accountHandler.CloseInvoice(w, r)
 }
 
 func (s *Server) handleListCategories(w http.ResponseWriter, r *http.Request) {

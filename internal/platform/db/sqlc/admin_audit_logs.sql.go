@@ -16,7 +16,7 @@ SELECT id, tenant_id, actor_id, actor_role, action, entity_type, entity_id, old_
 FROM audit_logs
 WHERE (entity_type = $1 OR $1 IS NULL)
   AND (entity_id = $2 OR $2 IS NULL)
-  AND (actor_id = $3 OR $3 IS NULL)
+  AND (actor_id = $3 OR $3 = '')
   AND (action = $4 OR $4 IS NULL)
   AND (created_at >= $5 OR $5 IS NULL)
   AND (created_at <= $6 OR $6 IS NULL)
