@@ -99,9 +99,9 @@
 | # | Task | Status | Last Updated | Notes |
 | --- | --- | --- | --- | --- |
 | 3.1  | [ADR: investment data model](tasks/TASK_3.1_adr-investment-data-model.md) | ✅ `done` | 2026-03-13 | `docs/ADR-003-investment-data-model.md` v3 |
-| 3.2  | [DB migrations — all 6 tables + 3 enums](tasks/TASK_3.2_db-migrations-investment.md) | 🔵 `backlog` | 2026-03-13 | `00010`–`00014` migration files |
-| 3.3  | [Domain: `Asset` + `TenantAssetConfig` entities + interfaces](tasks/TASK_3.3_domain-investment.md) | 🔵 `backlog` | 2026-03-13 | `internal/domain/asset.go` |
-| 3.4  | [SQLC queries: `assets` + `tenant_asset_configs`](tasks/TASK_3.4_sqlc-queries-investment.md) | 🔵 `backlog` | 2026-03-13 | Includes COALESCE merge query (ADR §2.7) |
+| 3.2  | [DB migrations — all 6 tables + 3 enums](tasks/TASK_3.2_db-migrations-investment.md) | ✅ `done` | 2026-03-13 | `00010`–`00014` migration files |
+| 3.3  | [Domain: `Asset` + `TenantAssetConfig` entities + interfaces](tasks/TASK_3.3_domain-investment.md) | ✅ `done` | 2026-03-13 | `internal/domain/asset.go` |
+| 3.4  | [SQLC queries: `assets` + `tenant_asset_configs`](tasks/TASK_3.4_sqlc-queries-investment.md) | ✅ `done` | 2026-03-13 | Includes COALESCE merge query (ADR §2.7) |
 | 3.5  | [Repository: `AssetRepository` + `TenantAssetConfigRepository`](tasks/TASK_3.5_repository-investment.md) | 🔵 `backlog` | 2026-03-13 | |
 | 3.6  | [Service: `InvestmentService` — position CRUD, allocation, receivable lifecycle](tasks/TASK_3.6_service-investment.md) | 🔵 `backlog` | 2026-03-13 | |
 | 3.7  | [HTTP handlers: asset catalogue + tenant asset configs](tasks/TASK_3.7_handler-investment.md) | 🔵 `backlog` | 2026-03-13 | `GET/POST /v1/assets`, `PUT /v1/me/asset-configs/{asset_id}` |
@@ -113,6 +113,7 @@
 | 3.13 | [Income scheduler service (background goroutine — ADR §9)](tasks/TASK_3.13_income-scheduler-service.md) | 🔵 `backlog` | 2026-03-13 | `INCOME_SCHEDULER_INTERVAL` ENV VAR; default `1h` |
 | 3.14 | [HTTP handlers: positions, income events & portfolio summary](tasks/TASK_3.14_handler-position-income.md) | 🔵 `backlog` | 2026-03-13 | `GET /v1/investments/summary`, receivable lifecycle endpoints |
 | 3.15 | [Mock factory updates + Phase 3 smoke tests](tasks/TASK_3.15_smoke-tests-phase3.md) | 🔵 `backlog` | 2026-03-13 | 6 new mocks; 4 smoke test scenarios |
+
 ---
 
 ## Phase 4 — Billing, Plans & Monetisation

@@ -56,6 +56,52 @@ func (ns NullAccountType) Value() (driver.Value, error) {
 	return string(ns.AccountType), nil
 }
 
+type AssetType string
+
+const (
+	AssetTypeStock        AssetType = "stock"
+	AssetTypeBond         AssetType = "bond"
+	AssetTypeFund         AssetType = "fund"
+	AssetTypeCrypto       AssetType = "crypto"
+	AssetTypeRealEstate   AssetType = "real_estate"
+	AssetTypeIncomeSource AssetType = "income_source"
+)
+
+func (e *AssetType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = AssetType(s)
+	case string:
+		*e = AssetType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for AssetType: %T", src)
+	}
+	return nil
+}
+
+type NullAssetType struct {
+	AssetType AssetType `json:"asset_type"`
+	Valid     bool      `json:"valid"` // Valid is true if AssetType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullAssetType) Scan(value interface{}) error {
+	if value == nil {
+		ns.AssetType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.AssetType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullAssetType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.AssetType), nil
+}
+
 type AuditAction string
 
 const (
@@ -147,6 +193,52 @@ func (ns NullCategoryType) Value() (driver.Value, error) {
 	return string(ns.CategoryType), nil
 }
 
+type IncomeType string
+
+const (
+	IncomeTypeNone     IncomeType = "none"
+	IncomeTypeDividend IncomeType = "dividend"
+	IncomeTypeCoupon   IncomeType = "coupon"
+	IncomeTypeRent     IncomeType = "rent"
+	IncomeTypeInterest IncomeType = "interest"
+	IncomeTypeSalary   IncomeType = "salary"
+)
+
+func (e *IncomeType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = IncomeType(s)
+	case string:
+		*e = IncomeType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for IncomeType: %T", src)
+	}
+	return nil
+}
+
+type NullIncomeType struct {
+	IncomeType IncomeType `json:"income_type"`
+	Valid      bool       `json:"valid"` // Valid is true if IncomeType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullIncomeType) Scan(value interface{}) error {
+	if value == nil {
+		ns.IncomeType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.IncomeType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullIncomeType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.IncomeType), nil
+}
+
 type MasterPurchaseStatus string
 
 const (
@@ -187,6 +279,49 @@ func (ns NullMasterPurchaseStatus) Value() (driver.Value, error) {
 		return nil, nil
 	}
 	return string(ns.MasterPurchaseStatus), nil
+}
+
+type ReceivableStatus string
+
+const (
+	ReceivableStatusPending   ReceivableStatus = "pending"
+	ReceivableStatusReceived  ReceivableStatus = "received"
+	ReceivableStatusCancelled ReceivableStatus = "cancelled"
+)
+
+func (e *ReceivableStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = ReceivableStatus(s)
+	case string:
+		*e = ReceivableStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for ReceivableStatus: %T", src)
+	}
+	return nil
+}
+
+type NullReceivableStatus struct {
+	ReceivableStatus ReceivableStatus `json:"receivable_status"`
+	Valid            bool             `json:"valid"` // Valid is true if ReceivableStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullReceivableStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.ReceivableStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.ReceivableStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullReceivableStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.ReceivableStatus), nil
 }
 
 type TenantPlan string
@@ -331,6 +466,17 @@ type Account struct {
 	DeletedAt    pgtype.Timestamptz `json:"deleted_at"`
 }
 
+type Asset struct {
+	ID        string             `json:"id"`
+	Ticker    string             `json:"ticker"`
+	Isin      pgtype.Text        `json:"isin"`
+	Name      string             `json:"name"`
+	AssetType AssetType          `json:"asset_type"`
+	Currency  string             `json:"currency"`
+	Details   pgtype.Text        `json:"details"`
+	CreatedAt pgtype.Timestamptz `json:"created_at"`
+}
+
 type AuditLog struct {
 	ID         string             `json:"id"`
 	TenantID   string             `json:"tenant_id"`
@@ -386,10 +532,80 @@ type OtpRequest struct {
 	CreatedAt pgtype.Timestamptz `json:"created_at"`
 }
 
+type PortfolioSnapshot struct {
+	ID               string             `json:"id"`
+	TenantID         string             `json:"tenant_id"`
+	SnapshotDate     pgtype.Date        `json:"snapshot_date"`
+	TotalValueCents  int64              `json:"total_value_cents"`
+	TotalIncomeCents int64              `json:"total_income_cents"`
+	Currency         string             `json:"currency"`
+	Details          []byte             `json:"details"`
+	CreatedAt        pgtype.Timestamptz `json:"created_at"`
+}
+
+type Position struct {
+	ID                 string             `json:"id"`
+	TenantID           string             `json:"tenant_id"`
+	AssetID            string             `json:"asset_id"`
+	AccountID          string             `json:"account_id"`
+	Quantity           pgtype.Numeric     `json:"quantity"`
+	AvgCostCents       int64              `json:"avg_cost_cents"`
+	LastPriceCents     int64              `json:"last_price_cents"`
+	Currency           string             `json:"currency"`
+	PurchasedAt        pgtype.Timestamptz `json:"purchased_at"`
+	IncomeType         IncomeType         `json:"income_type"`
+	IncomeIntervalDays pgtype.Int4        `json:"income_interval_days"`
+	IncomeAmountCents  pgtype.Int8        `json:"income_amount_cents"`
+	IncomeRateBps      pgtype.Int4        `json:"income_rate_bps"`
+	NextIncomeAt       pgtype.Timestamptz `json:"next_income_at"`
+	MaturityAt         pgtype.Timestamptz `json:"maturity_at"`
+	CreatedAt          pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt          pgtype.Timestamptz `json:"updated_at"`
+	DeletedAt          pgtype.Timestamptz `json:"deleted_at"`
+}
+
+type PositionIncomeEvent struct {
+	ID          string             `json:"id"`
+	TenantID    string             `json:"tenant_id"`
+	PositionID  string             `json:"position_id"`
+	IncomeType  IncomeType         `json:"income_type"`
+	AmountCents int64              `json:"amount_cents"`
+	Currency    string             `json:"currency"`
+	EventDate   pgtype.Date        `json:"event_date"`
+	Status      ReceivableStatus   `json:"status"`
+	RealizedAt  pgtype.Timestamptz `json:"realized_at"`
+	CreatedAt   pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt   pgtype.Timestamptz `json:"updated_at"`
+}
+
+type PositionSnapshot struct {
+	ID             string             `json:"id"`
+	TenantID       string             `json:"tenant_id"`
+	PositionID     string             `json:"position_id"`
+	SnapshotDate   pgtype.Date        `json:"snapshot_date"`
+	Quantity       pgtype.Numeric     `json:"quantity"`
+	AvgCostCents   int64              `json:"avg_cost_cents"`
+	LastPriceCents int64              `json:"last_price_cents"`
+	Currency       string             `json:"currency"`
+	CreatedAt      pgtype.Timestamptz `json:"created_at"`
+}
+
 type Tenant struct {
 	ID        string             `json:"id"`
 	Name      string             `json:"name"`
 	Plan      TenantPlan         `json:"plan"`
+	CreatedAt pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt pgtype.Timestamptz `json:"updated_at"`
+	DeletedAt pgtype.Timestamptz `json:"deleted_at"`
+}
+
+type TenantAssetConfig struct {
+	ID        string             `json:"id"`
+	TenantID  string             `json:"tenant_id"`
+	AssetID   string             `json:"asset_id"`
+	Name      pgtype.Text        `json:"name"`
+	Currency  pgtype.Text        `json:"currency"`
+	Details   pgtype.Text        `json:"details"`
 	CreatedAt pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt pgtype.Timestamptz `json:"updated_at"`
 	DeletedAt pgtype.Timestamptz `json:"deleted_at"`

@@ -1,7 +1,7 @@
 # Task 3.3 — Domain: `Asset` + `TenantAssetConfig` Entities & Repository Interfaces
 
 > **Roadmap Ref:** Phase 3 — Investment Portfolio Tracking › Domain Layer
-> **Status:** 🔵 `backlog`
+> **Status:** ✅ `done`
 > **Last Updated:** 2026-03-13
 > **Assignee:** —
 > **Estimated Effort:** S
@@ -28,15 +28,15 @@ Following the project convention, every repository must be defined as an interfa
 
 ### In scope
 
-- [ ] `AssetType` string enum with constants for all six values from ADR (`stock`, `bond`, `fund`, `crypto`, `real_estate`, `income_source`).
-- [ ] `Asset` struct with JSON tags (all fields from ADR §3.1).
-- [ ] `CreateAssetInput` and `ListAssetsParams` input types.
-- [ ] `AssetRepository` interface (`Create`, `GetByID`, `GetByTicker`, `List`, `Delete`).
-- [ ] `TenantAssetConfig` struct with JSON tags (all fields from ADR §3.2).
-- [ ] `UpsertTenantAssetConfigInput` input type.
-- [ ] `TenantAssetConfigRepository` interface (`Upsert`, `GetByAssetID`, `ListByTenant`, `Delete`).
-- [ ] Sentinel errors: `ErrAssetNotFound`, `ErrAssetConfigNotFound`.
-- [ ] Unit tests in `internal/domain/asset_test.go` covering validation helpers (if any).
+- [x] `AssetType` string enum with constants for all six values from ADR (`stock`, `bond`, `fund`, `crypto`, `real_estate`, `income_source`).
+- [x] `Asset` struct with JSON tags (all fields from ADR §3.1).
+- [x] `CreateAssetInput` and `ListAssetsParams` input types.
+- [x] `AssetRepository` interface (`Create`, `GetByID`, `GetByTicker`, `List`, `Delete`).
+- [x] `TenantAssetConfig` struct with JSON tags (all fields from ADR §3.2).
+- [x] `UpsertTenantAssetConfigInput` input type.
+- [x] `TenantAssetConfigRepository` interface (`Upsert`, `GetByAssetID`, `ListByTenant`, `Delete`).
+- [x] Sentinel errors: `ErrAssetNotFound`, `ErrAssetConfigNotFound`.
+- [x] Unit tests in `internal/domain/asset_test.go` covering validation helpers (if any).
 
 ### Out of scope
 
@@ -98,21 +98,6 @@ type TenantAssetConfig struct {
 }
 
 // AssetRepository defines persistence operations for the global asset catalogue.
-type AssetRepository interface {
-    Create(ctx context.Context, input CreateAssetInput) (*Asset, error)
-    GetByID(ctx context.Context, id string) (*Asset, error)
-    GetByTicker(ctx context.Context, ticker string) (*Asset, error)
-    List(ctx context.Context, params ListAssetsParams) ([]Asset, error)
-    Delete(ctx context.Context, id string) error
-}
-
-// TenantAssetConfigRepository defines persistence for per-tenant asset overrides.
-type TenantAssetConfigRepository interface {
-    Upsert(ctx context.Context, tenantID string, input UpsertTenantAssetConfigInput) (*TenantAssetConfig, error)
-    GetByAssetID(ctx context.Context, tenantID, assetID string) (*TenantAssetConfig, error)
-    ListByTenant(ctx context.Context, tenantID string) ([]TenantAssetConfig, error)
-    Delete(ctx context.Context, tenantID, assetID string) error
-}
 ```
 
 ### SQL queries (sqlc) — reference only; implemented in Task 3.4
@@ -143,15 +128,15 @@ type TenantAssetConfigRepository interface {
 
 ## 5. Acceptance Criteria
 
-- [ ] `AssetType` has all six constants matching ADR enum values exactly.
-- [ ] `Asset` struct has `ISIN *string`, `Details *string` (nullable as per ADR).
-- [ ] `TenantAssetConfig` has nullable `Name`, `Currency`, `Details` fields.
-- [ ] `AssetRepository` interface is defined in `internal/domain/`.
-- [ ] `TenantAssetConfigRepository` interface is defined in `internal/domain/`.
-- [ ] Sentinel errors are exported from `internal/domain/`.
-- [ ] Unit tests cover all `AssetType` constant values.
-- [ ] `make task-check` passes.
-- [ ] `docs/ROADMAP.md` row 3.3 updated to ✅ `done`.
+- [x] `AssetType` has all six constants matching ADR enum values exactly.
+- [x] `Asset` struct has `ISIN *string`, `Details *string` (nullable as per ADR).
+- [x] `TenantAssetConfig` has nullable `Name`, `Currency`, `Details` fields.
+- [x] `AssetRepository` interface is defined in `internal/domain/`.
+- [x] `TenantAssetConfigRepository` interface is defined in `internal/domain/`.
+- [x] Sentinel errors are exported from `internal/domain/`.
+- [x] Unit tests cover all `AssetType` constant values.
+- [x] `make task-check` passes.
+- [x] `docs/ROADMAP.md` row 3.3 updated to ✅ `done`.
 
 ---
 
@@ -160,3 +145,4 @@ type TenantAssetConfigRepository interface {
 | Date       | Author | Change                                 |
 | ---------- | ------ | -------------------------------------- |
 | 2026-03-13 | —      | Task created; rewritten for ADR v3 (Asset + TenantAssetConfig only) |
+| 2026-03-13 | —      | Implemented domain structs, interfaces, tests and passed lint. |

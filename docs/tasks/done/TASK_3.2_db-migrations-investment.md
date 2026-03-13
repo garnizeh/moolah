@@ -1,7 +1,7 @@
 # Task 3.2 — Goose Migrations: All Phase 3 Tables (6 tables + 3 enums)
 
 > **Roadmap Ref:** Phase 3 — Investment Portfolio Tracking › Infrastructure
-> **Status:** 🔵 `backlog`
+> **Status:** ✅ `done`
 > **Last Updated:** 2026-03-13
 > **Assignee:** —
 > **Estimated Effort:** M
@@ -202,17 +202,17 @@ DROP TABLE IF EXISTS portfolio_snapshots;
 
 ## 5. Acceptance Criteria
 
-- [ ] Five migration files exist under `internal/platform/db/migrations/` with numbers `00010`–`00014`.
-- [ ] All three enum types (`asset_type`, `income_type`, `receivable_status`) are created in `00010`.
-- [ ] `assets` table: no `tenant_id`, correct UNIQUE constraint on `ticker`, `details TEXT` column present.
-- [ ] `tenant_asset_configs` table: `tenant_id` FK, partial UNIQUE `(tenant_id, asset_id) WHERE deleted_at IS NULL`, both indexes present.
-- [ ] `positions` table: all capital + income-schedule columns present, partial UNIQUE, correct check constraints.
-- [ ] `position_snapshots` table: UNIQUE `(position_id, snapshot_date)`, no `deleted_at`.
-- [ ] `position_income_events` table: `status receivable_status`, `amount_cents > 0` check, no `deleted_at`.
-- [ ] `portfolio_snapshots` table: `total_income_cents BIGINT`, JSONB `details`, UNIQUE `(tenant_id, snapshot_date)`.
-- [ ] `goose up` + `goose down` execute without errors against a fresh Postgres container.
-- [ ] `make task-check` passes.
-- [ ] `docs/ROADMAP.md` row 3.2 updated to ✅ `done`.
+- [x] Five migration files exist under `internal/platform/db/migrations/` with numbers `00010`–`00014`.
+- [x] All three enum types (`asset_type`, `income_type`, `receivable_status`) are created in `00010`.
+- [x] `assets` table: no `tenant_id`, correct UNIQUE constraint on `ticker`, `details TEXT` column present.
+- [x] `tenant_asset_configs` table: `tenant_id` FK, partial UNIQUE `(tenant_id, asset_id) WHERE deleted_at IS NULL`, both indexes present.
+- [x] `positions` table: all capital + income-schedule columns present, partial UNIQUE, correct check constraints.
+- [x] `position_snapshots` table: UNIQUE `(position_id, snapshot_date)`, no `deleted_at`.
+- [x] `position_income_events` table: `status receivable_status`, `amount_cents > 0` check, no `deleted_at`.
+- [x] `portfolio_snapshots` table: `total_income_cents BIGINT`, JSONB `details`, UNIQUE `(tenant_id, snapshot_date)`.
+- [x] `goose up` + `goose down` execute without errors against a fresh Postgres container.
+- [x] `make task-check` passes.
+- [x] `docs/ROADMAP.md` row 3.2 updated to ✅ `done`.
 
 ---
 
