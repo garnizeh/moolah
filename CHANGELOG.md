@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.11.0](https://github.com/garnizeh/moolah/compare/v1.10.0...v1.11.0) (2026-03-13)
+
+
+### Features
+
+* enhance invoice closing functionality and add integration tests ([343d01f](https://github.com/garnizeh/moolah/commit/343d01f5f87b253c5e77726c6f2ba87df79fbf3e))
+* enhance invoice closing functionality and add integration tests ([5c0cf0f](https://github.com/garnizeh/moolah/commit/5c0cf0fdede435f8335eafbdb29076519f735b02))
+
 ## [1.10.0](https://github.com/garnizeh/moolah/compare/v1.9.0...v1.10.0) (2026-03-13)
 
 
