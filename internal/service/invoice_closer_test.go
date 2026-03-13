@@ -358,7 +358,6 @@ func TestInvoiceCloser_CloseInvoice(t *testing.T) {
 	})
 
 	t.Run("Failed increment installments", func(t *testing.T) {
-
 		t.Parallel()
 
 		mpRepo := new(mocks.MasterPurchaseRepository)

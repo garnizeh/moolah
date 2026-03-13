@@ -276,11 +276,11 @@ func TestCategoryService_Update(t *testing.T) {
 		auditRepo := new(mocks.AuditRepository)
 
 		oldCat := &domain.Category{ID: catID, Name: "Old Name", Icon: "old-icon", Color: "old-color"}
-		newName := "New Name"
+		newCategoryName := "New Name"
 		newIcon := "new-icon"
 		newColor := "new-color"
-		inputComplex := domain.UpdateCategoryInput{Name: &newName, Icon: &newIcon, Color: &newColor}
-		newCat := &domain.Category{ID: catID, Name: newName, Icon: newIcon, Color: newColor}
+		inputComplex := domain.UpdateCategoryInput{Name: &newCategoryName, Icon: &newIcon, Color: &newColor}
+		newCat := &domain.Category{ID: catID, Name: newCategoryName, Icon: newIcon, Color: newColor}
 
 		categoryRepo.On("GetByID", ctx, tenantID, catID).Return(oldCat, nil)
 		categoryRepo.On("Update", ctx, tenantID, catID, inputComplex).Return(newCat, nil)

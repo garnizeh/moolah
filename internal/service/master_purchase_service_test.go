@@ -159,6 +159,7 @@ func TestMasterPurchaseService_ProjectInstallments(t *testing.T) {
 	require.NoError(t, err)
 
 	t.Run("success - calculation", func(t *testing.T) {
+		t.Parallel()
 		mp := &domain.MasterPurchase{
 			TotalAmountCents:     1000,
 			InstallmentCount:     3,
@@ -174,6 +175,7 @@ func TestMasterPurchaseService_ProjectInstallments(t *testing.T) {
 	})
 
 	t.Run("zero installments", func(t *testing.T) {
+		t.Parallel()
 		mp := &domain.MasterPurchase{InstallmentCount: 0}
 		installments := svc.ProjectInstallments(mp)
 		assert.Nil(t, installments)
@@ -341,10 +343,7 @@ func TestMasterPurchaseService_Update(t *testing.T) {
 		svc := service.NewMasterPurchaseService(nil, nil, catRepo)
 		got, err := svc.Update(ctx, tenantID, mpID, input)
 
-		require.Error(t, err)
-		// Based on line 89 in master_purchase_service.go:
-		// return nil, fmt.Errorf("master purchase service: category %s not found: %w", *input.CategoryID, domain.ErrNotFound)
-		assert.ErrorIs(t, err, domain.ErrNotFound)
+		require.ErrorIs(t, err, domain.ErrNotFound)
 		assert.Contains(t, err.Error(), "not found")
 		assert.Nil(t, got)
 	})

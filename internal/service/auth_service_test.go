@@ -372,7 +372,6 @@ func TestAuthService_VerifyOTP(t *testing.T) {
 	})
 }
 
-
 func TestAuthService_RefreshToken(t *testing.T) {
 	t.Parallel()
 
