@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.12.0](https://github.com/garnizeh/moolah/compare/v1.11.0...v1.12.0) (2026-03-13)
+
+
+### Features
+
+* Investment Portfolio Tracking docs ([545200e](https://github.com/garnizeh/moolah/commit/545200e71cb4f4dd6a0f096fe562b4928b83c8f4))
+* Refactor investment handler and introduce asset management endpoints ([9d4dba8](https://github.com/garnizeh/moolah/commit/9d4dba8cb029837d6004692993900b80bd8b96aa))
+
 ## [1.11.0](https://github.com/garnizeh/moolah/compare/v1.10.0...v1.11.0) (2026-03-13)
 
 
