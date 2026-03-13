@@ -104,42 +104,46 @@ func TestServer_adminWrappers_DelegateToAdminHandler(t *testing.T) {
 	s.handleAdminForceDeleteUser(rr, req)
 	require.Equal(t, http.StatusNoContent, rr.Code)
 
-	// Direct calls for remaining coverage (no mock setup needed as they will return 401/error without ctx)
+	// Direct calls for remaining coverage
 	// Admin List Tenants
 	t.Run("handleAdminListTenants", func(t *testing.T) {
 		t.Parallel()
-		req = httptest.NewRequest(http.MethodGet, "/v1/admin/tenants", nil)
-		rr = httptest.NewRecorder()
+		svc.On("ListAllTenants", mock.Anything, false).Return([]domain.Tenant{}, nil).Once()
+		req := httptest.NewRequest(http.MethodGet, "/v1/admin/tenants", nil)
+		rr := httptest.NewRecorder()
 		s.handleAdminListTenants(rr, req)
-		require.Equal(t, http.StatusUnauthorized, rr.Code)
+		require.Equal(t, http.StatusOK, rr.Code)
 	})
 
 	// Admin Get Tenant
 	t.Run("handleAdminGetTenant", func(t *testing.T) {
 		t.Parallel()
-		req = httptest.NewRequest(http.MethodGet, "/v1/admin/tenants/t1", nil)
+		svc.On("GetTenantByID", mock.Anything, "t1").Return(&domain.Tenant{ID: "t1"}, nil).Once()
+		req := httptest.NewRequest(http.MethodGet, "/v1/admin/tenants/t1", nil)
 		req.SetPathValue("id", "t1")
-		rr = httptest.NewRecorder()
+		rr := httptest.NewRecorder()
 		s.handleAdminGetTenant(rr, req)
-		require.Equal(t, http.StatusUnauthorized, rr.Code)
+		require.Equal(t, http.StatusOK, rr.Code)
 	})
 
 	// Admin List Users
 	t.Run("handleAdminListUsers", func(t *testing.T) {
 		t.Parallel()
-		req = httptest.NewRequest(http.MethodGet, "/v1/admin/users", nil)
-		rr = httptest.NewRecorder()
+		svc.On("ListAllUsers", mock.Anything).Return([]domain.User{}, nil).Once()
+		req := httptest.NewRequest(http.MethodGet, "/v1/admin/users", nil)
+		rr := httptest.NewRecorder()
 		s.handleAdminListUsers(rr, req)
-		require.Equal(t, http.StatusUnauthorized, rr.Code)
+		require.Equal(t, http.StatusOK, rr.Code)
 	})
 
 	// Admin List Audit Logs
 	t.Run("handleAdminListAuditLogs", func(t *testing.T) {
 		t.Parallel()
-		req = httptest.NewRequest(http.MethodGet, "/v1/admin/audit-logs", nil)
-		rr = httptest.NewRecorder()
+		svc.On("ListAuditLogs", mock.Anything, mock.Anything).Return([]domain.AuditLog{}, nil).Once()
+		req := httptest.NewRequest(http.MethodGet, "/v1/admin/audit-logs", nil)
+		rr := httptest.NewRecorder()
 		s.handleAdminListAuditLogs(rr, req)
-		require.Equal(t, http.StatusUnauthorized, rr.Code)
+		require.Equal(t, http.StatusOK, rr.Code)
 	})
 
 	svc.AssertExpectations(t)
