@@ -22,6 +22,7 @@ func TestNew(t *testing.T) {
 	accountSvc := new(mocks.AccountService)
 	categorySvc := new(mocks.CategoryService)
 	transactionSvc := new(mocks.TransactionService)
+	masterPurchaseSvc := new(mocks.MasterPurchaseService)
 	adminSvc := new(mocks.AdminService)
 	idempotencyStore := new(mocks.IdempotencyStore)
 
@@ -32,10 +33,11 @@ func TestNew(t *testing.T) {
 		accountSvc,
 		categorySvc,
 		transactionSvc,
+		masterPurchaseSvc,
 		adminSvc,
 		idempotencyStore,
-		nil, // rateLimiterStore (optional in test if not hitting routes)
-		nil, // tokenParser
+		nil,
+		nil,
 	)
 
 	assert.NotNil(t, s)
@@ -54,6 +56,7 @@ func TestServer_ListenAndServe_Shutdown(t *testing.T) {
 	accountSvc := new(mocks.AccountService)
 	categorySvc := new(mocks.CategoryService)
 	transactionSvc := new(mocks.TransactionService)
+	masterPurchaseSvc := new(mocks.MasterPurchaseService)
 	adminSvc := new(mocks.AdminService)
 	idempotencyStore := new(mocks.IdempotencyStore)
 
@@ -64,6 +67,7 @@ func TestServer_ListenAndServe_Shutdown(t *testing.T) {
 		accountSvc,
 		categorySvc,
 		transactionSvc,
+		masterPurchaseSvc,
 		adminSvc,
 		idempotencyStore,
 		nil,
@@ -119,6 +123,7 @@ func TestServer_ListenAndServe_BindError(t *testing.T) {
 		new(mocks.AccountService),
 		new(mocks.CategoryService),
 		new(mocks.TransactionService),
+		new(mocks.MasterPurchaseService),
 		new(mocks.AdminService),
 		new(mocks.IdempotencyStore),
 		nil,
@@ -140,6 +145,7 @@ func TestServer_Shutdown_NoHTTPServer(t *testing.T) {
 		new(mocks.AccountService),
 		new(mocks.CategoryService),
 		new(mocks.TransactionService),
+		new(mocks.MasterPurchaseService),
 		new(mocks.AdminService),
 		new(mocks.IdempotencyStore),
 		nil,

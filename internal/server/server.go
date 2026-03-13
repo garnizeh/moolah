@@ -25,20 +25,22 @@ type Server struct {
 	httpServer *http.Server
 
 	// Handlers
-	authHandler        *handler.AuthHandler
-	tenantHandler      *handler.TenantHandler
-	accountHandler     *handler.AccountHandler
-	categoryHandler    *handler.CategoryHandler
-	transactionHandler *handler.TransactionHandler
-	adminHandler       *handler.AdminHandler
+	authHandler           *handler.AuthHandler
+	tenantHandler         *handler.TenantHandler
+	accountHandler        *handler.AccountHandler
+	categoryHandler       *handler.CategoryHandler
+	transactionHandler    *handler.TransactionHandler
+	masterPurchaseHandler *handler.MasterPurchaseHandler
+	adminHandler          *handler.AdminHandler
 
 	// Services passed to routes.go
-	authSvc        domain.AuthService
-	tenantSvc      domain.TenantService
-	accountSvc     domain.AccountService
-	categorySvc    domain.CategoryService
-	transactionSvc domain.TransactionService
-	adminSvc       domain.AdminService
+	authSvc           domain.AuthService
+	tenantSvc         domain.TenantService
+	accountSvc        domain.AccountService
+	categorySvc       domain.CategoryService
+	transactionSvc    domain.TransactionService
+	masterPurchaseSvc domain.MasterPurchaseService
+	adminSvc          domain.AdminService
 
 	// Additional providers for middleware
 	idempotencyStore domain.IdempotencyStore
@@ -57,28 +59,31 @@ func New(
 	accountSvc domain.AccountService,
 	categorySvc domain.CategoryService,
 	transactionSvc domain.TransactionService,
+	masterPurchaseSvc domain.MasterPurchaseService,
 	adminSvc domain.AdminService,
 	idempotencyStore domain.IdempotencyStore,
 	rateLimiterStore *middleware.RateLimiterStore,
 	tokenParser middleware.TokenParser,
 ) *Server {
 	s := &Server{
-		addr:               ":" + port,
-		authHandler:        handler.NewAuthHandler(authSvc),
-		tenantHandler:      handler.NewTenantHandler(tenantSvc),
-		accountHandler:     handler.NewAccountHandler(accountSvc),
-		categoryHandler:    handler.NewCategoryHandler(categorySvc),
-		transactionHandler: handler.NewTransactionHandler(transactionSvc),
-		adminHandler:       handler.NewAdminHandler(adminSvc),
-		authSvc:            authSvc,
-		tenantSvc:          tenantSvc,
-		accountSvc:         accountSvc,
-		categorySvc:        categorySvc,
-		transactionSvc:     transactionSvc,
-		adminSvc:           adminSvc,
-		idempotencyStore:   idempotencyStore,
-		rateLimiterStore:   rateLimiterStore,
-		tokenParser:        tokenParser,
+		addr:                  ":" + port,
+		authHandler:           handler.NewAuthHandler(authSvc),
+		tenantHandler:         handler.NewTenantHandler(tenantSvc),
+		accountHandler:        handler.NewAccountHandler(accountSvc),
+		categoryHandler:       handler.NewCategoryHandler(categorySvc),
+		transactionHandler:    handler.NewTransactionHandler(transactionSvc),
+		masterPurchaseHandler: handler.NewMasterPurchaseHandler(masterPurchaseSvc),
+		adminHandler:          handler.NewAdminHandler(adminSvc),
+		authSvc:               authSvc,
+		tenantSvc:             tenantSvc,
+		accountSvc:            accountSvc,
+		categorySvc:           categorySvc,
+		transactionSvc:        transactionSvc,
+		masterPurchaseSvc:     masterPurchaseSvc,
+		adminSvc:              adminSvc,
+		idempotencyStore:      idempotencyStore,
+		rateLimiterStore:      rateLimiterStore,
+		tokenParser:           tokenParser,
 	}
 
 	s.handler = middleware.RequestLogger()(s.routes())

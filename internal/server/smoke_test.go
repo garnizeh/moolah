@@ -124,6 +124,7 @@ func TestSmoke_Phase1HappyPath(t *testing.T) {
 	accountRepo := repository.NewAccountRepository(pgDB.Queries)
 	categoryRepo := repository.NewCategoryRepository(pgDB.Queries)
 	transactionRepo := repository.NewTransactionRepository(pgDB.Queries)
+	masterPurchaseRepo := repository.NewMasterPurchaseRepository(pgDB.Queries)
 	auditRepo := repository.NewAuditRepository(pgDB.Queries)
 	adminTenantRepo := repository.NewAdminTenantRepository(pgDB.Queries)
 	adminUserRepo := repository.NewAdminUserRepository(pgDB.Queries)
@@ -138,6 +139,7 @@ func TestSmoke_Phase1HappyPath(t *testing.T) {
 	accountSvc := service.NewAccountService(accountRepo, userRepo, auditRepo)
 	categorySvc := service.NewCategoryService(categoryRepo, auditRepo)
 	transactionSvc := service.NewTransactionService(transactionRepo, accountRepo, categoryRepo, auditRepo)
+	masterPurchaseSvc := service.NewMasterPurchaseService(masterPurchaseRepo, accountRepo, categoryRepo)
 	adminSvc := service.NewAdminService(adminTenantRepo, adminUserRepo, adminAuditRepo, auditRepo)
 
 	tokenParser := paseto.NewTokenParser(pasetoKey)
@@ -150,6 +152,7 @@ func TestSmoke_Phase1HappyPath(t *testing.T) {
 		accountSvc,
 		categorySvc,
 		transactionSvc,
+		masterPurchaseSvc,
 		adminSvc,
 		idempotencyStore,
 		rateLimiterStore,

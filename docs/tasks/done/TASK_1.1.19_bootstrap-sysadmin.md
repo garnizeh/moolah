@@ -104,7 +104,7 @@ func EnsureSysadmin(ctx context.Context, q sqlc.Querier, cfg *config.Config) err
         slog.Info("sysadmin already exists, skipping bootstrap", "email", cfg.SysadminEmail)
         return nil
     }
-    if err != nil && !errors.Is(repository.TranslateError(err), domain.ErrNotFound) {
+    if err != nil && !errors.Is(repository.translateError(err), domain.ErrNotFound) {
         return fmt.Errorf("bootstrap: failed to check existing sysadmin: %w", err)
     }
 

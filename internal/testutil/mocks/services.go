@@ -456,3 +456,122 @@ func (m *AdminService) ListAuditLogs(ctx context.Context, params domain.ListAudi
 }
 
 var _ domain.AdminService = (*AdminService)(nil)
+
+// MasterPurchaseService is a testify/mock implementation of domain.MasterPurchaseService.
+type MasterPurchaseService struct {
+	mock.Mock
+}
+
+func (m *MasterPurchaseService) Create(ctx context.Context, tenantID string, input domain.CreateMasterPurchaseInput) (*domain.MasterPurchase, error) {
+	args := m.Called(ctx, tenantID, input)
+	var err error
+	if e := args.Error(1); e != nil {
+		err = fmt.Errorf("mock MasterPurchaseService.Create: %w", e)
+	}
+
+	if args.Get(0) == nil {
+		return nil, err
+	}
+
+	res, ok := args.Get(0).(*domain.MasterPurchase)
+	if !ok {
+		return nil, fmt.Errorf("mock MasterPurchaseService.Create: unexpected type %T", args.Get(0))
+	}
+	return res, err
+}
+
+func (m *MasterPurchaseService) GetByID(ctx context.Context, tenantID, id string) (*domain.MasterPurchase, error) {
+	args := m.Called(ctx, tenantID, id)
+	var err error
+	if e := args.Error(1); e != nil {
+		err = fmt.Errorf("mock MasterPurchaseService.GetByID: %w", e)
+	}
+
+	if args.Get(0) == nil {
+		return nil, err
+	}
+
+	res, ok := args.Get(0).(*domain.MasterPurchase)
+	if !ok {
+		return nil, fmt.Errorf("mock MasterPurchaseService.GetByID: unexpected type %T", args.Get(0))
+	}
+	return res, err
+}
+
+func (m *MasterPurchaseService) ListByTenant(ctx context.Context, tenantID string) ([]domain.MasterPurchase, error) {
+	args := m.Called(ctx, tenantID)
+	var err error
+	if e := args.Error(1); e != nil {
+		err = fmt.Errorf("mock MasterPurchaseService.ListByTenant: %w", e)
+	}
+
+	if args.Get(0) == nil {
+		return nil, err
+	}
+
+	res, ok := args.Get(0).([]domain.MasterPurchase)
+	if !ok {
+		return nil, fmt.Errorf("mock MasterPurchaseService.ListByTenant: unexpected type %T", args.Get(0))
+	}
+	return res, err
+}
+
+func (m *MasterPurchaseService) ListByAccount(ctx context.Context, tenantID, accountID string) ([]domain.MasterPurchase, error) {
+	args := m.Called(ctx, tenantID, accountID)
+	var err error
+	if e := args.Error(1); e != nil {
+		err = fmt.Errorf("mock MasterPurchaseService.ListByAccount: %w", e)
+	}
+
+	if args.Get(0) == nil {
+		return nil, err
+	}
+
+	res, ok := args.Get(0).([]domain.MasterPurchase)
+	if !ok {
+		return nil, fmt.Errorf("mock MasterPurchaseService.ListByAccount: unexpected type %T", args.Get(0))
+	}
+	return res, err
+}
+
+func (m *MasterPurchaseService) ProjectInstallments(mp *domain.MasterPurchase) []domain.ProjectedInstallment {
+	args := m.Called(mp)
+
+	if args.Get(0) == nil {
+		return nil
+	}
+
+	res, ok := args.Get(0).([]domain.ProjectedInstallment)
+	if !ok {
+		return nil
+	}
+	return res
+}
+
+func (m *MasterPurchaseService) Update(ctx context.Context, tenantID, id string, input domain.UpdateMasterPurchaseInput) (*domain.MasterPurchase, error) {
+	args := m.Called(ctx, tenantID, id, input)
+	var err error
+	if e := args.Error(1); e != nil {
+		err = fmt.Errorf("mock MasterPurchaseService.Update: %w", e)
+	}
+
+	if args.Get(0) == nil {
+		return nil, err
+	}
+
+	res, ok := args.Get(0).(*domain.MasterPurchase)
+	if !ok {
+		return nil, fmt.Errorf("mock MasterPurchaseService.Update: unexpected type %T", args.Get(0))
+	}
+	return res, err
+}
+
+func (m *MasterPurchaseService) Delete(ctx context.Context, tenantID, id string) error {
+	args := m.Called(ctx, tenantID, id)
+	if e := args.Error(0); e != nil {
+		return fmt.Errorf("mock MasterPurchaseService.Delete: %w", e)
+	}
+	return nil
+}
+
+var _ domain.MasterPurchaseService = (*MasterPurchaseService)(nil)

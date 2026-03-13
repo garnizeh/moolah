@@ -147,6 +147,48 @@ func (ns NullCategoryType) Value() (driver.Value, error) {
 	return string(ns.CategoryType), nil
 }
 
+type MasterPurchaseStatus string
+
+const (
+	MasterPurchaseStatusOpen   MasterPurchaseStatus = "open"
+	MasterPurchaseStatusClosed MasterPurchaseStatus = "closed"
+)
+
+func (e *MasterPurchaseStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = MasterPurchaseStatus(s)
+	case string:
+		*e = MasterPurchaseStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for MasterPurchaseStatus: %T", src)
+	}
+	return nil
+}
+
+type NullMasterPurchaseStatus struct {
+	MasterPurchaseStatus MasterPurchaseStatus `json:"master_purchase_status"`
+	Valid                bool                 `json:"valid"` // Valid is true if MasterPurchaseStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullMasterPurchaseStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.MasterPurchaseStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.MasterPurchaseStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullMasterPurchaseStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.MasterPurchaseStatus), nil
+}
+
 type TenantPlan string
 
 const (
@@ -318,20 +360,21 @@ type Category struct {
 }
 
 type MasterPurchase struct {
-	ID                     string             `json:"id"`
-	TenantID               string             `json:"tenant_id"`
-	AccountID              string             `json:"account_id"`
-	CategoryID             string             `json:"category_id"`
-	UserID                 string             `json:"user_id"`
-	Description            string             `json:"description"`
-	TotalAmountCents       int64              `json:"total_amount_cents"`
-	InstallmentCount       int16              `json:"installment_count"`
-	InstallmentCents       int64              `json:"installment_cents"`
-	FirstDueDate           pgtype.Date        `json:"first_due_date"`
-	LastSettledInstallment int16              `json:"last_settled_installment"`
-	CreatedAt              pgtype.Timestamptz `json:"created_at"`
-	UpdatedAt              pgtype.Timestamptz `json:"updated_at"`
-	DeletedAt              pgtype.Timestamptz `json:"deleted_at"`
+	ID                   string               `json:"id"`
+	TenantID             string               `json:"tenant_id"`
+	AccountID            string               `json:"account_id"`
+	CategoryID           string               `json:"category_id"`
+	UserID               string               `json:"user_id"`
+	Description          string               `json:"description"`
+	Status               MasterPurchaseStatus `json:"status"`
+	TotalAmountCents     int64                `json:"total_amount_cents"`
+	InstallmentCount     int16                `json:"installment_count"`
+	PaidInstallments     int16                `json:"paid_installments"`
+	ClosingDay           int16                `json:"closing_day"`
+	FirstInstallmentDate pgtype.Date          `json:"first_installment_date"`
+	CreatedAt            pgtype.Timestamptz   `json:"created_at"`
+	UpdatedAt            pgtype.Timestamptz   `json:"updated_at"`
+	DeletedAt            pgtype.Timestamptz   `json:"deleted_at"`
 }
 
 type OtpRequest struct {

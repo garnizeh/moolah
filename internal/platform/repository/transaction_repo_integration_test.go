@@ -87,14 +87,14 @@ func TestTransactionRepo_Integration(t *testing.T) {
 		_, err := db.Pool.Exec(ctx, `
 			INSERT INTO master_purchases (
 				id, tenant_id, account_id, category_id, user_id,
-				description, total_amount_cents, installment_count, installment_cents,
-				first_due_date, created_at, updated_at
+				description, total_amount_cents, installment_count,
+				closing_day, first_installment_date, created_at, updated_at
 			) VALUES (
 				$1, $2, $3, $4, $5,
-				$6, $7, $8, $9,
-				$10, NOW(), NOW()
+				$6, $7, $8,
+				$9, $10, NOW(), NOW()
 			)
-		`, masterID, tenant.ID, acc.ID, cat.ID, user.ID, "Master Purchase", int64(12000), int16(12), int64(1000), time.Now().UTC())
+		`, masterID, tenant.ID, acc.ID, cat.ID, user.ID, "Master Purchase", int64(12000), int16(12), int16(15), time.Now().UTC())
 		require.NoError(t, err)
 
 		input := domain.CreateTransactionInput{

@@ -99,3 +99,17 @@ type MasterPurchaseService interface {
 	// Delete performs a soft delete on the specified master purchase.
 	Delete(ctx context.Context, tenantID, id string) error
 }
+
+// CloseInvoiceResult reports the outcome of an invoice closing operation.
+type CloseInvoiceResult struct {
+	Errors         []error
+	ProcessedCount int
+}
+
+// InvoiceCloser defines the contract for materializing installments at invoice-close time.
+type InvoiceCloser interface {
+	// CloseInvoice finds all pending master purchases for the account due on or before
+	// closingDate, materializes the current installment as a transaction, and advances
+	// paid_installments. Runs each master purchase in its own DB transaction.
+	CloseInvoice(ctx context.Context, tenantID, accountID string, closingDate time.Time) (CloseInvoiceResult, error)
+}

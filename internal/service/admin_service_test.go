@@ -60,6 +60,18 @@ func TestAdminService_TenantOperations(t *testing.T) {
 		require.Equal(t, expected, res)
 	})
 
+	t.Run("GetTenantByID_Error", func(t *testing.T) {
+		t.Parallel()
+		tenantRepo := new(mocks.AdminTenantRepository)
+		tenantRepo.On("GetByID", mock.Anything, "t1").Return((*domain.Tenant)(nil), errors.New("get tenant fail"))
+
+		svc := service.NewAdminService(tenantRepo, nil, nil, nil)
+		res, err := svc.GetTenantByID(ctx, "t1")
+
+		require.Error(t, err)
+		require.Nil(t, res)
+	})
+
 	t.Run("GetTenantByID_NotFound", func(t *testing.T) {
 		t.Parallel()
 		tenantRepo := new(mocks.AdminTenantRepository)
@@ -102,6 +114,22 @@ func TestAdminService_TenantOperations(t *testing.T) {
 		require.Nil(t, res)
 	})
 
+	t.Run("UpdateTenantPlan_AuditError", func(t *testing.T) {
+		t.Parallel()
+		tenantRepo := new(mocks.AdminTenantRepository)
+		auditRepo := new(mocks.AuditRepository)
+		updated := &domain.Tenant{ID: "t1", Plan: domain.TenantPlanPremium}
+
+		tenantRepo.On("UpdatePlan", mock.Anything, "t1", domain.TenantPlanPremium).Return(updated, nil)
+		auditRepo.On("Create", mock.Anything, mock.Anything).Return(nil, errors.New("audit fail"))
+
+		svc := service.NewAdminService(tenantRepo, nil, nil, auditRepo)
+		res, err := svc.UpdateTenantPlan(ctx, "t1", domain.TenantPlanPremium)
+
+		require.NoError(t, err)
+		require.Equal(t, updated, res)
+	})
+
 	t.Run("SuspendTenant_Success", func(t *testing.T) {
 		t.Parallel()
 		tenantRepo := new(mocks.AdminTenantRepository)
@@ -117,6 +145,31 @@ func TestAdminService_TenantOperations(t *testing.T) {
 		tenantRepo.AssertExpectations(t)
 	})
 
+	t.Run("SuspendTenant_AuditError", func(t *testing.T) {
+		t.Parallel()
+		tenantRepo := new(mocks.AdminTenantRepository)
+		auditRepo := new(mocks.AuditRepository)
+
+		tenantRepo.On("Suspend", mock.Anything, "t1").Return(nil)
+		auditRepo.On("Create", mock.Anything, mock.Anything).Return(nil, errors.New("audit fail"))
+
+		svc := service.NewAdminService(tenantRepo, nil, nil, auditRepo)
+		err := svc.SuspendTenant(ctx, "t1")
+
+		require.NoError(t, err)
+	})
+
+	t.Run("SuspendTenant_Error", func(t *testing.T) {
+		t.Parallel()
+		tenantRepo := new(mocks.AdminTenantRepository)
+		tenantRepo.On("Suspend", mock.Anything, "t1").Return(errors.New("db error"))
+
+		svc := service.NewAdminService(tenantRepo, nil, nil, nil)
+		err := svc.SuspendTenant(ctx, "t1")
+
+		require.Error(t, err)
+	})
+
 	t.Run("RestoreTenant_Success", func(t *testing.T) {
 		t.Parallel()
 		tenantRepo := new(mocks.AdminTenantRepository)
@@ -130,6 +183,20 @@ func TestAdminService_TenantOperations(t *testing.T) {
 
 		require.NoError(t, err)
 		tenantRepo.AssertExpectations(t)
+	})
+
+	t.Run("RestoreTenant_AuditError", func(t *testing.T) {
+		t.Parallel()
+		tenantRepo := new(mocks.AdminTenantRepository)
+		auditRepo := new(mocks.AuditRepository)
+
+		tenantRepo.On("Restore", mock.Anything, "t1").Return(nil)
+		auditRepo.On("Create", mock.Anything, mock.Anything).Return(nil, errors.New("audit fail"))
+
+		svc := service.NewAdminService(tenantRepo, nil, nil, auditRepo)
+		err := svc.RestoreTenant(ctx, "t1")
+
+		require.NoError(t, err)
 	})
 
 	t.Run("RestoreTenant_Error", func(t *testing.T) {
@@ -163,6 +230,20 @@ func TestAdminService_TenantOperations(t *testing.T) {
 
 		require.NoError(t, err)
 		tenantRepo.AssertExpectations(t)
+	})
+
+	t.Run("HardDeleteTenant_AuditError", func(t *testing.T) {
+		t.Parallel()
+		tenantRepo := new(mocks.AdminTenantRepository)
+		auditRepo := new(mocks.AuditRepository)
+
+		auditRepo.On("Create", mock.Anything, mock.Anything).Return(nil, errors.New("audit fail"))
+		tenantRepo.On("HardDelete", mock.Anything, "t1").Return(nil)
+
+		svc := service.NewAdminService(tenantRepo, nil, nil, auditRepo)
+		err := svc.HardDeleteTenant(ctx, "t1", "t1")
+
+		require.NoError(t, err)
 	})
 
 	t.Run("HardDeleteTenant_RepoError", func(t *testing.T) {
@@ -201,6 +282,18 @@ func TestAdminService_UserOperations(t *testing.T) {
 		require.Equal(t, expected, res)
 	})
 
+	t.Run("ListAllUsers_Error", func(t *testing.T) {
+		t.Parallel()
+		userRepo := new(mocks.AdminUserRepository)
+		userRepo.On("ListAll", mock.Anything).Return(nil, errors.New("db error"))
+
+		svc := service.NewAdminService(nil, userRepo, nil, nil)
+		res, err := svc.ListAllUsers(ctx)
+
+		require.Error(t, err)
+		require.Nil(t, res)
+	})
+
 	t.Run("GetUserByID_Success", func(t *testing.T) {
 		t.Parallel()
 		userRepo := new(mocks.AdminUserRepository)
@@ -212,6 +305,18 @@ func TestAdminService_UserOperations(t *testing.T) {
 
 		require.NoError(t, err)
 		require.Equal(t, expected, res)
+	})
+
+	t.Run("GetUserByID_Error", func(t *testing.T) {
+		t.Parallel()
+		userRepo := new(mocks.AdminUserRepository)
+		userRepo.On("GetByID", mock.Anything, "u1").Return(nil, errors.New("db error"))
+
+		svc := service.NewAdminService(nil, userRepo, nil, nil)
+		res, err := svc.GetUserByID(ctx, "u1")
+
+		require.Error(t, err)
+		require.Nil(t, res)
 	})
 
 	t.Run("GetUserByID_NotFound", func(t *testing.T) {
@@ -239,6 +344,20 @@ func TestAdminService_UserOperations(t *testing.T) {
 
 		require.NoError(t, err)
 		userRepo.AssertExpectations(t)
+	})
+
+	t.Run("ForceDeleteUser_AuditError", func(t *testing.T) {
+		t.Parallel()
+		userRepo := new(mocks.AdminUserRepository)
+		auditRepo := new(mocks.AuditRepository)
+
+		auditRepo.On("Create", mock.Anything, mock.Anything).Return(nil, errors.New("audit fail"))
+		userRepo.On("ForceDelete", mock.Anything, "u1").Return(nil)
+
+		svc := service.NewAdminService(nil, userRepo, nil, auditRepo)
+		err := svc.ForceDeleteUser(ctx, "u1")
+
+		require.NoError(t, err)
 	})
 
 	t.Run("ForceDeleteUser_Error", func(t *testing.T) {

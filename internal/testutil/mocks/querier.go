@@ -112,6 +112,15 @@ func (m *Querier) CreateCategory(ctx context.Context, arg sqlc.CreateCategoryPar
 	return r0, args.Error(1) //nolint:wrapcheck
 }
 
+func (m *Querier) CreateMasterPurchase(ctx context.Context, arg sqlc.CreateMasterPurchaseParams) (sqlc.MasterPurchase, error) {
+	args := m.Called(ctx, arg)
+	var r0 sqlc.MasterPurchase
+	if rf, ok := args.Get(0).(sqlc.MasterPurchase); ok {
+		r0 = rf
+	}
+	return r0, args.Error(1) //nolint:wrapcheck
+}
+
 func (m *Querier) CreateOTPRequest(ctx context.Context, arg sqlc.CreateOTPRequestParams) (sqlc.OtpRequest, error) {
 	args := m.Called(ctx, arg)
 	var r0 sqlc.OtpRequest
@@ -153,6 +162,11 @@ func (m *Querier) DeleteExpiredOTPs(ctx context.Context) error {
 	return args.Error(0) //nolint:wrapcheck
 }
 
+func (m *Querier) DeleteMasterPurchase(ctx context.Context, arg sqlc.DeleteMasterPurchaseParams) error {
+	args := m.Called(ctx, arg)
+	return args.Error(0) //nolint:wrapcheck
+}
+
 func (m *Querier) GetAccountByID(ctx context.Context, arg sqlc.GetAccountByIDParams) (sqlc.Account, error) {
 	args := m.Called(ctx, arg)
 	var r0 sqlc.Account
@@ -175,6 +189,15 @@ func (m *Querier) GetCategoryByID(ctx context.Context, arg sqlc.GetCategoryByIDP
 	args := m.Called(ctx, arg)
 	var r0 sqlc.Category
 	if rf, ok := args.Get(0).(sqlc.Category); ok {
+		r0 = rf
+	}
+	return r0, args.Error(1) //nolint:wrapcheck
+}
+
+func (m *Querier) GetMasterPurchaseByID(ctx context.Context, arg sqlc.GetMasterPurchaseByIDParams) (sqlc.MasterPurchase, error) {
+	args := m.Called(ctx, arg)
+	var r0 sqlc.MasterPurchase
+	if rf, ok := args.Get(0).(sqlc.MasterPurchase); ok {
 		r0 = rf
 	}
 	return r0, args.Error(1) //nolint:wrapcheck
@@ -211,6 +234,15 @@ func (m *Querier) GetUserByID(ctx context.Context, arg sqlc.GetUserByIDParams) (
 	args := m.Called(ctx, arg)
 	var r0 sqlc.User
 	if rf, ok := args.Get(0).(sqlc.User); ok {
+		r0 = rf
+	}
+	return r0, args.Error(1) //nolint:wrapcheck
+}
+
+func (m *Querier) IncrementPaidInstallments(ctx context.Context, arg sqlc.IncrementPaidInstallmentsParams) (sqlc.MasterPurchase, error) {
+	args := m.Called(ctx, arg)
+	var r0 sqlc.MasterPurchase
+	if rf, ok := args.Get(0).(sqlc.MasterPurchase); ok {
 		r0 = rf
 	}
 	return r0, args.Error(1) //nolint:wrapcheck
@@ -265,6 +297,33 @@ func (m *Querier) ListChildCategories(ctx context.Context, arg sqlc.ListChildCat
 	args := m.Called(ctx, arg)
 	var r0 []sqlc.Category
 	if rf, ok := args.Get(0).([]sqlc.Category); ok {
+		r0 = rf
+	}
+	return r0, args.Error(1) //nolint:wrapcheck
+}
+
+func (m *Querier) ListMasterPurchasesByAccount(ctx context.Context, arg sqlc.ListMasterPurchasesByAccountParams) ([]sqlc.MasterPurchase, error) {
+	args := m.Called(ctx, arg)
+	var r0 []sqlc.MasterPurchase
+	if rf, ok := args.Get(0).([]sqlc.MasterPurchase); ok {
+		r0 = rf
+	}
+	return r0, args.Error(1) //nolint:wrapcheck
+}
+
+func (m *Querier) ListMasterPurchasesByTenant(ctx context.Context, tenantID string) ([]sqlc.MasterPurchase, error) {
+	args := m.Called(ctx, tenantID)
+	var r0 []sqlc.MasterPurchase
+	if rf, ok := args.Get(0).([]sqlc.MasterPurchase); ok {
+		r0 = rf
+	}
+	return r0, args.Error(1) //nolint:wrapcheck
+}
+
+func (m *Querier) ListPendingMasterPurchasesByClosingDay(ctx context.Context, arg sqlc.ListPendingMasterPurchasesByClosingDayParams) ([]sqlc.MasterPurchase, error) {
+	args := m.Called(ctx, arg)
+	var r0 []sqlc.MasterPurchase
+	if rf, ok := args.Get(0).([]sqlc.MasterPurchase); ok {
 		r0 = rf
 	}
 	return r0, args.Error(1) //nolint:wrapcheck
@@ -345,6 +404,15 @@ func (m *Querier) UpdateCategory(ctx context.Context, arg sqlc.UpdateCategoryPar
 	args := m.Called(ctx, arg)
 	var r0 sqlc.Category
 	if rf, ok := args.Get(0).(sqlc.Category); ok {
+		r0 = rf
+	}
+	return r0, args.Error(1) //nolint:wrapcheck
+}
+
+func (m *Querier) UpdateMasterPurchase(ctx context.Context, arg sqlc.UpdateMasterPurchaseParams) (sqlc.MasterPurchase, error) {
+	args := m.Called(ctx, arg)
+	var r0 sqlc.MasterPurchase
+	if rf, ok := args.Get(0).(sqlc.MasterPurchase); ok {
 		r0 = rf
 	}
 	return r0, args.Error(1) //nolint:wrapcheck

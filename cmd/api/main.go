@@ -113,6 +113,7 @@ func run(ctx context.Context, cfg *config.Config, showConfig bool) error {
 	accountRepo := repository.NewAccountRepository(querier)
 	categoryRepo := repository.NewCategoryRepository(querier)
 	transactionRepo := repository.NewTransactionRepository(querier)
+	masterPurchaseRepo := repository.NewMasterPurchaseRepository(querier)
 	auditRepo := repository.NewAuditRepository(querier)
 
 	adminTenantRepo := repository.NewAdminTenantRepository(querier)
@@ -127,6 +128,7 @@ func run(ctx context.Context, cfg *config.Config, showConfig bool) error {
 	accountSvc := service.NewAccountService(accountRepo, userRepo, auditRepo)
 	categorySvc := service.NewCategoryService(categoryRepo, auditRepo)
 	transactionSvc := service.NewTransactionService(transactionRepo, accountRepo, categoryRepo, auditRepo)
+	masterPurchaseSvc := service.NewMasterPurchaseService(masterPurchaseRepo, accountRepo, categoryRepo)
 	adminSvc := service.NewAdminService(adminTenantRepo, adminUserRepo, adminAuditRepo, auditRepo)
 
 	rateLimiterStore := middleware.NewRateLimiterStore()
@@ -140,6 +142,7 @@ func run(ctx context.Context, cfg *config.Config, showConfig bool) error {
 		accountSvc,
 		categorySvc,
 		transactionSvc,
+		masterPurchaseSvc,
 		adminSvc,
 		idempotencyStore,
 		rateLimiterStore,
