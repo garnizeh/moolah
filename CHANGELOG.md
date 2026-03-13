@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.10.0](https://github.com/garnizeh/moolah/compare/v1.9.0...v1.10.0) (2026-03-13)
+
+
+### Features
+
+* add MasterPurchase functionality with tests ([1b2cac0](https://github.com/garnizeh/moolah/commit/1b2cac009bd2182ef62871fcf565c626337659f5))
+* add MasterPurchase functionality with tests ([7fd0073](https://github.com/garnizeh/moolah/commit/7fd007382e73726b68c83cfd69eecce7ae17c29e))
+* implement InvoiceCloser service for scheduled and on-demand invoice closing ([e6372ac](https://github.com/garnizeh/moolah/commit/e6372acdf0efefb05dc106251f24f443ff96b5ea))
+* **tests:** add tests for MasterPurchase routes with unauthorized status checks ([6561cff](https://github.com/garnizeh/moolah/commit/6561cff6f4fcaf84d5e47c56f390aef39dcec0cb))
+
 ## [1.9.0](https://github.com/garnizeh/moolah/compare/v1.8.0...v1.9.0) (2026-03-12)
 
 
