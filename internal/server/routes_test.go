@@ -22,6 +22,7 @@ func TestRoutes(t *testing.T) {
 
 	// Initialize mocks
 	authSvc := new(mocks.AuthService)
+	masterPurchaseSvc := new(mocks.MasterPurchaseService)
 	// Other services can be nil as we are just checking routing table presence
 
 	// Middleware dependencies
@@ -31,10 +32,11 @@ func TestRoutes(t *testing.T) {
 
 	// Create Server
 	s := &Server{
-		authHandler:      handler.NewAuthHandler(authSvc),
-		tokenParser:      tokenParser,
-		rateLimiterStore: rateLimiterStore,
-		idempotencyStore: idempotencyStore,
+		authHandler:           handler.NewAuthHandler(authSvc),
+		masterPurchaseHandler: handler.NewMasterPurchaseHandler(masterPurchaseSvc),
+		tokenParser:           tokenParser,
+		rateLimiterStore:      rateLimiterStore,
+		idempotencyStore:      idempotencyStore,
 	}
 
 	mux := s.routes()
@@ -159,60 +161,5 @@ func TestHealthz(t *testing.T) {
 
 			assert.Equal(t, http.StatusMethodNotAllowed, rr.Code)
 		}
-	})
-}
-
-func TestMasterPurchaseRoutes_Handlers(t *testing.T) {
-	t.Parallel()
-	svc := new(mocks.MasterPurchaseService)
-	h := handler.NewMasterPurchaseHandler(svc)
-	s := &Server{masterPurchaseHandler: h}
-
-	t.Run("handleListMasterPurchases", func(t *testing.T) {
-		t.Parallel()
-		req := httptest.NewRequest(http.MethodGet, "/v1/master-purchases", nil)
-		rr := httptest.NewRecorder()
-		s.handleListMasterPurchases(rr, req)
-		assert.Equal(t, http.StatusUnauthorized, rr.Code)
-	})
-
-	t.Run("handleCreateMasterPurchase", func(t *testing.T) {
-		t.Parallel()
-		req := httptest.NewRequest(http.MethodPost, "/v1/master-purchases", nil)
-		rr := httptest.NewRecorder()
-		s.handleCreateMasterPurchase(rr, req)
-		assert.Equal(t, http.StatusUnauthorized, rr.Code)
-	})
-
-	t.Run("handleGetMasterPurchaseByID", func(t *testing.T) {
-		t.Parallel()
-		req := httptest.NewRequest(http.MethodGet, "/v1/master-purchases/1", nil)
-		rr := httptest.NewRecorder()
-		s.handleGetMasterPurchaseByID(rr, req)
-		assert.Equal(t, http.StatusUnauthorized, rr.Code)
-	})
-
-	t.Run("handleProjectMasterPurchase", func(t *testing.T) {
-		t.Parallel()
-		req := httptest.NewRequest(http.MethodGet, "/v1/master-purchases/1/projection", nil)
-		rr := httptest.NewRecorder()
-		s.handleProjectMasterPurchase(rr, req)
-		assert.Equal(t, http.StatusUnauthorized, rr.Code)
-	})
-
-	t.Run("handleUpdateMasterPurchase", func(t *testing.T) {
-		t.Parallel()
-		req := httptest.NewRequest(http.MethodPatch, "/v1/master-purchases/1", nil)
-		rr := httptest.NewRecorder()
-		s.handleUpdateMasterPurchase(rr, req)
-		assert.Equal(t, http.StatusUnauthorized, rr.Code)
-	})
-
-	t.Run("handleDeleteMasterPurchase", func(t *testing.T) {
-		t.Parallel()
-		req := httptest.NewRequest(http.MethodDelete, "/v1/master-purchases/1", nil)
-		rr := httptest.NewRecorder()
-		s.handleDeleteMasterPurchase(rr, req)
-		assert.Equal(t, http.StatusUnauthorized, rr.Code)
 	})
 }

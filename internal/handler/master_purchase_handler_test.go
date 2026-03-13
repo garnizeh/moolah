@@ -111,7 +111,8 @@ func TestMasterPurchaseHandler_Create(t *testing.T) {
 			FirstInstallmentDate: now,
 		}
 		svc.On("Create", mock.Anything, tenantID, mock.Anything).Return(nil, errors.New("db error"))
-		body, _ := json.Marshal(reqBody)
+		body, err := json.Marshal(reqBody)
+		require.NoError(t, err)
 		req := httptest.NewRequest(http.MethodPost, "/v1/master-purchases", bytes.NewReader(body))
 		ctx := context.WithValue(req.Context(), middleware.TenantIDKey, tenantID)
 		ctx = context.WithValue(ctx, middleware.UserIDKey, userID)
@@ -286,7 +287,8 @@ func TestMasterPurchaseHandler_Update(t *testing.T) {
 		h := NewMasterPurchaseHandler(svc)
 		desc := "New Desc"
 		svc.On("Update", mock.Anything, tenantID, mpID, mock.Anything).Return(&domain.MasterPurchase{ID: mpID}, nil)
-		body, _ := json.Marshal(UpdateMasterPurchaseRequest{Description: &desc})
+		body, err := json.Marshal(UpdateMasterPurchaseRequest{Description: &desc})
+		require.NoError(t, err)
 		req := httptest.NewRequest(http.MethodPatch, "/v1/master-purchases/"+mpID, bytes.NewReader(body))
 		req.SetPathValue("id", mpID)
 		ctx := context.WithValue(req.Context(), middleware.TenantIDKey, tenantID)
@@ -320,7 +322,8 @@ func TestMasterPurchaseHandler_Update(t *testing.T) {
 		t.Parallel()
 		h := NewMasterPurchaseHandler(nil)
 		invalidDesc := ""
-		body, _ := json.Marshal(UpdateMasterPurchaseRequest{Description: &invalidDesc})
+		body, err := json.Marshal(UpdateMasterPurchaseRequest{Description: &invalidDesc})
+		require.NoError(t, err)
 		req := httptest.NewRequest(http.MethodPatch, "/v1/master-purchases/"+mpID, bytes.NewReader(body))
 		ctx := context.WithValue(req.Context(), middleware.TenantIDKey, tenantID)
 		req = req.WithContext(ctx)
@@ -334,7 +337,8 @@ func TestMasterPurchaseHandler_Update(t *testing.T) {
 		svc := &mocks.MasterPurchaseService{}
 		h := NewMasterPurchaseHandler(svc)
 		svc.On("Update", mock.Anything, tenantID, mpID, mock.Anything).Return(nil, errors.New("db error"))
-		body, _ := json.Marshal(UpdateMasterPurchaseRequest{})
+		body, err := json.Marshal(UpdateMasterPurchaseRequest{})
+		require.NoError(t, err)
 		req := httptest.NewRequest(http.MethodPatch, "/v1/master-purchases/"+mpID, bytes.NewReader(body))
 		req.SetPathValue("id", mpID)
 		ctx := context.WithValue(req.Context(), middleware.TenantIDKey, tenantID)
