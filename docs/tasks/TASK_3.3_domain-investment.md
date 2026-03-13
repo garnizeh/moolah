@@ -1,4 +1,4 @@
-# Task 3.3 — `domain/investment.go`: Entities + Repository Interfaces
+# Task 3.3 — Domain: `Asset` + `TenantAssetConfig` Entities & Repository Interfaces
 
 > **Roadmap Ref:** Phase 3 — Investment Portfolio Tracking › Domain Layer
 > **Status:** 🔵 `backlog`
@@ -10,15 +10,17 @@
 
 ## 1. Summary
 
-Define all Phase 3 domain entities (`Asset`, `Position`, `PortfolioSnapshot`) and their repository interfaces in `internal/domain/investment.go`. This file is the authoritative contract for the investment subdomain — every other Phase 3 task (repository, service, handler) depends on it. No business logic lives here; only structs, input types, and interface definitions.
+Define the `Asset` and `TenantAssetConfig` domain entities, input types, and their repository interfaces in `internal/domain/asset.go`. This is the first domain file for Phase 3 and establishes the global asset catalogue and per-tenant override pattern from ADR-003 §2.1 and §2.7.
 
 ---
 
 ## 2. Context & Motivation
 
-The project follows interface-driven development: every repository and service is defined as a Go interface in the `internal/domain/` package before any concrete implementation is written. This enables robust mocking in unit tests and makes the architecture explicitly documented in code.
+Phase 3 introduces a two-layer asset model: a global `assets` table (admin-managed, no `tenant_id`) and a `tenant_asset_configs` table (per-tenant sparse overrides). The domain layer defines the Go structs and interfaces that all downstream layers (sqlc, repository, service, handler) depend on.
 
-Phase 1 established `AccountRepository`, `CategoryRepository`, etc. Phase 2 added `MasterPurchaseRepository`. Phase 3 must follow the same pattern with `AssetRepository`, `PositionRepository`, and `PortfolioSnapshotRepository`.
+Following the project convention, every repository must be defined as an interface in `internal/domain/` before any implementation is written. See `internal/domain/account.go` for the Phase 1 pattern.
+
+**Reference:** ADR-003 §2.1, §2.7, §3.1, §3.2.
 
 ---
 
@@ -26,22 +28,22 @@ Phase 1 established `AccountRepository`, `CategoryRepository`, etc. Phase 2 adde
 
 ### In scope
 
-- [ ] `Asset` struct with JSON tags.
-- [ ] `Position` struct with JSON tags.
-- [ ] `PortfolioSnapshot` struct with JSON tags.
-- [ ] `AssetType` string enum type with constants.
-- [ ] Input types: `CreateAssetInput`, `CreatePositionInput`, `UpdatePositionInput`.
-- [ ] `AssetRepository` interface.
-- [ ] `PositionRepository` interface.
-- [ ] `PortfolioSnapshotRepository` interface.
-- [ ] `InvestmentService` interface (used by handler layer).
-- [ ] Unit tests for domain validation helpers (if any) in `internal/domain/investment_test.go`.
+- [ ] `AssetType` string enum with constants for all six values from ADR (`stock`, `bond`, `fund`, `crypto`, `real_estate`, `income_source`).
+- [ ] `Asset` struct with JSON tags (all fields from ADR §3.1).
+- [ ] `CreateAssetInput` and `ListAssetsParams` input types.
+- [ ] `AssetRepository` interface (`Create`, `GetByID`, `GetByTicker`, `List`, `Delete`).
+- [ ] `TenantAssetConfig` struct with JSON tags (all fields from ADR §3.2).
+- [ ] `UpsertTenantAssetConfigInput` input type.
+- [ ] `TenantAssetConfigRepository` interface (`Upsert`, `GetByAssetID`, `ListByTenant`, `Delete`).
+- [ ] Sentinel errors: `ErrAssetNotFound`, `ErrAssetConfigNotFound`.
+- [ ] Unit tests in `internal/domain/asset_test.go` covering validation helpers (if any).
 
 ### Out of scope
 
-- Concrete repository implementations (Task 3.5).
-- Service implementation (Task 3.6).
-- SQL queries (Task 3.4).
+- Position, PositionSnapshot, PositionIncomeEvent, PortfolioSnapshot (Task 3.9).
+- CurrencyConverter interface (Task 3.10).
+- Concrete repository implementations (Task 3.7).
+- SQLC queries (Task 3.4).
 
 ---
 
@@ -49,188 +51,112 @@ Phase 1 established `AccountRepository`, `CategoryRepository`, etc. Phase 2 adde
 
 ### Files to create / modify
 
-| Action | Path                                    | Purpose                                  |
-| ------ | --------------------------------------- | ---------------------------------------- |
-| CREATE | `internal/domain/investment.go`         | Entities, input types, interfaces        |
-| CREATE | `internal/domain/investment_test.go`    | Unit tests for domain types/helpers      |
+| Action | Path                              | Purpose                                        |
+| ------ | --------------------------------- | ---------------------------------------------- |
+| CREATE | `internal/domain/asset.go`        | Entities, input types, interfaces, errors      |
+| CREATE | `internal/domain/asset_test.go`   | Unit tests for domain types / validation       |
 
-### Key interfaces / types
+### Key types
 
 ```go
-// AssetType represents the investment instrument category.
+// AssetType categorises the investment instrument.
 type AssetType string
 
 const (
-    AssetTypeStock      AssetType = "stock"
-    AssetTypeBond       AssetType = "bond"
-    AssetTypeFund       AssetType = "fund"
-    AssetTypeCrypto     AssetType = "crypto"
-    AssetTypeRealEstate AssetType = "real_estate"
+    AssetTypeStock        AssetType = "stock"
+    AssetTypeBond         AssetType = "bond"
+    AssetTypeFund         AssetType = "fund"
+    AssetTypeCrypto       AssetType = "crypto"
+    AssetTypeRealEstate   AssetType = "real_estate"
+    AssetTypeIncomeSource AssetType = "income_source"
 )
 
-// Asset is a global reference record for a tradeable instrument.
+// Asset is a global, admin-managed reference record — no tenant_id.
 type Asset struct {
     ID        string    `json:"id"`
     Ticker    string    `json:"ticker"`
+    ISIN      *string   `json:"isin,omitempty"`
     Name      string    `json:"name"`
     AssetType AssetType `json:"asset_type"`
     Currency  string    `json:"currency"`
+    Details   *string   `json:"details,omitempty"`
     CreatedAt time.Time `json:"created_at"`
 }
 
-// Position represents a tenant's holding in a specific asset.
-type Position struct {
-    ID              string    `json:"id"`
-    TenantID        string    `json:"-"`
-    AssetID         string    `json:"asset_id"`
-    AccountID       string    `json:"account_id"`
-    Quantity        string    `json:"quantity"` // NUMERIC returned as string to avoid float imprecision
-    AvgCostCents    int64     `json:"avg_cost_cents"`
-    LastPriceCents  int64     `json:"last_price_cents"`
-    Currency        string    `json:"currency"`
-    PurchasedAt     time.Time `json:"purchased_at"`
-    CreatedAt       time.Time `json:"created_at"`
-    UpdatedAt       time.Time `json:"updated_at"`
-    DeletedAt       *time.Time `json:"-"`
+// TenantAssetConfig holds a tenant's sparse overrides for a global asset.
+// Fields that are nil fall back to the global asset value.
+type TenantAssetConfig struct {
+    ID        string     `json:"id"`
+    TenantID  string     `json:"-"`
+    AssetID   string     `json:"asset_id"`
+    Name      *string    `json:"name,omitempty"`      // overrides Asset.Name
+    Currency  *string    `json:"currency,omitempty"`  // overrides Asset.Currency
+    Details   *string    `json:"details,omitempty"`   // overrides Asset.Details
+    CreatedAt time.Time  `json:"created_at"`
+    UpdatedAt time.Time  `json:"updated_at"`
+    DeletedAt *time.Time `json:"-"`
 }
 
-// PortfolioSnapshot is a monthly point-in-time valuation.
-type PortfolioSnapshot struct {
-    ID               string          `json:"id"`
-    TenantID         string          `json:"-"`
-    SnapshotDate     time.Time       `json:"snapshot_date"`
-    TotalValueCents  int64           `json:"total_value_cents"`
-    Currency         string          `json:"currency"`
-    Details          json.RawMessage `json:"details,omitempty"`
-    CreatedAt        time.Time       `json:"created_at"`
-}
-
-// --- Input types ---
-
-type CreateAssetInput struct {
-    Ticker    string    `json:"ticker"     validate:"required,min=1,max=20"`
-    Name      string    `json:"name"       validate:"required,min=1,max=200"`
-    AssetType AssetType `json:"asset_type" validate:"required,oneof=stock bond fund crypto real_estate"`
-    Currency  string    `json:"currency"   validate:"required,len=3"`
-}
-
-type CreatePositionInput struct {
-    AssetID        string    `json:"asset_id"         validate:"required"`
-    AccountID      string    `json:"account_id"       validate:"required"`
-    Quantity       string    `json:"quantity"         validate:"required"`
-    AvgCostCents   int64     `json:"avg_cost_cents"   validate:"required,gt=0"`
-    LastPriceCents int64     `json:"last_price_cents" validate:"omitempty,gte=0"`
-    Currency       string    `json:"currency"         validate:"required,len=3"`
-    PurchasedAt    time.Time `json:"purchased_at"     validate:"required"`
-}
-
-type UpdatePositionInput struct {
-    Quantity       *string `json:"quantity"         validate:"omitempty"`
-    AvgCostCents   *int64  `json:"avg_cost_cents"   validate:"omitempty,gt=0"`
-    LastPriceCents *int64  `json:"last_price_cents" validate:"omitempty,gte=0"`
-}
-
-// --- Repository interfaces ---
-
+// AssetRepository defines persistence operations for the global asset catalogue.
 type AssetRepository interface {
     Create(ctx context.Context, input CreateAssetInput) (*Asset, error)
     GetByID(ctx context.Context, id string) (*Asset, error)
     GetByTicker(ctx context.Context, ticker string) (*Asset, error)
-    List(ctx context.Context) ([]Asset, error)
+    List(ctx context.Context, params ListAssetsParams) ([]Asset, error)
+    Delete(ctx context.Context, id string) error
 }
 
-type PositionRepository interface {
-    Create(ctx context.Context, tenantID string, input CreatePositionInput) (*Position, error)
-    GetByID(ctx context.Context, tenantID, id string) (*Position, error)
-    ListByTenant(ctx context.Context, tenantID string) ([]Position, error)
-    ListByAccount(ctx context.Context, tenantID, accountID string) ([]Position, error)
-    Update(ctx context.Context, tenantID, id string, input UpdatePositionInput) (*Position, error)
-    Delete(ctx context.Context, tenantID, id string) error
-}
-
-type PortfolioSnapshotRepository interface {
-    Create(ctx context.Context, tenantID string, snapshot PortfolioSnapshot) (*PortfolioSnapshot, error)
-    GetByDate(ctx context.Context, tenantID string, date time.Time) (*PortfolioSnapshot, error)
-    ListByTenant(ctx context.Context, tenantID string) ([]PortfolioSnapshot, error)
-}
-
-// InvestmentService is the interface consumed by the HTTP handler layer.
-type InvestmentService interface {
-    CreateAsset(ctx context.Context, input CreateAssetInput) (*Asset, error)
-    GetAsset(ctx context.Context, id string) (*Asset, error)
-    ListAssets(ctx context.Context) ([]Asset, error)
-
-    CreatePosition(ctx context.Context, tenantID string, input CreatePositionInput) (*Position, error)
-    GetPosition(ctx context.Context, tenantID, id string) (*Position, error)
-    ListPositions(ctx context.Context, tenantID string) ([]Position, error)
-    ListPositionsByAccount(ctx context.Context, tenantID, accountID string) ([]Position, error)
-    UpdatePosition(ctx context.Context, tenantID, id string, input UpdatePositionInput) (*Position, error)
-    DeletePosition(ctx context.Context, tenantID, id string) error
-
-    GetPortfolioSummary(ctx context.Context, tenantID string) (*PortfolioSummary, error)
-    TakeSnapshot(ctx context.Context, tenantID string) (*PortfolioSnapshot, error)
-}
-
-// PortfolioSummary is the computed read model returned by GET /v1/investments/summary.
-type PortfolioSummary struct {
-    TotalValueCents    int64               `json:"total_value_cents"`
-    Currency           string              `json:"currency"`
-    AllocationByType   map[string]int64    `json:"allocation_by_type"`
-    Positions          []Position          `json:"positions"`
+// TenantAssetConfigRepository defines persistence for per-tenant asset overrides.
+type TenantAssetConfigRepository interface {
+    Upsert(ctx context.Context, tenantID string, input UpsertTenantAssetConfigInput) (*TenantAssetConfig, error)
+    GetByAssetID(ctx context.Context, tenantID, assetID string) (*TenantAssetConfig, error)
+    ListByTenant(ctx context.Context, tenantID string) ([]TenantAssetConfig, error)
+    Delete(ctx context.Context, tenantID, assetID string) error
 }
 ```
+
+### SQL queries (sqlc) — reference only; implemented in Task 3.4
+
+```sql
+-- name: CreateAsset :one
+-- name: GetAssetByID :one
+-- name: GetAssetByTicker :one
+-- name: ListAssets :many
+-- name: DeleteAsset :exec
+-- name: UpsertTenantAssetConfig :one
+-- name: GetTenantAssetConfigByAssetID :one
+-- name: ListTenantAssetConfigs :many
+-- name: SoftDeleteTenantAssetConfig :exec
+-- name: GetAssetWithTenantConfig :one   (COALESCE merge — see ADR §2.7)
+```
+
+### Error cases to handle
+
+| Scenario              | Sentinel Error              | HTTP Status |
+| --------------------- | --------------------------- | ----------- |
+| Asset not found       | `domain.ErrAssetNotFound`   | `404`       |
+| Config not found      | `domain.ErrAssetConfigNotFound` | `404`   |
+| Tenant mismatch       | `domain.ErrForbidden`       | `403`       |
+| Duplicate ticker      | unique constraint wrapped   | `409`       |
 
 ---
 
 ## 5. Acceptance Criteria
 
-- [ ] `internal/domain/investment.go` compiles with zero errors.
-- [ ] All exported types have Go doc comments.
-- [ ] All repository interfaces include `context.Context` as first parameter.
-- [ ] Every mutating repository method passes `tenantID` for tenant isolation.
-- [ ] `AssetRepository.List` has no `tenantID` (global catalogue — justified by ADR 3.1).
-- [ ] `internal/domain/investment_test.go` covers any domain validation helpers.
-- [ ] `golangci-lint run ./...` passes with zero issues.
+- [ ] `AssetType` has all six constants matching ADR enum values exactly.
+- [ ] `Asset` struct has `ISIN *string`, `Details *string` (nullable as per ADR).
+- [ ] `TenantAssetConfig` has nullable `Name`, `Currency`, `Details` fields.
+- [ ] `AssetRepository` interface is defined in `internal/domain/`.
+- [ ] `TenantAssetConfigRepository` interface is defined in `internal/domain/`.
+- [ ] Sentinel errors are exported from `internal/domain/`.
+- [ ] Unit tests cover all `AssetType` constant values.
+- [ ] `make task-check` passes.
 - [ ] `docs/ROADMAP.md` row 3.3 updated to ✅ `done`.
 
 ---
 
-## 6. Dependencies
+## 6. Change Log
 
-| Dependency                                 | Type     | Status     |
-| ------------------------------------------ | -------- | ---------- |
-| Task 3.1 — ADR finalises entity shapes     | Upstream | 🔵 backlog |
-| `domain.ErrNotFound` already defined       | Upstream | ✅ done    |
-| `domain.ErrForbidden` already defined      | Upstream | ✅ done    |
-
----
-
-## 7. Testing Plan
-
-### Unit tests (`_test.go`, no build tag)
-
-- **File:** `internal/domain/investment_test.go`
-- **Cases:**
-  - `AssetType` constants have correct string values.
-  - Confirm `PortfolioSummary` fields are correctly zero-valued upon init (if helper constructors are added).
-
-### Integration tests
-
-N/A — this task produces only domain types and interfaces.
-
----
-
-## 8. Open Questions
-
-| # | Question                                                                             | Owner | Resolution |
-| - | ------------------------------------------------------------------------------------ | ----- | ---------- |
-| 1 | Should `Quantity` be `string` (to avoid float) or a dedicated `decimal.Decimal` type? | —   | Decide during Task 3.1 ADR |
-| 2 | Should `PortfolioSummary.Currency` be the tenant's base currency or configurable?    | —     | —          |
-
----
-
-## 9. Change Log
-
-| Date       | Author | Change                    |
-| ---------- | ------ | ------------------------- |
-| 2026-03-13 | —      | Task created from roadmap |
+| Date       | Author | Change                                 |
+| ---------- | ------ | -------------------------------------- |
+| 2026-03-13 | —      | Task created; rewritten for ADR v3 (Asset + TenantAssetConfig only) |

@@ -93,22 +93,26 @@
 
 ## Phase 3 — Investment Portfolio Tracking
 
-> **Goal:** Add investment accounts with position tracking, asset allocation views, and monthly performance snapshots. Read-heavy; no monetary mutation beyond deposits/withdrawals recorded as transactions.
-> **Status:** 🔵 `backlog` | **Last Updated:** 2026-03-06
+> **Goal:** Add investment accounts with position tracking, asset allocation views, income receivables, and periodic portfolio snapshots. Read-heavy; no monetary mutation beyond deposits/withdrawals recorded as transactions.
+> **Status:** 🟡 `in-progress` | **Last Updated:** 2026-03-13
 
 | # | Task | Status | Last Updated | Notes |
 | --- | --- | --- | --- | --- |
-| 3.1 | [ADR: investment data model](tasks/TASK_3.1_adr-investment-data-model.md) | 🔵 `backlog` | 2026-03-13 | |
-| 3.2 | [Goose migrations — `assets`, `positions`, `portfolio_snapshots`](tasks/TASK_3.2_db-migrations-investment.md) | 🔵 `backlog` | 2026-03-13 | |
-| 3.3 | [`domain/investment.go` — entities + repository interfaces](tasks/TASK_3.3_domain-investment.md) | 🔵 `backlog` | 2026-03-13 | |
-| 3.4 | [`sqlc` query files for investment entities](tasks/TASK_3.4_sqlc-queries-investment.md) | 🔵 `backlog` | 2026-03-13 | |
-| 3.5 | [`repository/investment_repo.go` + integration tests](tasks/TASK_3.5_repository-investment.md) | 🔵 `backlog` | 2026-03-13 | |
-| 3.6 | [`service/investment_service.go` + unit tests](tasks/TASK_3.6_service-investment.md) | 🔵 `backlog` | 2026-03-13 | Position upsert, allocation calc |
-| 3.7 | [`handler/investment_handler.go` — positions, allocation, history](tasks/TASK_3.7_handler-investment.md) | 🔵 `backlog` | 2026-03-13 | |
-| 3.8 | [Monthly snapshot job (`portfolio_snapshots`)](tasks/TASK_3.8_snapshot-job.md) | 🔵 `backlog` | 2026-03-13 | Triggered by scheduler or cron |
-| 3.9 | [`GET /v1/investments/summary` — net worth + allocation breakdown](tasks/TASK_3.9_summary-endpoint.md) | 🔵 `backlog` | 2026-03-13 | |
-| 3.10 | [Currency conversion hook (extensible; no external API in MVP)](tasks/TASK_3.10_currency-conversion-hook.md) | 🔵 `backlog` | 2026-03-13 | Static rate table for MVP; hook ready for live feed |
-
+| 3.1  | [ADR: investment data model](tasks/TASK_3.1_adr-investment-data-model.md) | ✅ `done` | 2026-03-13 | `docs/ADR-003-investment-data-model.md` v3 |
+| 3.2  | [DB migrations — all 6 tables + 3 enums](tasks/TASK_3.2_db-migrations-investment.md) | 🔵 `backlog` | 2026-03-13 | `00010`–`00014` migration files |
+| 3.3  | [Domain: `Asset` + `TenantAssetConfig` entities + interfaces](tasks/TASK_3.3_domain-investment.md) | 🔵 `backlog` | 2026-03-13 | `internal/domain/asset.go` |
+| 3.4  | [SQLC queries: `assets` + `tenant_asset_configs`](tasks/TASK_3.4_sqlc-queries-investment.md) | 🔵 `backlog` | 2026-03-13 | Includes COALESCE merge query (ADR §2.7) |
+| 3.5  | [Repository: `AssetRepository` + `TenantAssetConfigRepository`](tasks/TASK_3.5_repository-investment.md) | 🔵 `backlog` | 2026-03-13 | |
+| 3.6  | [Service: `InvestmentService` — position CRUD, allocation, receivable lifecycle](tasks/TASK_3.6_service-investment.md) | 🔵 `backlog` | 2026-03-13 | |
+| 3.7  | [HTTP handlers: asset catalogue + tenant asset configs](tasks/TASK_3.7_handler-investment.md) | 🔵 `backlog` | 2026-03-13 | `GET/POST /v1/assets`, `PUT /v1/me/asset-configs/{asset_id}` |
+| 3.8  | [Portfolio snapshot job (`SNAPSHOT_CRON_SCHEDULE`)](tasks/TASK_3.8_snapshot-job.md) | 🔵 `backlog` | 2026-03-13 | Default `"0 5 1 * *"` |
+| 3.9  | [Domain: position family (`Position`, `PositionSnapshot`, `PositionIncomeEvent`, `PortfolioSnapshot`)](tasks/TASK_3.9_summary-endpoint.md) | 🔵 `backlog` | 2026-03-13 | `internal/domain/position.go` |
+| 3.10 | [CurrencyConverter interface + static rate implementation](tasks/TASK_3.10_currency-conversion-hook.md) | 🔵 `backlog` | 2026-03-13 | Integer-cents arithmetic; no external API in MVP |
+| 3.11 | [SQLC queries: position family (positions, snapshots, income events, portfolio snapshots)](tasks/TASK_3.11_sqlc-queries-position-family.md) | 🔵 `backlog` | 2026-03-13 | Includes `ListPositionsDueIncome` for income scheduler |
+| 3.12 | [Repository: position family (4 repos + integration tests)](tasks/TASK_3.12_repository-position-family.md) | 🔵 `backlog` | 2026-03-13 | |
+| 3.13 | [Income scheduler service (background goroutine — ADR §9)](tasks/TASK_3.13_income-scheduler-service.md) | 🔵 `backlog` | 2026-03-13 | `INCOME_SCHEDULER_INTERVAL` ENV VAR; default `1h` |
+| 3.14 | [HTTP handlers: positions, income events & portfolio summary](tasks/TASK_3.14_handler-position-income.md) | 🔵 `backlog` | 2026-03-13 | `GET /v1/investments/summary`, receivable lifecycle endpoints |
+| 3.15 | [Mock factory updates + Phase 3 smoke tests](tasks/TASK_3.15_smoke-tests-phase3.md) | 🔵 `backlog` | 2026-03-13 | 6 new mocks; 4 smoke test scenarios |
 ---
 
 ## Phase 4 — Billing, Plans & Monetisation

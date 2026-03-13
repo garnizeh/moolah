@@ -1,7 +1,7 @@
 # Task 3.1 — ADR: Investment Data Model (Positions, Assets, Snapshots)
 
 > **Roadmap Ref:** Phase 3 — Investment Portfolio Tracking › Architecture Decision
-> **Status:** 🔵 `backlog`
+> **Status:** ✅ `done`
 > **Last Updated:** 2026-03-13
 > **Assignee:** —
 > **Estimated Effort:** S
@@ -116,13 +116,13 @@ Tenant (1) ──< PortfolioSnapshot (N)
 
 ## 5. Acceptance Criteria
 
-- [ ] `docs/ADR-003-investment-data-model.md` is committed and contains all required sections.
-- [ ] ERD Mermaid diagram is valid and renders in GitHub Markdown.
-- [ ] All three entities (`assets`, `positions`, `portfolio_snapshots`) are fully specified with column names, types, and constraints.
-- [ ] Tenant isolation approach is explicitly documented.
-- [ ] Soft-delete policy is stated.
-- [ ] Currency/price-source decision is documented.
-- [ ] `docs/ROADMAP.md` row 3.1 updated to ✅ `done`.
+- [x] `docs/ADR-003-investment-data-model.md` is committed and contains all required sections.
+- [x] ERD Mermaid diagram is valid and renders in GitHub Markdown.
+- [x] All three entities (`assets`, `positions`, `portfolio_snapshots`) are fully specified with column names, types, and constraints.
+- [x] Tenant isolation approach is explicitly documented.
+- [x] Soft-delete policy is stated.
+- [x] Currency/price-source decision is documented.
+- [x] `docs/ROADMAP.md` row 3.1 updated to ✅ `done`.
 
 ---
 
@@ -163,3 +163,5 @@ N/A — no code changes.
 | Date       | Author | Change                    |
 | ---------- | ------ | ------------------------- |
 | 2026-03-13 | —      | Task created from roadmap |
+| 2026-03-13 | —      | ADR written; all acceptance criteria met; status → ✅ done |
+| 2026-03-13 | —      | ADR revised to v2: configurable snapshot cron (ENV VAR), `position_snapshots` history table, fixed-income & yield model, `position_income_events` receivables ledger, `income_source` asset type, `details` field on assets, job-as-asset pattern |
