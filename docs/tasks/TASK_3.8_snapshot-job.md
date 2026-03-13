@@ -1,24 +1,26 @@
-# Task 3.8 — Monthly Portfolio Snapshot Job (`portfolio_snapshots`)
+# Task 3.8 — Portfolio Snapshot Job (`portfolio_snapshots` — `SNAPSHOT_CRON_SCHEDULE`)
 
 > **Roadmap Ref:** Phase 3 — Investment Portfolio Tracking › Background Jobs
 > **Status:** 🔵 `backlog`
 > **Last Updated:** 2026-03-13
 > **Assignee:** —
-> **Estimated Effort:** M
+> **Estimated Effort:** S
 
 ---
 
 ## 1. Summary
 
-Implement a background job — `SnapshotJob` — that automatically generates a `PortfolioSnapshot` for every active tenant at the start of each month. The job uses the `InvestmentService.TakeSnapshot` method (Task 3.6) and is wired into the application's startup lifecycle via a dedicated goroutine. For Phase 3, the scheduler is a simple in-process ticker; a more robust distributed cron (e.g., Redis-backed) is deferred to Phase 5.
+Implement `PortfolioSnapshotJob` — a background goroutine that calls `InvestmentService.TakeSnapshot` for every active tenant on a configurable schedule. The cron schedule is read from the `SNAPSHOT_CRON_SCHEDULE` environment variable (default: `0 5 1 * *` — 00:05 UTC on the 1st of each month). See ADR-003 §2.4 and §8.
 
 ---
 
 ## 2. Context & Motivation
 
-Monthly snapshots provide the historical data required for portfolio performance charting. Without automated snapshotting, tenants could only see their current position value — not how it evolved over time. The Phase 2 pattern for background work (`InvoiceCloser`) used a synchronous endpoint trigger; portfolio snapshotting is better suited to an async job because it affects all tenants simultaneously and doesn't require a per-tenant manual action.
+Monthly snapshots supply the time-series data needed for portfolio performance charts. Without automated snapshotting, only the tenant's current position values are available — not how the portfolio evolved. The job must be idempotent: if a snapshot already exists for a given `(tenant_id, snapshot_date)`, it logs and skips (the unique DB constraint prevents duplicates).
 
-The job must be safe to run concurrently with normal API traffic and must be idempotent — running it twice in the same month for the same tenant must produce at most one snapshot (enforced by the `UNIQUE(tenant_id, snapshot_date)` constraint in the DB).
+The schedule is operator-controlled via `SNAPSHOT_CRON_SCHEDULE` so environments can run more or less frequently without code changes. This is distinct from the income scheduler (Task 3.13), which runs continuously and fires on `next_income_at` timestamps.
+
+**Reference:** ADR-003 §2.4, §8.
 
 ---
 
@@ -26,19 +28,20 @@ The job must be safe to run concurrently with normal API traffic and must be ide
 
 ### In scope
 
-- [ ] `internal/service/snapshot_job.go` — `SnapshotJob` struct with `Run(ctx context.Context)` method.
-- [ ] `internal/service/snapshot_job_test.go` — unit tests with mocked service and tenant list.
-- [ ] Wiring in `cmd/api/main.go`: start the job goroutine at server startup.
-- [ ] Graceful shutdown: the job listens on `ctx.Done()` for clean exit.
-- [ ] Structured logging on each tenant processed, with errors logged but not fatal.
-- [ ] Idempotency: if snapshot already exists for the month (unique constraint), log and skip.
+- [ ] `internal/service/snapshot_job.go` — `PortfolioSnapshotJob` struct with `Run(ctx context.Context)`.
+- [ ] `internal/service/snapshot_job_test.go` — unit tests (mocked service + tenant list).
+- [ ] Schedule parsed from `SNAPSHOT_CRON_SCHEDULE` ENV VAR using `robfig/cron` (or equivalent); default `"0 5 1 * *"`.
+- [ ] `Run` iterates all active tenants via `domain.TenantRepository.ListActive`.
+- [ ] Graceful shutdown: `Run` listens on `ctx.Done()`.
+- [ ] Structured logging: log tenant processed, errors logged but not fatal.
+- [ ] Wiring in `cmd/api/main.go`: start goroutine after server starts.
 
 ### Out of scope
 
+- Income scheduler (Task 3.13 — separate goroutine with different polling logic).
 - Distributed lock / Redis-backed cron (deferred to Phase 5).
-- Per-tenant configurable snapshot frequency.
-- Backfilling historical snapshots for existing tenants (separate migration/script).
-- Manual trigger endpoint (available via `POST /v1/accounts/{id}/snapshot` in Task 3.7).
+- Backfilling historical snapshots.
+- Per-tenant configurable schedule (global ENV VAR is sufficient per ADR §8).
 
 ---
 
@@ -46,130 +49,66 @@ The job must be safe to run concurrently with normal API traffic and must be ide
 
 ### Files to create / modify
 
-| Action | Path                                       | Purpose                                                 |
-| ------ | ------------------------------------------ | ------------------------------------------------------- |
-| CREATE | `internal/service/snapshot_job.go`         | Background job struct + ticker loop                     |
-| CREATE | `internal/service/snapshot_job_test.go`    | Unit tests (mock service, mock tenant list)             |
-| MODIFY | `cmd/api/main.go`                          | Start job goroutine; pass cancel context from server    |
+| Action | Path                                       | Purpose                                           |
+| ------ | ------------------------------------------ | ------------------------------------------------- |
+| CREATE | `internal/service/snapshot_job.go`         | Cron-driven goroutine                             |
+| CREATE | `internal/service/snapshot_job_test.go`    | Unit tests (mock service + tenant list)           |
+| MODIFY | `cmd/api/main.go`                          | Start goroutine; pass cancel context from server  |
+| MODIFY | `internal/config/config.go`                | Add `SnapshotCronSchedule string` field           |
 
-### Struct and Run loop
+### Struct
 
 ```go
-// SnapshotJob generates monthly portfolio snapshots for all active tenants.
-type SnapshotJob struct {
+type PortfolioSnapshotJob struct {
     investmentSvc domain.InvestmentService
     tenantRepo    domain.TenantRepository
     logger        *slog.Logger
-    interval      time.Duration // default: 24h; checked daily, fires on month boundary
+    schedule      string // e.g. "0 5 1 * *"
 }
 
-func NewSnapshotJob(
+func NewPortfolioSnapshotJob(
     investmentSvc domain.InvestmentService,
     tenantRepo    domain.TenantRepository,
     logger        *slog.Logger,
-) *SnapshotJob {
-    return &SnapshotJob{
-        investmentSvc: investmentSvc,
-        tenantRepo:    tenantRepo,
-        logger:        logger,
-        interval:      24 * time.Hour,
-    }
-}
+    schedule      string,
+) *PortfolioSnapshotJob { ... }
 
-// Run starts the daily ticker loop. It returns when ctx is cancelled.
-func (j *SnapshotJob) Run(ctx context.Context) {
-    ticker := time.NewTicker(j.interval)
-    defer ticker.Stop()
-    for {
-        select {
-        case <-ctx.Done():
-            j.logger.InfoContext(ctx, "snapshot_job: shutting down")
-            return
-        case t := <-ticker.C:
-            if t.Day() == 1 { // first day of the month
-                j.runOnce(ctx)
-            }
-        }
-    }
-}
-
-func (j *SnapshotJob) runOnce(ctx context.Context) {
-    tenants, err := j.tenantRepo.ListAll(ctx)
-    if err != nil {
-        j.logger.ErrorContext(ctx, "snapshot_job: failed to list tenants", "error", err)
-        return
-    }
-    for _, tenant := range tenants {
-        if _, err := j.investmentSvc.TakeSnapshot(ctx, tenant.ID); err != nil {
-            j.logger.WarnContext(ctx, "snapshot_job: failed to take snapshot",
-                "tenant_id", tenant.ID, "error", err)
-        }
-    }
-}
+// Run starts the cron loop. Blocks until ctx is cancelled.
+func (j *PortfolioSnapshotJob) Run(ctx context.Context) error { ... }
 ```
 
-### Wiring in `main.go`
+### Config
 
 ```go
-snapshotJob := service.NewSnapshotJob(investmentSvc, tenantRepo, logger)
-go snapshotJob.Run(ctx) // ctx is the application-level context tied to OS signal
+// internal/config/config.go
+SnapshotCronSchedule string `env:"SNAPSHOT_CRON_SCHEDULE" envDefault:"0 5 1 * *"`
 ```
+
+### Error cases to handle
+
+| Scenario                         | Action                                          |
+| -------------------------------- | ----------------------------------------------- |
+| Snapshot already exists          | Log "snapshot exists, skipping" and continue    |
+| `TakeSnapshot` returns any error | Log error with tenant_id; continue to next tenant |
+| `ctx` cancelled                  | Exit `Run` loop cleanly                         |
 
 ---
 
 ## 5. Acceptance Criteria
 
-- [ ] `SnapshotJob.Run` starts without blocking the HTTP server.
-- [ ] Job fires once on the first day of the month only (not every 24 h on other days).
-- [ ] Errors in individual tenant snapshots are logged but do not abort the full run.
-- [ ] `ctx.Done()` causes the job to exit cleanly within one tick period.
-- [ ] Idempotency: running `runOnce` twice in the same month for the same tenant produces only one snapshot (DB uniqueness enforced; error logged and skipped).
-- [ ] Unit tests cover: tick fires on day 1 → all tenants processed; tick fires on day 15 → no-op; tenant snapshot error → loop continues.
-- [ ] `golangci-lint run ./...` passes with zero issues.
-- [ ] `gosec ./...` passes with zero issues.
+- [ ] `PortfolioSnapshotJob.Run` starts the cron scheduler using `SNAPSHOT_CRON_SCHEDULE` from config.
+- [ ] Default schedule is `"0 5 1 * *"`.
+- [ ] Running twice in the same period does not create duplicate snapshots (idempotent).
+- [ ] A `TakeSnapshot` error for one tenant does not abort the job for other tenants.
+- [ ] `Run` exits cleanly when `ctx` is cancelled.
+- [ ] Unit tests cover: successful run, snapshot-already-exists skipping, error-per-tenant isolation, context cancellation.
+- [ ] `make task-check` passes.
 - [ ] `docs/ROADMAP.md` row 3.8 updated to ✅ `done`.
 
 ---
 
-## 6. Dependencies
+## 6. Change Log
 
-| Dependency                                                    | Type     | Status     |
-| ------------------------------------------------------------- | -------- | ---------- |
-| Task 3.6 — `InvestmentService.TakeSnapshot` implemented       | Upstream | 🔵 backlog |
-| `domain.TenantRepository.ListAll` method (may need adding)    | Upstream | 🔵 backlog |
-| Application-level `context.Context` with cancel in `main.go`  | Upstream | ✅ done    |
-
----
-
-## 7. Testing Plan
-
-### Unit tests (`_test.go`, no build tag)
-
-- **File:** `internal/service/snapshot_job_test.go`
-- **Cases:**
-  - `runOnce` calls `TakeSnapshot` for each tenant returned by `ListAll`.
-  - `runOnce` logs warn and continues when one tenant fails.
-  - `Run` exits when context is cancelled.
-  - `Run` does not call `runOnce` when ticker fires on day != 1.
-
-### Integration tests
-
-N/A for the scheduler itself. End-to-end flow (snapshot appears in DB after job fires) can be added in a dedicated integration test if needed.
-
----
-
-## 8. Open Questions
-
-| # | Question                                                                                      | Owner | Resolution |
-| - | --------------------------------------------------------------------------------------------- | ----- | ---------- |
-| 1 | Should `TenantRepository` expose a `ListAll` method, or should the job use `AdminService`?   | —     | Prefer `tenantRepo.ListAll(ctx)` to avoid coupling to admin layer |
-| 2 | Should a missed month (e.g., server was down on day 1) trigger a backfill on next startup?   | —     | Not for MVP; document as known limitation |
-| 3 | Should the interval be configurable via env var for testing?                                  | —     | Yes — add `WithInterval(d time.Duration)` functional option |
-
----
-
-## 9. Change Log
-
-| Date       | Author | Change                    |
-| ---------- | ------ | ------------------------- |
-| 2026-03-13 | —      | Task created from roadmap |
+| Date       | Author | Change                                             |
+| ---------- | ------ | -------------------------------------------------- |
+| 2026-03-13 | —      | Task created; updated for ADR v3 (SNAPSHOT_CRON_SCHEDULE ENV VAR; income scheduler moved to Task 3.13) |
