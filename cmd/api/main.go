@@ -129,6 +129,7 @@ func run(ctx context.Context, cfg *config.Config, showConfig bool) error {
 	categorySvc := service.NewCategoryService(categoryRepo, auditRepo)
 	transactionSvc := service.NewTransactionService(transactionRepo, accountRepo, categoryRepo, auditRepo)
 	masterPurchaseSvc := service.NewMasterPurchaseService(masterPurchaseRepo, accountRepo, categoryRepo)
+	invoiceCloser := service.NewInvoiceCloser(masterPurchaseRepo, transactionRepo, auditRepo, accountRepo, masterPurchaseSvc, pool)
 	adminSvc := service.NewAdminService(adminTenantRepo, adminUserRepo, adminAuditRepo, auditRepo)
 
 	rateLimiterStore := middleware.NewRateLimiterStore()
@@ -143,6 +144,7 @@ func run(ctx context.Context, cfg *config.Config, showConfig bool) error {
 		categorySvc,
 		transactionSvc,
 		masterPurchaseSvc,
+		invoiceCloser,
 		adminSvc,
 		idempotencyStore,
 		rateLimiterStore,

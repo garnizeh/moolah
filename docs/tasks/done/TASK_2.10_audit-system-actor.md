@@ -1,7 +1,7 @@
 # Task 2.10 — Audit Trail: `SYSTEM` Actor for Auto-Generated Transactions
 
 > **Roadmap Ref:** Phase 2 — Credit Card & Installment Tracking › Infrastructure
-> **Status:** 🔵 `backlog`
+> **Status:** ✅ `done`
 > **Last Updated:** 2026-03-12
 > **Assignee:** —
 > **Estimated Effort:** S
@@ -24,9 +24,9 @@ The Phase 1 audit log records `actor_id` as the authenticated user's ULID. When 
 
 ### In scope
 
-- [ ] Define `ActorSystem = "SYSTEM"` constant in `internal/domain/audit.go` (or a new `domain/actor.go`).
-- [ ] Update `InvoiceCloser.CloseInvoice` (Task 2.7) to pass `ActorSystem` when creating audit log entries for auto-generated transactions.
-- [ ] Unit tests verifying that audit logs created by `InvoiceCloser` carry `actor_id = "SYSTEM"`.
+- [x] Define `ActorSystem = "SYSTEM"` constant in `internal/domain/audit.go` (or a new `domain/actor.go`).
+- [x] Update `InvoiceCloser.CloseInvoice` (Task 2.7) to pass `ActorSystem` when creating audit log entries for auto-generated transactions.
+- [x] Unit tests verifying that audit logs created by `InvoiceCloser` carry `actor_id = "SYSTEM"`.
 
 ### Out of scope
 
@@ -81,14 +81,14 @@ err = c.auditRepo.Create(ctx, domain.CreateAuditLogInput{
 
 ## 5. Acceptance Criteria
 
-- [ ] `domain.ActorSystem = "SYSTEM"` constant defined and exported.
-- [ ] `InvoiceCloser` uses `domain.ActorSystem` — no hardcoded string literals.
-- [ ] Unit tests on `InvoiceCloser` verify mock `auditRepo.Create` is called with `ActorID == domain.ActorSystem`.
-- [ ] Audit log `metadata` includes `master_purchase_id` and `installment_number` for traceability.
-- [ ] Existing Phase 1 audit log tests are unaffected.
-- [ ] `golangci-lint run ./...` passes with zero issues.
-- [ ] `gosec ./...` passes with zero issues.
-- [ ] `docs/ROADMAP.md` row 2.10 updated to ✅ `done`.
+- [x] `domain.ActorSystem = "SYSTEM"` constant defined and exported.
+- [x] `InvoiceCloser` uses `domain.ActorSystem` — no hardcoded string literals.
+- [x] Unit tests on `InvoiceCloser` verify mock `auditRepo.Create` is called with `ActorID == domain.ActorSystem`.
+- [x] Audit log `metadata` includes `master_purchase_id` and `installment_number` for traceability.
+- [x] Existing Phase 1 audit log tests are unaffected.
+- [x] `golangci-lint run ./...` passes with zero issues.
+- [x] `gosec ./...` passes with zero issues.
+- [x] `docs/ROADMAP.md` row 2.10 updated to ✅ `done`.
 
 ---
 

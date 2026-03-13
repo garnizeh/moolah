@@ -140,6 +140,7 @@ func TestSmoke_Phase1HappyPath(t *testing.T) {
 	categorySvc := service.NewCategoryService(categoryRepo, auditRepo)
 	transactionSvc := service.NewTransactionService(transactionRepo, accountRepo, categoryRepo, auditRepo)
 	masterPurchaseSvc := service.NewMasterPurchaseService(masterPurchaseRepo, accountRepo, categoryRepo)
+	invoiceCloser := service.NewInvoiceCloser(masterPurchaseRepo, transactionRepo, auditRepo, accountRepo, masterPurchaseSvc, pgDB.Pool)
 	adminSvc := service.NewAdminService(adminTenantRepo, adminUserRepo, adminAuditRepo, auditRepo)
 
 	tokenParser := paseto.NewTokenParser(pasetoKey)
@@ -153,6 +154,7 @@ func TestSmoke_Phase1HappyPath(t *testing.T) {
 		categorySvc,
 		transactionSvc,
 		masterPurchaseSvc,
+		invoiceCloser,
 		adminSvc,
 		idempotencyStore,
 		rateLimiterStore,
@@ -214,6 +216,10 @@ func TestSmoke_Phase1HappyPath(t *testing.T) {
 	accountKey := ulid.New()
 	categoryKey := ulid.New()
 	transactionKey := ulid.New()
+	tenantPatchKey := ulid.New()
+	accountPatchKey := ulid.New()
+	categoryPatchKey := ulid.New()
+	transactionPatchKey := ulid.New()
 	otpRequestKey := ulid.New()
 	otpVerifyKey := ulid.New()
 	sysOTPRequestKey := ulid.New()
@@ -273,7 +279,7 @@ func TestSmoke_Phase1HappyPath(t *testing.T) {
 	t.Run("04_patch_tenant_me", func(t *testing.T) {
 		newName := "Updated Smoke Household"
 		resp := do(t, http.MethodPatch, "/v1/tenants/me",
-			map[string]any{"name": &newName}, accessToken, "")
+			map[string]any{"name": &newName}, accessToken, tenantPatchKey)
 		defer resp.Body.Close()
 		var tenant domain.Tenant
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
@@ -350,7 +356,7 @@ func TestSmoke_Phase1HappyPath(t *testing.T) {
 	t.Run("08_update_account", func(t *testing.T) {
 		newName := "Smoke Updated Checking"
 		resp := do(t, http.MethodPatch, "/v1/accounts/"+accountID,
-			map[string]any{"name": &newName}, accessToken, "")
+			map[string]any{"name": &newName}, accessToken, accountPatchKey)
 		defer resp.Body.Close()
 		var acc domain.Account
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
@@ -398,7 +404,7 @@ func TestSmoke_Phase1HappyPath(t *testing.T) {
 	t.Run("12_update_category", func(t *testing.T) {
 		newName := "Smoke Updated Groceries"
 		resp := do(t, http.MethodPatch, "/v1/categories/"+categoryID,
-			map[string]any{"name": &newName}, accessToken, "")
+			map[string]any{"name": &newName}, accessToken, categoryPatchKey)
 		defer resp.Body.Close()
 		var cat domain.Category
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
@@ -450,7 +456,7 @@ func TestSmoke_Phase1HappyPath(t *testing.T) {
 	t.Run("16_update_transaction", func(t *testing.T) {
 		newDesc := "Smoke updated grocery run"
 		resp := do(t, http.MethodPatch, "/v1/transactions/"+transactionID,
-			map[string]any{"description": &newDesc}, accessToken, "")
+			map[string]any{"description": &newDesc}, accessToken, transactionPatchKey)
 		defer resp.Body.Close()
 		var tx domain.Transaction
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
@@ -526,5 +532,380 @@ func TestSmoke_Phase1HappyPath(t *testing.T) {
 		resp := do(t, http.MethodGet, "/v1/admin/audit-logs", nil, sysadminToken, "")
 		require.NoError(t, resp.Body.Close())
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
+	})
+}
+
+// TestSmoke_Phase2HappyPath exercises the full Phase 2 API journey end-to-end.
+// It covers Credit Card accounts, Master Purchases (installments), and Invoice Closing.
+//
+// Journey:
+//
+//	00: Health Check
+//	01-02: Auth (OTP)
+//	03: Create Credit Card Account
+//	04: Create Category
+//	05: Create Master Purchase (3 installments) -> capture mpID, assert projection
+//	05b: Idempotency Replay (Master Purchase)
+//	06: List Master Purchases
+//	07: Get Master Purchase by ID -> verify projected_schedule
+//	08: Get Master Purchase Projection (separate endpoint)
+//	09: Update Master Purchase
+//	10: Close Invoice -> processed_count=1
+//	11: List Transactions -> assert materialized installment exists
+//	12: List Audit Logs -> assert SYSTEM actor entry
+func TestSmoke_Phase2HappyPath(t *testing.T) {
+	t.Parallel()
+
+	ctx := context.Background()
+
+	// ── 1. Infrastructure containers ────────────────────────────────────────
+	pgDB := containers.NewPostgresDB(t)
+	rdb := containers.NewRedisClient(t)
+
+	// ── 2. Crypto & mailer ──────────────────────────────────────────────────
+	pasetoKey, err := paseto.V4SymmetricKeyFromHex(testPasetoHexKey)
+	require.NoError(t, err, "failed to parse test PASETO key")
+
+	capMailer := mailer.NewCapturingMailer()
+
+	// ── 3. Seed: tenant + admin user ────────────────────────────────────────
+	tenantID := ulid.New()
+	_, err = pgDB.Queries.CreateTenant(ctx, sqlc.CreateTenantParams{
+		ID:   tenantID,
+		Name: "Phase 2 Smoke Household",
+		Plan: sqlc.TenantPlanFree,
+	})
+	require.NoError(t, err, "failed to seed tenant")
+
+	adminEmail := fmt.Sprintf("admin-smoke-p2-%s@example.com", tenantID)
+	adminID := ulid.New()
+	_, err = pgDB.Queries.CreateUser(ctx, sqlc.CreateUserParams{
+		ID:       adminID,
+		TenantID: tenantID,
+		Email:    adminEmail,
+		Name:     "P2 Smoke Admin",
+		Role:     sqlc.UserRoleAdmin,
+	})
+	require.NoError(t, err, "failed to seed admin user")
+
+	// ── 4. Wire repos → services ────────────────────────────────────────────
+	authRepo := repository.NewAuthRepository(pgDB.Queries)
+	tenantRepo := repository.NewTenantRepository(pgDB.Queries)
+	userRepo := repository.NewUserRepository(pgDB.Queries)
+	accountRepo := repository.NewAccountRepository(pgDB.Queries)
+	categoryRepo := repository.NewCategoryRepository(pgDB.Queries)
+	transactionRepo := repository.NewTransactionRepository(pgDB.Queries)
+	masterPurchaseRepo := repository.NewMasterPurchaseRepository(pgDB.Queries)
+	auditRepo := repository.NewAuditRepository(pgDB.Queries)
+	adminTenantRepo := repository.NewAdminTenantRepository(pgDB.Queries)
+	adminUserRepo := repository.NewAdminUserRepository(pgDB.Queries)
+	adminAuditRepo := repository.NewAdminAuditRepository(pgDB.Queries)
+
+	idempotencyStore := idempotency.NewRedisStore(rdb)
+	rateLimiterStore := middleware.NewRateLimiterStore()
+	t.Cleanup(rateLimiterStore.Close)
+
+	authSvc := service.NewAuthService(authRepo, userRepo, auditRepo, capMailer, pasetoKey)
+	tenantSvc := service.NewTenantService(tenantRepo, userRepo, auditRepo)
+	accountSvc := service.NewAccountService(accountRepo, userRepo, auditRepo)
+	categorySvc := service.NewCategoryService(categoryRepo, auditRepo)
+	transactionSvc := service.NewTransactionService(transactionRepo, accountRepo, categoryRepo, auditRepo)
+	masterPurchaseSvc := service.NewMasterPurchaseService(masterPurchaseRepo, accountRepo, categoryRepo)
+	invoiceCloser := service.NewInvoiceCloser(masterPurchaseRepo, transactionRepo, auditRepo, accountRepo, masterPurchaseSvc, pgDB.Pool)
+	adminSvc := service.NewAdminService(adminTenantRepo, adminUserRepo, adminAuditRepo, auditRepo)
+
+	tokenParser := paseto.NewTokenParser(pasetoKey)
+
+	// ── 5. Build server & test HTTP server ───────────────────────────────────
+	srv := server.New(
+		"0",
+		authSvc,
+		tenantSvc,
+		accountSvc,
+		categorySvc,
+		transactionSvc,
+		masterPurchaseSvc,
+		invoiceCloser,
+		adminSvc,
+		idempotencyStore,
+		rateLimiterStore,
+		tokenParser,
+	)
+
+	ts := httptest.NewServer(srv.Handler())
+	t.Cleanup(ts.Close)
+
+	client := ts.Client()
+	base := ts.URL
+
+	// ── Helpers ──────────────────────────────────────────────────────────────
+	do := func(tb testing.TB, method, path string, body any, token, idempotencyKey string) *http.Response {
+		tb.Helper()
+		var buf bytes.Buffer
+		if body != nil {
+			b, encErr := json.Marshal(body)
+			require.NoError(tb, encErr, "failed to marshal request body")
+			buf = *bytes.NewBuffer(b)
+		}
+		req, reqErr := http.NewRequestWithContext(ctx, method, base+path, &buf)
+		require.NoError(tb, reqErr, "failed to build request")
+		req.Header.Set("Content-Type", "application/json")
+		if token != "" {
+			req.Header.Set("Authorization", "Bearer "+token)
+		}
+		if idempotencyKey != "" {
+			req.Header.Set(idempotencyHeader, idempotencyKey)
+		}
+		resp, doErr := client.Do(req)
+		require.NoError(tb, doErr, "HTTP request failed")
+		return resp
+	}
+
+	decodeJSON := func(tb testing.TB, resp *http.Response, target any) {
+		tb.Helper()
+		require.NoError(tb, json.NewDecoder(resp.Body).Decode(target), "failed to decode response body")
+	}
+
+	// ── Journey Variables ────────────────────────────────────────────────────
+	var (
+		accessToken      string
+		accountID        string
+		categoryID       string
+		masterPurchaseID string
+	)
+
+	otpRequestKey := ulid.New()
+	otpVerifyKey := ulid.New()
+	mpKey := ulid.New()
+
+	// ══════════════════════════════════════════════════════════════════════════
+	// 00. HEALTH CHECK
+	// ══════════════════════════════════════════════════════════════════════════
+	t.Run("00_healthz", func(t *testing.T) {
+		resp := do(t, http.MethodGet, "/healthz", nil, "", "")
+		require.NoError(t, resp.Body.Close())
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+	})
+
+	// ══════════════════════════════════════════════════════════════════════════
+	// 01-02. AUTH
+	// ══════════════════════════════════════════════════════════════════════════
+	t.Run("01_auth_otp_request", func(t *testing.T) {
+		resp := do(t, http.MethodPost, "/v1/auth/otp/request", map[string]string{"email": adminEmail}, "", otpRequestKey)
+		require.NoError(t, resp.Body.Close())
+		assert.Equal(t, http.StatusAccepted, resp.StatusCode)
+	})
+
+	t.Run("02_auth_otp_verify", func(t *testing.T) {
+		code := capMailer.OTPFor(adminEmail)
+		require.NotEmpty(t, code)
+		var tokenResp handler.TokenResponse
+		resp := do(t, http.MethodPost, "/v1/auth/otp/verify", map[string]string{"email": adminEmail, "code": code}, "", otpVerifyKey)
+		defer resp.Body.Close()
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+		decodeJSON(t, resp, &tokenResp)
+		accessToken = tokenResp.AccessToken
+		require.NotEmpty(t, accessToken)
+	})
+
+	// ══════════════════════════════════════════════════════════════════════════
+	// 03. CREATE CREDIT CARD ACCOUNT
+	// ══════════════════════════════════════════════════════════════════════════
+	t.Run("03_create_cc_account", func(t *testing.T) {
+		var acc domain.Account
+		resp := do(t, http.MethodPost, "/v1/accounts", map[string]any{
+			"name":          "Smoke Visa",
+			"type":          "credit_card",
+			"currency":      "BRL",
+			"initial_cents": int64(1), // must be > 0 to pass validator:'required'
+		}, accessToken, ulid.New())
+		defer resp.Body.Close()
+
+		require.Equal(t, http.StatusCreated, resp.StatusCode)
+		decodeJSON(t, resp, &acc)
+		accountID = acc.ID
+		require.NotEmpty(t, accountID)
+	})
+
+	// ══════════════════════════════════════════════════════════════════════════
+	// 04. CREATE CATEGORY
+	// ══════════════════════════════════════════════════════════════════════════
+	t.Run("04_create_category", func(t *testing.T) {
+		var cat domain.Category
+		resp := do(t, http.MethodPost, "/v1/categories", map[string]any{
+			"name": "Electronics",
+			"type": "expense",
+		}, accessToken, ulid.New())
+		defer resp.Body.Close()
+		require.Equal(t, http.StatusCreated, resp.StatusCode)
+		decodeJSON(t, resp, &cat)
+		categoryID = cat.ID
+		require.NotEmpty(t, categoryID)
+	})
+
+	// ══════════════════════════════════════════════════════════════════════════
+	// 05. CREATE MASTER PURCHASE
+	// ══════════════════════════════════════════════════════════════════════════
+	t.Run("05_create_master_purchase", func(t *testing.T) {
+		var mp domain.MasterPurchase
+		resp := do(t, http.MethodPost, "/v1/master-purchases", map[string]any{
+			"account_id":             accountID,
+			"category_id":            categoryID,
+			"description":            "New iPhone",
+			"total_amount_cents":     int64(120000), // 1200.00
+			"installment_count":      int32(3),
+			"first_installment_date": time.Now().UTC().Format(time.RFC3339),
+			"closing_day":            int32(28),
+		}, accessToken, mpKey)
+		defer resp.Body.Close()
+
+		require.Equal(t, http.StatusCreated, resp.StatusCode)
+		decodeJSON(t, resp, &mp)
+
+		masterPurchaseID = mp.ID
+		require.NotEmpty(t, masterPurchaseID)
+		assert.Equal(t, int64(120000), mp.TotalAmountCents)
+	})
+
+	t.Run("05b_idempotency_replay_mp", func(t *testing.T) {
+		resp := do(t, http.MethodPost, "/v1/master-purchases", map[string]any{
+			"account_id":             accountID,
+			"category_id":            categoryID,
+			"description":            "New iPhone",
+			"total_amount_cents":     int64(120000),
+			"installment_count":      int32(3),
+			"first_installment_date": time.Now().UTC().Format(time.RFC3339),
+			"closing_day":            int32(28),
+		}, accessToken, mpKey)
+		defer resp.Body.Close()
+		assert.Equal(t, http.StatusCreated, resp.StatusCode)
+		assert.Equal(t, "HIT", resp.Header.Get("X-Cache"))
+	})
+
+	// ══════════════════════════════════════════════════════════════════════════
+	// 06-09. MASTER PURCHASE QUERIES & UPDATES
+	// ══════════════════════════════════════════════════════════════════════════
+	t.Run("06_list_master_purchases", func(t *testing.T) {
+		resp := do(t, http.MethodGet, "/v1/master-purchases", nil, accessToken, "")
+		defer resp.Body.Close()
+		var list []domain.MasterPurchase
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+		decodeJSON(t, resp, &list)
+		assert.NotEmpty(t, list)
+	})
+
+	t.Run("07_get_master_purchase_by_id", func(t *testing.T) {
+		var mp domain.MasterPurchase
+		resp := do(t, http.MethodGet, "/v1/master-purchases/"+masterPurchaseID, nil, accessToken, "")
+		defer resp.Body.Close()
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+		decodeJSON(t, resp, &mp)
+		assert.Equal(t, masterPurchaseID, mp.ID)
+	})
+
+	t.Run("08_get_master_purchase_projection", func(t *testing.T) {
+		resp := do(t, http.MethodGet, "/v1/master-purchases/"+masterPurchaseID+"/projection", nil, accessToken, "")
+		defer resp.Body.Close()
+		var schedule []domain.ProjectedInstallment
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+		decodeJSON(t, resp, &schedule)
+		assert.Len(t, schedule, 3)
+	})
+
+	t.Run("09_update_master_purchase", func(t *testing.T) {
+		newDesc := "iPhone 16 Pro"
+		resp := do(t, http.MethodPatch, "/v1/master-purchases/"+masterPurchaseID, map[string]any{
+			"description": newDesc,
+		}, accessToken, ulid.New())
+		defer resp.Body.Close()
+
+		var mp domain.MasterPurchase
+		require.Equal(t, http.StatusOK, resp.StatusCode)
+		decodeJSON(t, resp, &mp)
+		assert.Equal(t, newDesc, mp.Description)
+	})
+
+	// ══════════════════════════════════════════════════════════════════════════
+	// 10. CLOSE INVOICE
+	// ══════════════════════════════════════════════════════════════════════════
+	t.Run("10_close_invoice", func(t *testing.T) {
+		var closeResp struct {
+			Errors         []string `json:"errors"`
+			ProcessedCount int      `json:"processed_count"`
+		}
+		resp := do(t, http.MethodPost, "/v1/accounts/"+accountID+"/close-invoice", nil, accessToken, ulid.New())
+		defer resp.Body.Close()
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+		decodeJSON(t, resp, &closeResp)
+		assert.Equal(t, 1, closeResp.ProcessedCount)
+		assert.Empty(t, closeResp.Errors)
+	})
+
+	// ══════════════════════════════════════════════════════════════════════════
+	// 11. LIST TRANSACTIONS (assert materialized)
+	// ══════════════════════════════════════════════════════════════════════════
+	t.Run("11_assert_materialized_tx", func(t *testing.T) {
+		resp := do(t, http.MethodGet, "/v1/transactions", nil, accessToken, "")
+		defer resp.Body.Close()
+		var res struct {
+			Data []domain.Transaction `json:"data"`
+		}
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+		decodeJSON(t, resp, &res)
+
+		var found bool
+		for _, tx := range res.Data {
+			if tx.MasterPurchaseID == masterPurchaseID {
+				found = true
+				assert.Equal(t, int64(40000), tx.AmountCents) // 120000 / 3
+				assert.Equal(t, domain.TransactionTypeExpense, tx.Type)
+			}
+		}
+		assert.True(t, found, "materialized installment transaction not found in list")
+	})
+
+	// ══════════════════════════════════════════════════════════════════════════
+	// 12. AUDIT LOG (assert SYSTEM actor)
+	// ══════════════════════════════════════════════════════════════════════════
+	// Note: We need a sysadmin token to view audit logs via the API.
+	t.Run("12_assert_system_audit_log", func(t *testing.T) {
+		// Create sysadmin user
+		sysEmail := "sys@moolah.com"
+		_, err = pgDB.Queries.CreateUser(ctx, sqlc.CreateUserParams{
+			ID:       ulid.New(),
+			TenantID: tenantID,
+			Email:    sysEmail,
+			Name:     "System Admin",
+			Role:     sqlc.UserRoleSysadmin,
+		})
+		require.NoError(t, err)
+
+		// Get sys token
+		reqResp := do(t, http.MethodPost, "/v1/auth/otp/request", map[string]string{"email": sysEmail}, "", ulid.New())
+		require.NoError(t, reqResp.Body.Close())
+		code := capMailer.OTPFor(sysEmail)
+		var tResp handler.TokenResponse
+		vResp := do(t, http.MethodPost, "/v1/auth/otp/verify", map[string]string{"email": sysEmail, "code": code}, "", ulid.New())
+		decodeJSON(t, vResp, &tResp)
+		vResp.Body.Close()
+
+		// List audit logs
+		resp := do(t, http.MethodGet, "/v1/admin/audit-logs", nil, tResp.AccessToken, "")
+		defer resp.Body.Close()
+		var res struct {
+			Data []domain.AuditLog `json:"data"`
+		}
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+		decodeJSON(t, resp, &res)
+
+		var foundSystem bool
+		for _, alog := range res.Data {
+			if alog.ActorID == domain.ActorSystem {
+				foundSystem = true
+				assert.Equal(t, domain.AuditActionCreate, alog.Action)
+				assert.Equal(t, "transaction", alog.EntityType)
+			}
+		}
+		assert.True(t, foundSystem, "audit log item with SYSTEM actor not found")
 	})
 }

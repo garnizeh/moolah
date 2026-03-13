@@ -175,7 +175,7 @@ func TestServer_TenantWrappers_DelegateToHandler(t *testing.T) {
 func TestServer_AccountWrappers_DelegateToHandler(t *testing.T) {
 	t.Parallel()
 	svc := new(mocks.AccountService)
-	h := handler.NewAccountHandler(svc)
+	h := handler.NewAccountHandler(svc, new(mocks.InvoiceCloser))
 	s := &Server{accountHandler: h}
 
 	wrappers := []struct {

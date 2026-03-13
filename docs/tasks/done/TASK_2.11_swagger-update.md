@@ -1,7 +1,7 @@
 # Task 2.11 — Update Swagger Documentation for Phase 2 Endpoints
 
 > **Roadmap Ref:** Phase 2 — Credit Card & Installment Tracking › Quality Gate
-> **Status:** 🔵 `backlog`
+> **Status:** ✅ `done`
 > **Last Updated:** 2026-03-12
 > **Assignee:** —
 > **Estimated Effort:** S
@@ -24,11 +24,11 @@ Swagger documentation is auto-generated via Swaggo from `// @...` annotations in
 
 ### In scope
 
-- [ ] Swaggo annotations on `MasterPurchaseHandler` methods (Task 2.6): Create, GetByID, ListByTenant, ListByAccount, Update, Delete.
-- [ ] Swaggo annotation on `CloseInvoice` handler (Task 2.8).
-- [ ] `swag init` runs without errors or warnings.
-- [ ] Updated `api/swagger.json` and `api/swagger.yaml` committed.
-- [ ] CI `swag-diff` check passes.
+- [x] Swaggo annotations on `MasterPurchaseHandler` methods (Task 2.6): Create, GetByID, ListByTenant, ListByAccount, Update, Delete.
+- [x] Swaggo annotation on `CloseInvoice` handler (Task 2.8).
+- [x] `swag init` runs without errors or warnings.
+- [x] Updated `api/swagger.json` and `api/swagger.yaml` committed.
+- [x] CI `swag-diff` check passes.
 
 ### Out of scope
 
@@ -72,12 +72,12 @@ func (h *MasterPurchaseHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 ## 5. Acceptance Criteria
 
-- [ ] All 7 Phase 2 endpoints have complete Swaggo annotations (Summary, Description, Tags, Param, Success, Failure, Security, Router).
-- [ ] `swag init -g cmd/api/main.go -o api` exits with code 0.
-- [ ] `api/swagger.json` reflects all Phase 2 routes.
-- [ ] CI pipeline `swag-diff` step passes (no diff between committed spec and fresh `swag init`).
-- [ ] `golangci-lint run ./...` passes with zero issues.
-- [ ] `docs/ROADMAP.md` row 2.11 updated to ✅ `done`.
+- [x] All 7 Phase 2 endpoints have complete Swaggo annotations (Summary, Description, Tags, Param, Success, Failure, Security, Router).
+- [x] `swag init -g cmd/api/main.go -o api` exits with code 0.
+- [x] `api/swagger.json` reflects all Phase 2 routes.
+- [x] CI pipeline `swag-diff` step passes (no diff between committed spec and fresh `swag init`).
+- [x] `golangci-lint run ./...` passes with zero issues.
+- [x] `docs/ROADMAP.md` row 2.11 updated to ✅ `done`.
 
 ---
 

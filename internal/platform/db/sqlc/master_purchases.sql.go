@@ -306,18 +306,22 @@ func (q *Queries) ListPendingMasterPurchasesByClosingDay(ctx context.Context, ar
 const updateMasterPurchase = `-- name: UpdateMasterPurchase :one
 UPDATE master_purchases
 SET 
-    category_id = COALESCE($3, category_id),
+    category_id = COALESCE(NULLIF($3, ''), category_id),
     description = COALESCE($4, description),
+    status = COALESCE($5, status),
+    paid_installments = COALESCE($6, paid_installments),
     updated_at = NOW()
 WHERE id = $1 AND tenant_id = $2 AND deleted_at IS NULL
 RETURNING id, tenant_id, account_id, category_id, user_id, description, status, total_amount_cents, installment_count, paid_installments, closing_day, first_installment_date, created_at, updated_at, deleted_at
 `
 
 type UpdateMasterPurchaseParams struct {
-	ID          string      `json:"id"`
-	TenantID    string      `json:"tenant_id"`
-	CategoryID  string      `json:"category_id"`
-	Description pgtype.Text `json:"description"`
+	ID               string                   `json:"id"`
+	TenantID         string                   `json:"tenant_id"`
+	CategoryID       interface{}              `json:"category_id"`
+	Description      pgtype.Text              `json:"description"`
+	Status           NullMasterPurchaseStatus `json:"status"`
+	PaidInstallments pgtype.Int2              `json:"paid_installments"`
 }
 
 func (q *Queries) UpdateMasterPurchase(ctx context.Context, arg UpdateMasterPurchaseParams) (MasterPurchase, error) {
@@ -326,6 +330,8 @@ func (q *Queries) UpdateMasterPurchase(ctx context.Context, arg UpdateMasterPurc
 		arg.TenantID,
 		arg.CategoryID,
 		arg.Description,
+		arg.Status,
+		arg.PaidInstallments,
 	)
 	var i MasterPurchase
 	err := row.Scan(

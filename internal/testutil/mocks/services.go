@@ -3,6 +3,7 @@ package mocks
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/garnizeh/moolah/internal/domain"
 	"github.com/stretchr/testify/mock"
@@ -575,3 +576,24 @@ func (m *MasterPurchaseService) Delete(ctx context.Context, tenantID, id string)
 }
 
 var _ domain.MasterPurchaseService = (*MasterPurchaseService)(nil)
+
+// InvoiceCloser is a testify/mock implementation of domain.InvoiceCloser.
+type InvoiceCloser struct {
+	mock.Mock
+}
+
+func (m *InvoiceCloser) CloseInvoice(ctx context.Context, tenantID, accountID string, closingDate time.Time) (domain.CloseInvoiceResult, error) {
+	args := m.Called(ctx, tenantID, accountID, closingDate)
+	var err error
+	if e := args.Error(1); e != nil {
+		err = fmt.Errorf("mock InvoiceCloser.CloseInvoice: %w", e)
+	}
+
+	res, ok := args.Get(0).(domain.CloseInvoiceResult)
+	if !ok {
+		return domain.CloseInvoiceResult{}, fmt.Errorf("mock InvoiceCloser.CloseInvoice: unexpected type %T", args.Get(0))
+	}
+	return res, err
+}
+
+var _ domain.InvoiceCloser = (*InvoiceCloser)(nil)

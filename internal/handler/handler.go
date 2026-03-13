@@ -10,6 +10,12 @@ import (
 	"github.com/garnizeh/moolah/internal/domain"
 )
 
+// ErrorResponse is a generic error container for API failures.
+// @name ErrorResponse
+type ErrorResponse struct {
+	Error string `json:"error" example:"error message"`
+}
+
 func respondJSON(w http.ResponseWriter, r *http.Request, data any, status int) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)

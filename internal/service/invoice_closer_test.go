@@ -25,6 +25,7 @@ func TestInvoiceCloser_CloseInvoice(t *testing.T) {
 	closingDate := time.Date(2024, 1, 31, 23, 59, 59, 0, time.UTC)
 
 	logger := slog.New(slog.NewJSONHandler(io.Discard, nil))
+	slog.SetDefault(logger)
 
 	t.Run("Empty pending list", func(t *testing.T) {
 		t.Parallel()
@@ -43,7 +44,7 @@ func TestInvoiceCloser_CloseInvoice(t *testing.T) {
 
 		mpRepo.On("ListByAccount", mock.Anything, tenantID, accountID).Return([]domain.MasterPurchase{}, nil)
 
-		closer := service.NewInvoiceCloser(mpRepo, txRepo, auditRepo, accRepo, mpSvc, nil, logger)
+		closer := service.NewInvoiceCloser(mpRepo, txRepo, auditRepo, accRepo, mpSvc, nil)
 		result, err := closer.CloseInvoice(context.Background(), tenantID, accountID, closingDate)
 
 		require.NoError(t, err)
@@ -90,7 +91,7 @@ func TestInvoiceCloser_CloseInvoice(t *testing.T) {
 		})).Return(&domain.Transaction{ID: "TX1"}, nil)
 
 		auditRepo.On("Create", mock.Anything, mock.MatchedBy(func(i domain.CreateAuditLogInput) bool {
-			return i.ActorID == "SYSTEM" && i.EntityID == "TX1"
+			return i.ActorID == domain.ActorSystem && i.EntityID == "TX1" && i.Metadata != nil
 		})).Return(&domain.AuditLog{}, nil)
 
 		mpRepo.On("IncrementPaidInstallments", mock.Anything, tenantID, "MP1").Return(nil)
@@ -104,7 +105,7 @@ func TestInvoiceCloser_CloseInvoice(t *testing.T) {
 		// Actually, I'll update the service to accept an interface for the DB if I wanted to mock it.
 		// For now, I'll make the service more robust to nil DB if I'm just unit testing logic that doesn't strictly need the TX atomicity confirmed at this level.
 
-		closer := service.NewInvoiceCloser(mpRepo, txRepo, auditRepo, accRepo, mpSvc, nil, logger)
+		closer := service.NewInvoiceCloser(mpRepo, txRepo, auditRepo, accRepo, mpSvc, nil)
 		result, err := closer.CloseInvoice(context.Background(), tenantID, accountID, closingDate)
 
 		require.NoError(t, err)
@@ -140,7 +141,7 @@ func TestInvoiceCloser_CloseInvoice(t *testing.T) {
 		mpSvc.On("ProjectInstallments", mock.MatchedBy(func(m *domain.MasterPurchase) bool { return m.ID == "MP2" })).Return(schedule2)
 		txRepo.On("Create", mock.Anything, tenantID, mock.Anything).Return(nil, errors.New("db error")).Once()
 
-		closer := service.NewInvoiceCloser(mpRepo, txRepo, auditRepo, accRepo, mpSvc, nil, logger)
+		closer := service.NewInvoiceCloser(mpRepo, txRepo, auditRepo, accRepo, mpSvc, nil)
 		result, err := closer.CloseInvoice(context.Background(), tenantID, accountID, closingDate)
 
 		require.NoError(t, err) // Top level err is nil because it continues
@@ -160,7 +161,7 @@ func TestInvoiceCloser_CloseInvoice(t *testing.T) {
 
 		accRepo.On("GetByID", mock.Anything, tenantID, accountID).Return(nil, errors.New("not found"))
 
-		closer := service.NewInvoiceCloser(mpRepo, txRepo, auditRepo, accRepo, mpSvc, nil, logger)
+		closer := service.NewInvoiceCloser(mpRepo, txRepo, auditRepo, accRepo, mpSvc, nil)
 		_, err := closer.CloseInvoice(context.Background(), tenantID, accountID, closingDate)
 
 		require.Error(t, err)
@@ -181,7 +182,7 @@ func TestInvoiceCloser_CloseInvoice(t *testing.T) {
 			Type: domain.AccountTypeChecking,
 		}, nil)
 
-		closer := service.NewInvoiceCloser(mpRepo, txRepo, auditRepo, accRepo, mpSvc, nil, logger)
+		closer := service.NewInvoiceCloser(mpRepo, txRepo, auditRepo, accRepo, mpSvc, nil)
 		_, err := closer.CloseInvoice(context.Background(), tenantID, accountID, closingDate)
 
 		require.Error(t, err)
@@ -199,7 +200,7 @@ func TestInvoiceCloser_CloseInvoice(t *testing.T) {
 		accRepo.On("GetByID", mock.Anything, tenantID, accountID).Return(&domain.Account{ID: accountID, Type: domain.AccountTypeCreditCard}, nil)
 		mpRepo.On("ListByAccount", mock.Anything, tenantID, accountID).Return([]domain.MasterPurchase{mp}, nil)
 
-		closer := service.NewInvoiceCloser(mpRepo, nil, nil, accRepo, nil, nil, logger)
+		closer := service.NewInvoiceCloser(mpRepo, nil, nil, accRepo, nil, nil)
 		result, err := closer.CloseInvoice(context.Background(), tenantID, accountID, closingDate)
 
 		require.NoError(t, err)
@@ -221,7 +222,7 @@ func TestInvoiceCloser_CloseInvoice(t *testing.T) {
 		schedule := []domain.ProjectedInstallment{{DueDate: closingDate.Add(24 * time.Hour)}}
 		mpSvc.On("ProjectInstallments", mock.Anything).Return(schedule)
 
-		closer := service.NewInvoiceCloser(mpRepo, nil, nil, accRepo, mpSvc, nil, logger)
+		closer := service.NewInvoiceCloser(mpRepo, nil, nil, accRepo, mpSvc, nil)
 		result, err := closer.CloseInvoice(context.Background(), tenantID, accountID, closingDate)
 
 		require.NoError(t, err)
@@ -248,7 +249,7 @@ func TestInvoiceCloser_CloseInvoice(t *testing.T) {
 		txRepo.On("Create", mock.Anything, tenantID, mock.Anything).Return(&domain.Transaction{ID: "TX1"}, nil)
 		auditRepo.On("Create", mock.Anything, mock.Anything).Return(nil, errors.New("audit fail"))
 
-		closer := service.NewInvoiceCloser(mpRepo, txRepo, auditRepo, accRepo, mpSvc, nil, logger)
+		closer := service.NewInvoiceCloser(mpRepo, txRepo, auditRepo, accRepo, mpSvc, nil)
 		result, err := closer.CloseInvoice(context.Background(), tenantID, accountID, closingDate)
 
 		require.NoError(t, err)
@@ -274,7 +275,7 @@ func TestInvoiceCloser_CloseInvoice(t *testing.T) {
 
 		txRepo.On("Create", mock.Anything, tenantID, mock.Anything).Return(nil, errors.New("db error"))
 
-		closer := service.NewInvoiceCloser(mpRepo, txRepo, auditRepo, accRepo, mpSvc, nil, logger)
+		closer := service.NewInvoiceCloser(mpRepo, txRepo, auditRepo, accRepo, mpSvc, nil)
 		result, err := closer.CloseInvoice(context.Background(), tenantID, accountID, closingDate)
 
 		require.NoError(t, err)
@@ -303,7 +304,7 @@ func TestInvoiceCloser_CloseInvoice(t *testing.T) {
 		mpRepo.On("IncrementPaidInstallments", mock.Anything, tenantID, "MP1").Return(nil)
 		accRepo.On("UpdateBalance", mock.Anything, tenantID, accountID, int64(100)).Return(errors.New("db error"))
 
-		closer := service.NewInvoiceCloser(mpRepo, txRepo, auditRepo, accRepo, mpSvc, nil, logger)
+		closer := service.NewInvoiceCloser(mpRepo, txRepo, auditRepo, accRepo, mpSvc, nil)
 		result, err := closer.CloseInvoice(context.Background(), tenantID, accountID, closingDate)
 
 		require.NoError(t, err)
@@ -334,7 +335,7 @@ func TestInvoiceCloser_CloseInvoice(t *testing.T) {
 		}
 		mpSvc.On("ProjectInstallments", mock.Anything).Return(schedule)
 
-		closer := service.NewInvoiceCloser(mpRepo, nil, nil, accRepo, mpSvc, nil, logger)
+		closer := service.NewInvoiceCloser(mpRepo, nil, nil, accRepo, mpSvc, nil)
 		result, err := closer.CloseInvoice(context.Background(), tenantID, accountID, closingDate)
 
 		require.NoError(t, err)
@@ -350,7 +351,7 @@ func TestInvoiceCloser_CloseInvoice(t *testing.T) {
 		accRepo.On("GetByID", mock.Anything, tenantID, accountID).Return(&domain.Account{ID: accountID, Type: domain.AccountTypeCreditCard}, nil)
 		mpRepo.On("ListByAccount", mock.Anything, tenantID, accountID).Return(nil, errors.New("db error"))
 
-		closer := service.NewInvoiceCloser(mpRepo, nil, nil, accRepo, nil, nil, logger)
+		closer := service.NewInvoiceCloser(mpRepo, nil, nil, accRepo, nil, nil)
 		_, err := closer.CloseInvoice(context.Background(), tenantID, accountID, closingDate)
 
 		require.Error(t, err)
@@ -378,7 +379,7 @@ func TestInvoiceCloser_CloseInvoice(t *testing.T) {
 		auditRepo.On("Create", mock.Anything, mock.Anything).Return(&domain.AuditLog{}, nil)
 		mpRepo.On("IncrementPaidInstallments", mock.Anything, tenantID, "MP1").Return(errors.New("db error"))
 
-		closer := service.NewInvoiceCloser(mpRepo, txRepo, auditRepo, accRepo, mpSvc, nil, logger)
+		closer := service.NewInvoiceCloser(mpRepo, txRepo, auditRepo, accRepo, mpSvc, nil)
 		result, err := closer.CloseInvoice(context.Background(), tenantID, accountID, closingDate)
 
 		require.NoError(t, err)
@@ -403,7 +404,7 @@ func TestInvoiceCloser_CloseInvoice(t *testing.T) {
 		auditRepo.On("Create", mock.Anything, mock.Anything).Return(&domain.AuditLog{}, nil)
 		mpRepo.On("IncrementPaidInstallments", mock.Anything, tenantID, "MP1").Return(errors.New("db fail"))
 
-		closer := service.NewInvoiceCloser(mpRepo, txRepo, auditRepo, accRepo, mpSvc, nil, logger)
+		closer := service.NewInvoiceCloser(mpRepo, txRepo, auditRepo, accRepo, mpSvc, nil)
 		result, err := closer.CloseInvoice(context.Background(), tenantID, accountID, closingDate)
 
 		require.NoError(t, err)
@@ -429,7 +430,7 @@ func TestInvoiceCloser_CloseInvoice(t *testing.T) {
 		mpRepo.On("IncrementPaidInstallments", mock.Anything, tenantID, "MP1").Return(nil)
 		accRepo.On("UpdateBalance", mock.Anything, tenantID, accountID, mock.Anything).Return(errors.New("db fail"))
 
-		closer := service.NewInvoiceCloser(mpRepo, txRepo, auditRepo, accRepo, mpSvc, nil, logger)
+		closer := service.NewInvoiceCloser(mpRepo, txRepo, auditRepo, accRepo, mpSvc, nil)
 		result, err := closer.CloseInvoice(context.Background(), tenantID, accountID, closingDate)
 
 		require.NoError(t, err)

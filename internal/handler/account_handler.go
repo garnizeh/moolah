@@ -3,6 +3,7 @@ package handler
 import (
 	"encoding/json"
 	"net/http"
+	"time"
 
 	"github.com/garnizeh/moolah/internal/domain"
 	"github.com/garnizeh/moolah/internal/platform/middleware"
@@ -11,15 +12,17 @@ import (
 
 // AccountHandler handles account-related HTTP requests.
 type AccountHandler struct {
-	service  domain.AccountService
-	validate *validator.Validate
+	service       domain.AccountService
+	invoiceCloser domain.InvoiceCloser
+	validate      *validator.Validate
 }
 
 // NewAccountHandler creates a new AccountHandler.
-func NewAccountHandler(service domain.AccountService) *AccountHandler {
+func NewAccountHandler(service domain.AccountService, invoiceCloser domain.InvoiceCloser) *AccountHandler {
 	return &AccountHandler{
-		service:  service,
-		validate: validator.New(),
+		service:       service,
+		invoiceCloser: invoiceCloser,
+		validate:      validator.New(),
 	}
 }
 
@@ -35,6 +38,19 @@ type CreateAccountRequest struct {
 type UpdateAccountRequest struct {
 	Name     *string `json:"name"     validate:"omitempty,min=1,max=100"`
 	Currency *string `json:"currency" validate:"omitempty,len=3"`
+}
+
+// CloseInvoiceRequest defines the payload for manually triggering invoice closing.
+type CloseInvoiceRequest struct {
+	// ClosingDate defaults to today if omitted.
+	ClosingDate *string `json:"closing_date,omitempty" validate:"omitempty,datetime=2006-01-02"`
+}
+
+// CloseInvoiceResponse reports the result of the manual trigger.
+type CloseInvoiceResponse struct {
+	AccountID      string   `json:"account_id"`
+	Errors         []string `json:"errors,omitempty"`
+	ProcessedCount int      `json:"processed_count"`
 }
 
 // List handles GET /v1/accounts
@@ -243,4 +259,79 @@ func (h *AccountHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusNoContent)
+}
+
+// CloseInvoice handles POST /v1/accounts/{id}/close-invoice
+//
+// @Summary		Close invoice
+// @Description	Manually triggers invoice closing for a credit card account.
+// @Tags			accounts
+// @Accept			json
+// @Produce		json
+// @Security		BearerAuth
+// @Param			id				path	string					true	"Account ULID"
+// @Param			Idempotency-Key	header	string					false	"Required idempotency key"
+// @Param			request			body	CloseInvoiceRequest		false	"Manual closing details"
+// @Success		200				{object}	CloseInvoiceResponse
+// @Failure		400		{object}	map[string]string	"Invalid request body"
+// @Failure		401		{object}	map[string]string	"Unauthorized"
+// @Failure		404		{object}	map[string]string		"Account not found"
+// @Failure		422		{object}	map[string]string	"Validation error"
+// @Failure		500		{object}	map[string]string	"Internal server error"
+// @Router			/v1/accounts/{id}/close-invoice [post]
+func (h *AccountHandler) CloseInvoice(w http.ResponseWriter, r *http.Request) {
+	tenantID, ok := middleware.TenantIDFromCtx(r.Context())
+	if !ok {
+		respondError(w, r, "unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	id := r.PathValue("id")
+	if id == "" {
+		respondError(w, r, "missing account id", http.StatusBadRequest)
+		return
+	}
+
+	var req CloseInvoiceRequest
+	if r.ContentLength > 0 {
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			respondError(w, r, "invalid request body", http.StatusBadRequest)
+			return
+		}
+	}
+
+	if err := h.validate.Struct(req); err != nil {
+		respondError(w, r, err.Error(), http.StatusUnprocessableEntity)
+		return
+	}
+
+	closingDate := time.Now().UTC()
+	if req.ClosingDate != nil {
+		var err error
+		closingDate, err = time.Parse("2006-01-02", *req.ClosingDate)
+		if err != nil {
+			respondError(w, r, "invalid closing_date format; use YYYY-MM-DD", http.StatusUnprocessableEntity)
+			return
+		}
+	}
+
+	result, err := h.invoiceCloser.CloseInvoice(r.Context(), tenantID, id, closingDate)
+	if err != nil {
+		handleError(w, r, err, "failed to close invoice")
+		return
+	}
+
+	resp := CloseInvoiceResponse{
+		AccountID:      id,
+		ProcessedCount: result.ProcessedCount,
+	}
+
+	if len(result.Errors) > 0 {
+		resp.Errors = make([]string, len(result.Errors))
+		for i, e := range result.Errors {
+			resp.Errors[i] = e.Error()
+		}
+	}
+
+	respondJSON(w, r, resp, http.StatusOK)
 }

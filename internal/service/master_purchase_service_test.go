@@ -158,21 +158,78 @@ func TestMasterPurchaseService_ProjectInstallments(t *testing.T) {
 	startDate, err := time.Parse("2006-01-02", "2023-01-01")
 	require.NoError(t, err)
 
-	t.Run("success - calculation", func(t *testing.T) {
-		t.Parallel()
-		mp := &domain.MasterPurchase{
-			TotalAmountCents:     1000,
-			InstallmentCount:     3,
-			FirstInstallmentDate: startDate,
-		}
+	testCases := []struct {
+		name             string
+		expectedAmounts  []int64
+		totalAmountCents int64
+		installmentCount int32
+	}{
+		{
+			name:             "1200 / 3 (evenly divisible)",
+			totalAmountCents: 1200,
+			installmentCount: 3,
+			expectedAmounts:  []int64{400, 400, 400},
+		},
+		{
+			name:             "1000 / 3 (remainder 1)",
+			totalAmountCents: 1000,
+			installmentCount: 3,
+			expectedAmounts:  []int64{333, 333, 334},
+		},
+		{
+			name:             "1001 / 3 (remainder 2)",
+			totalAmountCents: 1001,
+			installmentCount: 3,
+			expectedAmounts:  []int64{333, 333, 335},
+		},
+		{
+			name:             "1 / 2 (min base 0)",
+			totalAmountCents: 1,
+			installmentCount: 2,
+			expectedAmounts:  []int64{0, 1},
+		},
+		{
+			name:             "99 / 2",
+			totalAmountCents: 99,
+			installmentCount: 2,
+			expectedAmounts:  []int64{49, 50},
+		},
+		{
+			name:             "10000 / 12",
+			totalAmountCents: 10000,
+			installmentCount: 12,
+			expectedAmounts:  []int64{833, 833, 833, 833, 833, 833, 833, 833, 833, 833, 833, 837},
+		},
+		{
+			name:             "1 / 48",
+			totalAmountCents: 1,
+			installmentCount: 48,
+			expectedAmounts:  append(make([]int64, 47), 1),
+		},
+	}
 
-		installments := svc.ProjectInstallments(mp)
-		require.Len(t, installments, 3)
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			mp := &domain.MasterPurchase{
+				TotalAmountCents:     tc.totalAmountCents,
+				InstallmentCount:     tc.installmentCount,
+				FirstInstallmentDate: startDate,
+			}
 
-		assert.Equal(t, int64(333), installments[0].AmountCents)
-		assert.Equal(t, int64(333), installments[1].AmountCents)
-		assert.Equal(t, int64(334), installments[2].AmountCents)
-	})
+			installments := svc.ProjectInstallments(mp)
+			require.Len(t, installments, int(tc.installmentCount))
+
+			var sum int64
+			for i, inst := range installments {
+				assert.Equal(t, tc.expectedAmounts[i], inst.AmountCents, "installment %d amount mismatch", i+1)
+				sum += inst.AmountCents
+				expectedDate := startDate.AddDate(0, i, 0)
+				assert.True(t, expectedDate.Equal(inst.DueDate), "installment %d due date mismatch", i+1)
+			}
+			assert.Equal(t, tc.totalAmountCents, sum, "total sum mismatch")
+		})
+	}
 
 	t.Run("zero installments", func(t *testing.T) {
 		t.Parallel()

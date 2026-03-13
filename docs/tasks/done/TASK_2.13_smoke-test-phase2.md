@@ -1,9 +1,9 @@
 # Task 2.13 — Smoke Test: Phase 2 Happy Path (`internal/server/smoke_test.go`)
 
 > **Roadmap Ref:** Phase 2 — Credit Card & Installment Tracking › Quality Gate
-> **Status:** 🔵 `backlog`
-> **Last Updated:** 2026-03-12
-> **Assignee:** —
+> **Status:** ✅ `done`
+> **Last Updated:** 2026-03-13
+> **Assignee:** GitHub Copilot
 > **Estimated Effort:** M
 
 ---
@@ -24,14 +24,14 @@ Extend `internal/server/smoke_test.go` with `TestSmoke_Phase2HappyPath` — an e
 
 ### In scope
 
-- [ ] New test function `TestSmoke_Phase2HappyPath` in `internal/server/smoke_test.go`.
-- [ ] DI wiring for Phase 2 dependencies: `MasterPurchaseRepository`, `MasterPurchaseService`, `InvoiceCloser`.
-- [ ] Update `server.New(...)` call (or equivalent builder) to accept Phase 2 services.
-- [ ] Journey steps covering all 7 Phase 2 endpoints (see §4).
-- [ ] Assertion that `close-invoice` materialises a transaction in the DB.
-- [ ] Assertion that the audit log contains a `SYSTEM`-actor entry after closing.
-- [ ] Assertion that `projected_schedule` is returned in the `POST /v1/master-purchases` response.
-- [ ] Idempotency replay verification for `POST /v1/master-purchases`.
+- [x] New test function `TestSmoke_Phase2HappyPath` in `internal/server/smoke_test.go`.
+- [x] DI wiring for Phase 2 dependencies: `MasterPurchaseRepository`, `MasterPurchaseService`, `InvoiceCloser`.
+- [x] Update `server.New(...)` call (or equivalent builder) to accept Phase 2 services.
+- [x] Journey steps covering all 7 Phase 2 endpoints (see §4).
+- [x] Assertion that `close-invoice` materialises a transaction in the DB.
+- [x] Assertion that the audit log contains a `SYSTEM`-actor entry after closing.
+- [x] Assertion that `projected_schedule` is returned in the `POST /v1/master-purchases` response.
+- [x] Idempotency replay verification for `POST /v1/master-purchases`.
 
 ### Out of scope
 
@@ -134,19 +134,19 @@ assert.True(t, found, "materialised instalment transaction must appear in list")
 
 ## 5. Acceptance Criteria
 
-- [ ] `TestSmoke_Phase2HappyPath` compiles and passes with `go test -tags integration ./internal/server/...`.
-- [ ] All 12+ journey steps are present and numbered with `t.Run("NN_...", ...)`.
-- [ ] `t.Parallel()` called at top of test function.
-- [ ] `TestSmoke_Phase1HappyPath` continues to pass unchanged.
-- [ ] `POST /v1/master-purchases` response includes `projected_schedule` with correct count.
-- [ ] Idempotency replay on `POST /v1/master-purchases` asserts `X-Cache: HIT` and same ID.
-- [ ] `POST /v1/accounts/{id}/close-invoice` returns `processed_count == 1` and empty `errors`.
-- [ ] Materialised transaction with correct `amount_cents` and `master_purchase_id` appears in `/v1/transactions`.
-- [ ] Test uses `require.NoError` for every fallible call (including `resp.Body.Close()`).
-- [ ] No `_ = ...` ignoring errors.
-- [ ] `golangci-lint run ./...` passes with zero issues.
-- [ ] `gosec ./...` passes with zero issues.
-- [ ] `docs/ROADMAP.md` row 2.13 updated to ✅ `done`.
+- [x] `TestSmoke_Phase2HappyPath` compiles and passes with `go test -tags integration ./internal/server/...`.
+- [x] All 12+ journey steps are present and numbered with `t.Run("NN_...", ...)`.
+- [x] `t.Parallel()` called at top of test function.
+- [x] `TestSmoke_Phase1HappyPath` continues to pass unchanged.
+- [x] `POST /v1/master-purchases` response includes `projected_schedule` with correct count.
+- [x] Idempotency replay on `POST /v1/master-purchases` asserts `X-Cache: HIT` and same ID.
+- [x] `POST /v1/accounts/{id}/close-invoice` returns `processed_count == 1` and empty `errors`.
+- [x] Materialised transaction with correct `amount_cents` and `master_purchase_id` appears in `/v1/transactions`.
+- [x] Test uses `require.NoError` for every fallible call (including `resp.Body.Close()`).
+- [x] No `_ = ...` ignoring errors.
+- [x] `golangci-lint run ./...` passes with zero issues.
+- [x] `gosec ./...` passes with zero issues.
+- [x] `docs/ROADMAP.md` row 2.13 updated to ✅ `done`.
 
 ---
 
@@ -154,11 +154,11 @@ assert.True(t, found, "materialised instalment transaction must appear in list")
 
 | Dependency                                           | Type     | Status       |
 | ---------------------------------------------------- | -------- | ------------ |
-| Task 2.6 — `MasterPurchaseHandler` implemented       | Upstream | 🔵 backlog   |
-| Task 2.7 — `InvoiceCloser` service                   | Upstream | 🔵 backlog   |
-| Task 2.8 — `CloseInvoice` endpoint                   | Upstream | 🔵 backlog   |
-| Task 2.10 — `domain.ActorSystem` constant            | Upstream | 🔵 backlog   |
-| Phase 2 routes registered in `internal/server/routes.go` | Upstream | 🔵 backlog |
+| Task 2.6 — `MasterPurchaseHandler` implemented       | Upstream | ✅ done      |
+| Task 2.7 — `InvoiceCloser` service                   | Upstream | ✅ done      |
+| Task 2.8 — `CloseInvoice` endpoint                   | Upstream | ✅ done      |
+| Task 2.10 — `domain.ActorSystem` constant            | Upstream | ✅ done      |
+| Phase 2 routes registered in `internal/server/routes.go` | Upstream | ✅ done      |
 | `internal/testutil/containers` (Phase 1)             | Upstream | ✅ done      |
 | `TestSmoke_Phase1HappyPath` pattern (reference)      | Upstream | ✅ done      |
 
@@ -194,3 +194,4 @@ N/A — this is an integration smoke test by nature.
 | Date       | Author | Change                    |
 | ---------- | ------ | ------------------------- |
 | 2026-03-12 | —      | Task created from roadmap |
+| 2026-03-13 | GitHub Copilot | Task finalized as done after `make task-check` passed |

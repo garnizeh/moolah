@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log/slog"
 	"time"
@@ -19,7 +20,6 @@ type InvoiceCloser struct {
 	accRepo   domain.AccountRepository
 	mpSvc     domain.MasterPurchaseService
 	db        *pgxpool.Pool
-	logger    *slog.Logger
 }
 
 // NewInvoiceCloser creates a new InvoiceCloser.
@@ -30,7 +30,6 @@ func NewInvoiceCloser(
 	accRepo domain.AccountRepository,
 	mpSvc domain.MasterPurchaseService,
 	db *pgxpool.Pool,
-	logger *slog.Logger,
 ) *InvoiceCloser {
 	return &InvoiceCloser{
 		mpRepo:    mpRepo,
@@ -39,7 +38,6 @@ func NewInvoiceCloser(
 		accRepo:   accRepo,
 		mpSvc:     mpSvc,
 		db:        db,
-		logger:    logger.With("service", "InvoiceCloser"),
 	}
 }
 
@@ -79,7 +77,7 @@ func (c *InvoiceCloser) CloseInvoice(
 		// Project installments to find the one to materialize
 		schedule := c.mpSvc.ProjectInstallments(&mp)
 		if int(mp.PaidInstallments) >= len(schedule) {
-			c.logger.Warn("master purchase already fully paid but not closed",
+			slog.WarnContext(ctx, "master purchase already fully paid but not closed",
 				slog.String("master_purchase_id", mp.ID),
 				slog.Int("paid", int(mp.PaidInstallments)),
 				slog.Int("total", len(schedule)))
@@ -94,7 +92,7 @@ func (c *InvoiceCloser) CloseInvoice(
 		// Materialize installment
 		err := c.materializeInstallment(ctx, tenantID, &mp, currentInstalment, acc)
 		if err != nil {
-			c.logger.Warn("failed to materialize installment",
+			slog.WarnContext(ctx, "failed to materialize installment",
 				slog.String("master_purchase_id", mp.ID),
 				slog.Int("installment_number", int(currentInstalment.InstallmentNumber)),
 				slog.Any("error", err))
@@ -127,7 +125,7 @@ func (c *InvoiceCloser) materializeInstallment(
 			if err != nil {
 				rbErr := tx.Rollback(ctx)
 				if rbErr != nil {
-					c.logger.Error("failed to rollback transaction", slog.Any("error", rbErr))
+					slog.ErrorContext(ctx, "failed to rollback transaction", slog.Any("error", rbErr))
 				}
 			}
 		}()
@@ -151,13 +149,22 @@ func (c *InvoiceCloser) materializeInstallment(
 	}
 
 	// 2. Audit Log (SYSTEM actor)
+	metadata, err := json.Marshal(map[string]any{
+		"master_purchase_id": mp.ID,
+		"installment":        installment.InstallmentNumber,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to marshal audit metadata: %w", err)
+	}
+
 	audioInput := domain.CreateAuditLogInput{
 		TenantID:   tenantID,
-		ActorID:    "SYSTEM",
+		ActorID:    domain.ActorSystem,
 		Action:     domain.AuditActionCreate,
 		EntityType: "transaction",
 		EntityID:   createdTx.ID,
 		ActorRole:  domain.RoleAdmin, // SYSTEM acts as Admin
+		Metadata:   metadata,
 	}
 	_, err = c.auditRepo.Create(ctx, audioInput)
 	if err != nil {
