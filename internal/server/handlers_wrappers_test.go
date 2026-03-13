@@ -104,30 +104,43 @@ func TestServer_adminWrappers_DelegateToAdminHandler(t *testing.T) {
 	s.handleAdminForceDeleteUser(rr, req)
 	require.Equal(t, http.StatusNoContent, rr.Code)
 
+	// Direct calls for remaining coverage (no mock setup needed as they will return 401/error without ctx)
 	// Admin List Tenants
-	req = httptest.NewRequest(http.MethodGet, "/v1/admin/tenants", nil)
-	rr = httptest.NewRecorder()
-	s.handleAdminListTenants(rr, req)
-	require.Equal(t, http.StatusUnauthorized, rr.Code)
+	t.Run("handleAdminListTenants", func(t *testing.T) {
+		t.Parallel()
+		req = httptest.NewRequest(http.MethodGet, "/v1/admin/tenants", nil)
+		rr = httptest.NewRecorder()
+		s.handleAdminListTenants(rr, req)
+		require.Equal(t, http.StatusUnauthorized, rr.Code)
+	})
 
 	// Admin Get Tenant
-	req = httptest.NewRequest(http.MethodGet, "/v1/admin/tenants/t1", nil)
-	req.SetPathValue("id", "t1")
-	rr = httptest.NewRecorder()
-	s.handleAdminGetTenant(rr, req)
-	require.Equal(t, http.StatusUnauthorized, rr.Code)
+	t.Run("handleAdminGetTenant", func(t *testing.T) {
+		t.Parallel()
+		req = httptest.NewRequest(http.MethodGet, "/v1/admin/tenants/t1", nil)
+		req.SetPathValue("id", "t1")
+		rr = httptest.NewRecorder()
+		s.handleAdminGetTenant(rr, req)
+		require.Equal(t, http.StatusUnauthorized, rr.Code)
+	})
 
 	// Admin List Users
-	req = httptest.NewRequest(http.MethodGet, "/v1/admin/users", nil)
-	rr = httptest.NewRecorder()
-	s.handleAdminListUsers(rr, req)
-	require.Equal(t, http.StatusUnauthorized, rr.Code)
+	t.Run("handleAdminListUsers", func(t *testing.T) {
+		t.Parallel()
+		req = httptest.NewRequest(http.MethodGet, "/v1/admin/users", nil)
+		rr = httptest.NewRecorder()
+		s.handleAdminListUsers(rr, req)
+		require.Equal(t, http.StatusUnauthorized, rr.Code)
+	})
 
 	// Admin List Audit Logs
-	req = httptest.NewRequest(http.MethodGet, "/v1/admin/audit-logs", nil)
-	rr = httptest.NewRecorder()
-	s.handleAdminListAuditLogs(rr, req)
-	require.Equal(t, http.StatusUnauthorized, rr.Code)
+	t.Run("handleAdminListAuditLogs", func(t *testing.T) {
+		t.Parallel()
+		req = httptest.NewRequest(http.MethodGet, "/v1/admin/audit-logs", nil)
+		rr = httptest.NewRecorder()
+		s.handleAdminListAuditLogs(rr, req)
+		require.Equal(t, http.StatusUnauthorized, rr.Code)
+	})
 
 	svc.AssertExpectations(t)
 }
