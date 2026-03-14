@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.14.0](https://github.com/garnizeh/moolah/compare/v1.13.0...v1.14.0) (2026-03-14)
+
+
+### Features
+
+* add InvestmentService mock implementation and refactor Querier methods ([fb88383](https://github.com/garnizeh/moolah/commit/fb883832dd5237f1b586167a33e771190b3e05b5))
+* add InvestmentService mock implementation and refactor Querier methods ([7f49945](https://github.com/garnizeh/moolah/commit/7f499455918ac26df06b3c3c347f63bf738c1409))
+
 ## [1.13.0](https://github.com/garnizeh/moolah/compare/v1.12.0...v1.13.0) (2026-03-14)
 
 
