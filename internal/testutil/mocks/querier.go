@@ -291,13 +291,7 @@ func (m *Querier) GetMasterPurchaseByID(ctx context.Context, arg sqlc.GetMasterP
 
 func (m *Querier) GetTenantAssetConfigByAssetID(ctx context.Context, arg sqlc.GetTenantAssetConfigByAssetIDParams) (sqlc.TenantAssetConfig, error) {
 	args := m.Called(ctx, arg)
-	var r0 sqlc.TenantAssetConfig
-	if arg := args.Get(0); arg != nil {
-		if val, ok := arg.(sqlc.TenantAssetConfig); ok {
-			r0 = val
-		}
-	}
-	return r0, args.Error(1) //nolint:wrapcheck
+	return args.Get(0).(sqlc.TenantAssetConfig), args.Error(1) //nolint:wrapcheck,errcheck
 }
 
 func (m *Querier) GetTenantByID(ctx context.Context, id string) (sqlc.Tenant, error) {

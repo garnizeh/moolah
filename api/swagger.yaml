@@ -37,6 +37,41 @@ definitions:
     - AccountTypeSavings
     - AccountTypeCreditCard
     - AccountTypeInvestment
+  domain.Asset:
+    properties:
+      asset_type:
+        $ref: '#/definitions/domain.AssetType'
+      created_at:
+        type: string
+      currency:
+        type: string
+      details:
+        type: string
+      id:
+        type: string
+      isin:
+        type: string
+      name:
+        type: string
+      ticker:
+        type: string
+    type: object
+  domain.AssetType:
+    enum:
+    - stock
+    - bond
+    - fund
+    - crypto
+    - real_estate
+    - income_source
+    type: string
+    x-enum-varnames:
+    - AssetTypeStock
+    - AssetTypeBond
+    - AssetTypeFund
+    - AssetTypeCrypto
+    - AssetTypeRealEstate
+    - AssetTypeIncomeSource
   domain.Category:
     properties:
       color:
@@ -73,6 +108,29 @@ definitions:
     - CategoryTypeIncome
     - CategoryTypeExpense
     - CategoryTypeTransfer
+  domain.CreateAssetInput:
+    properties:
+      asset_type:
+        $ref: '#/definitions/domain.AssetType'
+      currency:
+        type: string
+      details:
+        type: string
+      isin:
+        maxLength: 12
+        type: string
+      name:
+        maxLength: 200
+        type: string
+      ticker:
+        maxLength: 20
+        type: string
+    required:
+    - asset_type
+    - currency
+    - name
+    - ticker
+    type: object
   domain.MasterPurchase:
     properties:
       account_id:
@@ -152,6 +210,26 @@ definitions:
       updatedAt:
         type: string
     type: object
+  domain.TenantAssetConfig:
+    properties:
+      asset_id:
+        type: string
+      created_at:
+        type: string
+      currency:
+        description: overrides Asset.Currency
+        type: string
+      details:
+        description: overrides Asset.Details
+        type: string
+      id:
+        type: string
+      name:
+        description: overrides Asset.Name
+        type: string
+      updated_at:
+        type: string
+    type: object
   domain.TenantPlan:
     enum:
     - free
@@ -203,6 +281,20 @@ definitions:
     - TransactionTypeIncome
     - TransactionTypeExpense
     - TransactionTypeTransfer
+  domain.UpsertTenantAssetConfigInput:
+    properties:
+      asset_id:
+        type: string
+      currency:
+        type: string
+      details:
+        type: string
+      name:
+        maxLength: 200
+        type: string
+    required:
+    - asset_id
+    type: object
   domain.User:
     properties:
       createdAt:
@@ -1205,6 +1297,180 @@ paths:
       summary: Get user details
       tags:
       - admin
+  /v1/assets:
+    get:
+      consumes:
+      - application/json
+      description: Returns the global asset catalogue with optional filtering.
+      parameters:
+      - description: Filter by asset type (stock, bond, fund, crypto, real_estate,
+          income_source)
+        in: query
+        name: asset_type
+        type: string
+      - description: Filter by currency (e.g., USD, BRL)
+        in: query
+        name: currency
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/domain.Asset'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List assets
+      tags:
+      - assets
+    post:
+      consumes:
+      - application/json
+      description: Creates a new global asset in the catalogue. Restricted to administrators.
+      parameters:
+      - description: Asset details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/domain.CreateAssetInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/domain.Asset'
+        "400":
+          description: Invalid request body
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "422":
+          description: Validation error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create asset
+      tags:
+      - assets
+  /v1/assets/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Soft-deletes a global asset from the catalogue. Restricted to administrators.
+      parameters:
+      - description: Asset ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete asset
+      tags:
+      - assets
+    get:
+      consumes:
+      - application/json
+      description: Returns a single global asset by its ID, merging global values
+        with tenant-specific overrides if they exist.
+      parameters:
+      - description: Asset ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.Asset'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Asset not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get asset
+      tags:
+      - assets
   /v1/auth/otp/request:
     post:
       consumes:
@@ -1781,6 +2047,123 @@ paths:
       summary: Get installment projection
       tags:
       - master-purchases
+  /v1/me/asset-configs:
+    get:
+      consumes:
+      - application/json
+      description: Returns all asset overrides (configs) for the current tenant.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/domain.TenantAssetConfig'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List my asset configurations
+      tags:
+      - assets
+  /v1/me/asset-configs/{asset_id}:
+    delete:
+      consumes:
+      - application/json
+      description: Removes overrides for a global asset for the current tenant.
+      parameters:
+      - description: Asset ID
+        in: path
+        name: asset_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete asset configuration
+      tags:
+      - assets
+    put:
+      consumes:
+      - application/json
+      description: Creates or updates overrides for a global asset for the current
+        tenant.
+      parameters:
+      - description: Asset ID
+        in: path
+        name: asset_id
+        required: true
+        type: string
+      - description: Configuration details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/domain.UpsertTenantAssetConfigInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.TenantAssetConfig'
+        "400":
+          description: Invalid request body
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "422":
+          description: Validation error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Upsert asset configuration
+      tags:
+      - assets
   /v1/tenants/me:
     get:
       consumes:

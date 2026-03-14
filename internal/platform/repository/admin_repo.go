@@ -10,6 +10,9 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+// AdminRepository provides methods for administrative operations on tenants, users, and audit logs.
+// It allows listing, retrieving, updating, suspending, restoring, and hard-deleting tenants and users,
+// as well as listing audit logs with various filters.
 type adminTenantRepo struct {
 	q sqlc.Querier
 }
@@ -19,6 +22,7 @@ func NewAdminTenantRepository(q sqlc.Querier) domain.AdminTenantRepository {
 	return &adminTenantRepo{q: q}
 }
 
+// ListAll returns all tenants, including suspended ones. If withDeleted is true, it also includes hard-deleted tenants.
 func (r *adminTenantRepo) ListAll(ctx context.Context, withDeleted bool) ([]domain.Tenant, error) {
 	tenants, err := r.q.AdminListAllTenants(ctx, withDeleted)
 	if err != nil {
@@ -32,6 +36,7 @@ func (r *adminTenantRepo) ListAll(ctx context.Context, withDeleted bool) ([]doma
 	return result, nil
 }
 
+// GetByID retrieves a tenant by its ID, regardless of its status (active, suspended, or deleted).
 func (r *adminTenantRepo) GetByID(ctx context.Context, id string) (*domain.Tenant, error) {
 	t, err := r.q.AdminGetTenantByID(ctx, id)
 	if err != nil {
@@ -40,6 +45,7 @@ func (r *adminTenantRepo) GetByID(ctx context.Context, id string) (*domain.Tenan
 	return mapTenant(t), nil
 }
 
+// UpdatePlan changes the subscription plan of a tenant. It can be used to upgrade, downgrade, or set a custom plan.
 func (r *adminTenantRepo) UpdatePlan(ctx context.Context, id string, plan domain.TenantPlan) (*domain.Tenant, error) {
 	arg := sqlc.AdminUpdateTenantPlanParams{
 		ID:   id,
@@ -52,6 +58,7 @@ func (r *adminTenantRepo) UpdatePlan(ctx context.Context, id string, plan domain
 	return mapTenant(t), nil
 }
 
+// Suspend marks a tenant as suspended, which typically disables access to the application for all users under that tenant. Suspended tenants can be restored later.
 func (r *adminTenantRepo) Suspend(ctx context.Context, id string) error {
 	err := r.q.AdminSuspendTenant(ctx, id)
 	if err != nil {
@@ -60,6 +67,7 @@ func (r *adminTenantRepo) Suspend(ctx context.Context, id string) error {
 	return nil
 }
 
+// Restore reactivates a suspended tenant, allowing users under that tenant to access the application again. It cannot restore hard-deleted tenants.
 func (r *adminTenantRepo) Restore(ctx context.Context, id string) error {
 	err := r.q.AdminRestoreTenant(ctx, id)
 	if err != nil {
@@ -68,6 +76,7 @@ func (r *adminTenantRepo) Restore(ctx context.Context, id string) error {
 	return nil
 }
 
+// HardDelete permanently removes a tenant from the database. This action is irreversible and should be used with caution, typically only for tenants that were previously soft-deleted.
 func (r *adminTenantRepo) HardDelete(ctx context.Context, id string) error {
 	err := r.q.AdminHardDeleteTenant(ctx, id)
 	if err != nil {
@@ -76,6 +85,7 @@ func (r *adminTenantRepo) HardDelete(ctx context.Context, id string) error {
 	return nil
 }
 
+// mapTenant converts a sqlc.Tenant to a domain.Tenant, handling nullable fields appropriately.
 type adminUserRepo struct {
 	q sqlc.Querier
 }
@@ -85,6 +95,7 @@ func NewAdminUserRepository(q sqlc.Querier) domain.AdminUserRepository {
 	return &adminUserRepo{q: q}
 }
 
+// ListAll returns all users across all tenants, including those that are soft-deleted. It does not return hard-deleted users.
 func (r *adminUserRepo) ListAll(ctx context.Context) ([]domain.User, error) {
 	users, err := r.q.AdminListAllUsers(ctx)
 	if err != nil {
@@ -98,6 +109,7 @@ func (r *adminUserRepo) ListAll(ctx context.Context) ([]domain.User, error) {
 	return result, nil
 }
 
+// GetByID retrieves a user by their ID, regardless of their status (active or soft-deleted). It does not return hard-deleted users.
 func (r *adminUserRepo) GetByID(ctx context.Context, id string) (*domain.User, error) {
 	u, err := r.q.AdminGetUserByID(ctx, id)
 	if err != nil {
@@ -106,6 +118,7 @@ func (r *adminUserRepo) GetByID(ctx context.Context, id string) (*domain.User, e
 	return mapUser(u), nil
 }
 
+// ForceDelete permanently removes a user from the database. This action is irreversible and should be used with caution, typically only for users that were previously soft-deleted.
 func (r *adminUserRepo) ForceDelete(ctx context.Context, id string) error {
 	err := r.q.AdminForceDeleteUser(ctx, id)
 	if err != nil {
@@ -114,6 +127,7 @@ func (r *adminUserRepo) ForceDelete(ctx context.Context, id string) error {
 	return nil
 }
 
+// mapUser converts a sqlc.User to a domain.User, handling nullable fields appropriately.
 type adminAuditRepo struct {
 	q sqlc.Querier
 }
@@ -123,6 +137,7 @@ func NewAdminAuditRepository(q sqlc.Querier) domain.AdminAuditRepository {
 	return &adminAuditRepo{q: q}
 }
 
+// ListAll returns all audit logs across all tenants, with optional filtering by actor ID, entity type, entity ID, action, and date range. It supports pagination through limit and offset parameters.
 func (r *adminAuditRepo) ListAll(ctx context.Context, params domain.ListAuditLogsParams) ([]domain.AuditLog, error) {
 	arg := sqlc.AdminListAllAuditLogsParams{
 		LimitOff:  params.Limit,
@@ -158,6 +173,7 @@ func (r *adminAuditRepo) ListAll(ctx context.Context, params domain.ListAuditLog
 	return result, nil
 }
 
+// mapTenant converts a sqlc.Tenant to a domain.Tenant, handling nullable fields appropriately.
 func mapTenant(t sqlc.Tenant) *domain.Tenant {
 	var deletedAt *time.Time
 	if t.DeletedAt.Valid {
@@ -174,6 +190,7 @@ func mapTenant(t sqlc.Tenant) *domain.Tenant {
 	}
 }
 
+// mapUser converts a sqlc.User to a domain.User, handling nullable fields appropriately.
 func mapUser(u sqlc.User) *domain.User {
 	var deletedAt *time.Time
 	if u.DeletedAt.Valid {
@@ -198,6 +215,7 @@ func mapUser(u sqlc.User) *domain.User {
 	}
 }
 
+// mapAuditLog converts a sqlc.AuditLog to a domain.AuditLog, handling nullable fields appropriately.
 func mapAuditLog(l sqlc.AuditLog) *domain.AuditLog {
 	var ip string
 	if l.IpAddress != nil {

@@ -10,6 +10,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+// transactionRepo implements the domain.TransactionRepository interface using a sqlc.Querier for database interactions.
 type transactionRepo struct {
 	q sqlc.Querier
 }
@@ -19,6 +20,7 @@ func NewTransactionRepository(q sqlc.Querier) domain.TransactionRepository {
 	return &transactionRepo{q: q}
 }
 
+// Create persists a new transaction for the specified tenant.
 func (r *transactionRepo) Create(ctx context.Context, tenantID string, input domain.CreateTransactionInput) (*domain.Transaction, error) {
 	id := ulid.New()
 
@@ -46,6 +48,7 @@ func (r *transactionRepo) Create(ctx context.Context, tenantID string, input dom
 	return r.mapToDomain(row), nil
 }
 
+// GetByID retrieves a specific transaction by its ID and tenant ID.
 func (r *transactionRepo) GetByID(ctx context.Context, tenantID, id string) (*domain.Transaction, error) {
 	row, err := r.q.GetTransactionByID(ctx, sqlc.GetTransactionByIDParams{
 		TenantID: tenantID,
@@ -58,6 +61,8 @@ func (r *transactionRepo) GetByID(ctx context.Context, tenantID, id string) (*do
 	return r.mapToDomain(row), nil
 }
 
+// List returns transactions for a specific tenant with optional filters
+// for account, category, type, date range, and pagination.
 func (r *transactionRepo) List(ctx context.Context, tenantID string, filter domain.ListTransactionsParams) ([]domain.Transaction, error) {
 	arg := sqlc.ListTransactionsByTenantParams{
 		TenantID:    tenantID,
@@ -96,6 +101,8 @@ func (r *transactionRepo) List(ctx context.Context, tenantID string, filter doma
 	return transactions, nil
 }
 
+// ListByAccount returns transactions for a specific tenant and account
+// with optional filters for category, type, date range, and pagination.
 func (r *transactionRepo) Update(ctx context.Context, tenantID, id string, input domain.UpdateTransactionInput) (*domain.Transaction, error) {
 	current, err := r.q.GetTransactionByID(ctx, sqlc.GetTransactionByIDParams{
 		TenantID: tenantID,
@@ -137,6 +144,7 @@ func (r *transactionRepo) Update(ctx context.Context, tenantID, id string, input
 	return r.mapToDomain(row), nil
 }
 
+// Delete performs a soft delete of the transaction by its ID and tenant ID.
 func (r *transactionRepo) Delete(ctx context.Context, tenantID, id string) error {
 	err := r.q.SoftDeleteTransaction(ctx, sqlc.SoftDeleteTransactionParams{
 		TenantID: tenantID,
@@ -148,6 +156,7 @@ func (r *transactionRepo) Delete(ctx context.Context, tenantID, id string) error
 	return nil
 }
 
+// mapToDomain converts a sqlc.Transaction to a domain.Transaction, handling nullable fields appropriately.
 func (r *transactionRepo) mapToDomain(row sqlc.Transaction) *domain.Transaction {
 	var masterPurchaseID string
 	if row.MasterPurchaseID.Valid {

@@ -11,6 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+// authRepo implements the domain.AuthRepository interface using a sqlc.Querier for database interactions.
 type authRepo struct {
 	q sqlc.Querier
 }
@@ -77,6 +78,7 @@ func (r *authRepo) DeleteExpiredOTPRequests(ctx context.Context) error {
 	return nil
 }
 
+// mapOTPRequest converts a sqlc.OtpRequest to a domain.OTPRequest, handling nullable fields appropriately.
 func (r *authRepo) mapOTPRequest(o sqlc.OtpRequest) *domain.OTPRequest {
 	return &domain.OTPRequest{
 		ID:        o.ID,

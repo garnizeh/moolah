@@ -9,11 +9,13 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
+// CategoryHandler handles category-related HTTP requests.
 type CategoryHandler struct {
 	service  domain.CategoryService
 	validate *validator.Validate
 }
 
+// NewCategoryHandler creates a new CategoryHandler with the given CategoryService.
 func NewCategoryHandler(service domain.CategoryService) *CategoryHandler {
 	return &CategoryHandler{
 		service:  service,
@@ -21,6 +23,7 @@ func NewCategoryHandler(service domain.CategoryService) *CategoryHandler {
 	}
 }
 
+// CreateCategoryRequest represents the request body for creating a new category.
 type CreateCategoryRequest struct {
 	ParentID *string             `json:"parent_id" validate:"omitempty"`
 	Icon     *string             `json:"icon"      validate:"omitempty"`
@@ -29,6 +32,7 @@ type CreateCategoryRequest struct {
 	Type     domain.CategoryType `json:"type"      validate:"required"`
 }
 
+// UpdateCategoryRequest represents the request body for updating an existing category.
 type UpdateCategoryRequest struct {
 	Name  *string `json:"name"  validate:"omitempty,min=1,max=100"`
 	Icon  *string `json:"icon"  validate:"omitempty"`

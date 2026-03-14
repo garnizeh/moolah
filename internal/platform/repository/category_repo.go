@@ -10,6 +10,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+// categoryRepo implements the domain.CategoryRepository interface using a sqlc.Querier for database interactions.
 type categoryRepo struct {
 	q sqlc.Querier
 }
@@ -145,6 +146,7 @@ func (r *categoryRepo) Delete(ctx context.Context, tenantID, id string) error {
 	return nil
 }
 
+// mapCategory converts a sqlc.Category to a domain.Category, handling nullable fields appropriately.
 func mapCategory(row sqlc.Category) *domain.Category {
 	parentID := ""
 	if row.ParentID.Valid {

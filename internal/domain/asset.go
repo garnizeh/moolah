@@ -76,6 +76,7 @@ type AssetRepository interface {
 	GetByTicker(ctx context.Context, ticker string) (*Asset, error)
 	List(ctx context.Context, params ListAssetsParams) ([]Asset, error)
 	Delete(ctx context.Context, id string) error
+	GetLastPrice(ctx context.Context, id string) (int64, error) // Added for portfolio summary
 }
 
 // TenantAssetConfigRepository defines persistence for per-tenant asset overrides.
@@ -84,4 +85,39 @@ type TenantAssetConfigRepository interface {
 	GetByAssetID(ctx context.Context, tenantID, assetID string) (*TenantAssetConfig, error)
 	ListByTenant(ctx context.Context, tenantID string) ([]TenantAssetConfig, error)
 	Delete(ctx context.Context, tenantID, assetID string) error
+}
+
+// InvestmentService orchestrates portfolio tracking.
+type InvestmentService interface {
+	CreatePosition(ctx context.Context, tenantID string, in CreatePositionInput) (*Position, error)
+	GetPosition(ctx context.Context, tenantID, id string) (*Position, error)
+	ListPositions(ctx context.Context, tenantID string) ([]Position, error)
+	UpdatePosition(ctx context.Context, tenantID, id string, in UpdatePositionInput) (*Position, error)
+	DeletePosition(ctx context.Context, tenantID, id string) error
+
+	// Receivable lifecycle
+	MarkIncomeReceived(ctx context.Context, tenantID, eventID string) (*PositionIncomeEvent, error)
+	CancelIncome(ctx context.Context, tenantID, eventID string) (*PositionIncomeEvent, error)
+
+	// Portfolio summary
+	GetPortfolioSummary(ctx context.Context, tenantID string) (*PortfolioSummary, error)
+	TakeSnapshot(ctx context.Context, tenantID string) (*PortfolioSnapshot, error)
+
+	// Asset Catalogue
+	CreateAsset(ctx context.Context, input CreateAssetInput) (*Asset, error)
+	GetAssetByID(ctx context.Context, id string) (*Asset, error)
+	ListAssets(ctx context.Context, params ListAssetsParams) ([]Asset, error)
+	DeleteAsset(ctx context.Context, id string) error
+
+	// Tenant Asset Configuration
+	UpsertTenantAssetConfig(ctx context.Context, tenantID string, input UpsertTenantAssetConfigInput) (*TenantAssetConfig, error)
+	GetTenantAssetConfig(ctx context.Context, tenantID, assetID string) (*TenantAssetConfig, error)
+	ListTenantAssetConfigs(ctx context.Context, tenantID string) ([]TenantAssetConfig, error)
+	DeleteTenantAssetConfig(ctx context.Context, tenantID, assetID string) error
+	GetAssetWithTenantConfig(ctx context.Context, tenantID, id string) (*Asset, error)
+}
+
+// CurrencyConverter normalises values across multiple tickers.
+type CurrencyConverter interface {
+	Convert(ctx context.Context, amount int64, from, to string) (int64, error)
 }

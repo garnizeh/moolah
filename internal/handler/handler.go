@@ -16,6 +16,7 @@ type ErrorResponse struct {
 	Error string `json:"error" example:"error message"`
 }
 
+// respondJSON is a helper function to send JSON responses with proper headers and status codes.
 func respondJSON(w http.ResponseWriter, r *http.Request, data any, status int) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
@@ -24,10 +25,12 @@ func respondJSON(w http.ResponseWriter, r *http.Request, data any, status int) {
 	}
 }
 
+// respondError is a helper function to send standardized error responses.
 func respondError(w http.ResponseWriter, r *http.Request, message string, status int) {
 	respondJSON(w, r, map[string]string{"error": message}, status)
 }
 
+// handleError is a centralized error handling function that maps domain errors to appropriate HTTP status codes and logs unexpected errors.
 func handleError(w http.ResponseWriter, r *http.Request, err error, msg string) {
 	switch {
 	case errors.Is(err, domain.ErrNotFound):

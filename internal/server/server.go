@@ -31,6 +31,7 @@ type Server struct {
 	categoryHandler       *handler.CategoryHandler
 	transactionHandler    *handler.TransactionHandler
 	masterPurchaseHandler *handler.MasterPurchaseHandler
+	assetHandler          *handler.AssetHandler
 	adminHandler          *handler.AdminHandler
 
 	// Services passed to routes.go
@@ -40,6 +41,7 @@ type Server struct {
 	categorySvc       domain.CategoryService
 	transactionSvc    domain.TransactionService
 	masterPurchaseSvc domain.MasterPurchaseService
+	investmentSvc     domain.InvestmentService
 	invoiceCloser     domain.InvoiceCloser
 	adminSvc          domain.AdminService
 
@@ -61,6 +63,7 @@ func New(
 	categorySvc domain.CategoryService,
 	transactionSvc domain.TransactionService,
 	masterPurchaseSvc domain.MasterPurchaseService,
+	investmentSvc domain.InvestmentService,
 	invoiceCloser domain.InvoiceCloser,
 	adminSvc domain.AdminService,
 	idempotencyStore domain.IdempotencyStore,
@@ -75,6 +78,7 @@ func New(
 		categoryHandler:       handler.NewCategoryHandler(categorySvc),
 		transactionHandler:    handler.NewTransactionHandler(transactionSvc),
 		masterPurchaseHandler: handler.NewMasterPurchaseHandler(masterPurchaseSvc),
+		assetHandler:          handler.NewAssetHandler(investmentSvc),
 		adminHandler:          handler.NewAdminHandler(adminSvc),
 		authSvc:               authSvc,
 		tenantSvc:             tenantSvc,
@@ -82,6 +86,7 @@ func New(
 		categorySvc:           categorySvc,
 		transactionSvc:        transactionSvc,
 		masterPurchaseSvc:     masterPurchaseSvc,
+		investmentSvc:         investmentSvc,
 		invoiceCloser:         invoiceCloser,
 		adminSvc:              adminSvc,
 		idempotencyStore:      idempotencyStore,

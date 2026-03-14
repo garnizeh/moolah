@@ -8,6 +8,7 @@ import (
 	"github.com/garnizeh/moolah/internal/domain"
 )
 
+// tenantService provides business logic for managing tenants, including creation, retrieval, updating, and deletion of tenants, as well as inviting users to a tenant. It also handles related audit logging.
 type tenantService struct {
 	tenantRepo domain.TenantRepository
 	userRepo   domain.UserRepository
@@ -27,6 +28,7 @@ func NewTenantService(
 	}
 }
 
+// Create creates a new tenant with the specified input, and logs the creation action in the audit trail.
 func (s *tenantService) Create(ctx context.Context, input domain.CreateTenantInput) (*domain.Tenant, error) {
 	tenant, err := s.tenantRepo.Create(ctx, input)
 	if err != nil {
@@ -54,6 +56,7 @@ func (s *tenantService) Create(ctx context.Context, input domain.CreateTenantInp
 	return tenant, nil
 }
 
+// GetByID retrieves a tenant by its ID. It returns the tenant or an error if the record cannot be found or retrieved.
 func (s *tenantService) GetByID(ctx context.Context, id string) (*domain.Tenant, error) {
 	tenant, err := s.tenantRepo.GetByID(ctx, id)
 	if err != nil {
@@ -62,6 +65,7 @@ func (s *tenantService) GetByID(ctx context.Context, id string) (*domain.Tenant,
 	return tenant, nil
 }
 
+// List returns all tenants. It retrieves the list of tenants or returns an error if the records cannot be retrieved.
 func (s *tenantService) List(ctx context.Context) ([]domain.Tenant, error) {
 	tenants, err := s.tenantRepo.List(ctx)
 	if err != nil {
@@ -70,6 +74,7 @@ func (s *tenantService) List(ctx context.Context) ([]domain.Tenant, error) {
 	return tenants, nil
 }
 
+// Update validates the input and updates an existing tenant record. It logs any changes in the tenant's name or plan in the audit trail. It returns the updated tenant or an error if validation fails or the record cannot be updated.
 func (s *tenantService) Update(ctx context.Context, id string, input domain.UpdateTenantInput) (*domain.Tenant, error) {
 	oldTenant, err := s.tenantRepo.GetByID(ctx, id)
 	if err != nil {
@@ -121,6 +126,7 @@ func (s *tenantService) Update(ctx context.Context, id string, input domain.Upda
 	return tenant, nil
 }
 
+// Delete performs a soft delete of a tenant record by its ID. It logs the deletion action in the audit trail. It returns an error if the record cannot be deleted.
 func (s *tenantService) Delete(ctx context.Context, id string) error {
 	_, err := s.auditRepo.Create(ctx, domain.CreateAuditLogInput{
 		TenantID:   id,
@@ -141,6 +147,7 @@ func (s *tenantService) Delete(ctx context.Context, id string) error {
 	return nil
 }
 
+// InviteUser invites a new user to the tenant by creating a user record with the specified input. It logs the invitation action in the audit trail. It returns the created user or an error if the record cannot be created.
 func (s *tenantService) InviteUser(ctx context.Context, tenantID string, input domain.CreateUserInput) (*domain.User, error) {
 	// Enforcement: logic requires tenant match.
 	input.TenantID = tenantID

@@ -9,11 +9,13 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
+// AdminHandler handles system administration HTTP requests. These endpoints are restricted to sysadmin users and allow management of tenants, users, and viewing audit logs.
 type AdminHandler struct {
 	service  domain.AdminService
 	validate *validator.Validate
 }
 
+// NewAdminHandler creates a new AdminHandler with the given AdminService.
 func NewAdminHandler(service domain.AdminService) *AdminHandler {
 	return &AdminHandler{
 		service:  service,
@@ -21,6 +23,7 @@ func NewAdminHandler(service domain.AdminService) *AdminHandler {
 	}
 }
 
+// UpdateTenantPlanRequest represents the request body for updating a tenant's subscription plan.
 type UpdateTenantPlanRequest struct {
 	Plan domain.TenantPlan `json:"plan" validate:"required,oneof=free pro business"`
 }

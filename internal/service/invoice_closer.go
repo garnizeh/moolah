@@ -106,6 +106,7 @@ func (c *InvoiceCloser) CloseInvoice(
 	return result, nil
 }
 
+// materializeInstallment creates a transaction for the given installment, advances paid_installments, and updates account balance. It runs in a DB transaction to ensure atomicity of these operations.
 func (c *InvoiceCloser) materializeInstallment(
 	ctx context.Context,
 	tenantID string,
