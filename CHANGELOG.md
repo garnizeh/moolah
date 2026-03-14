@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.13.0](https://github.com/garnizeh/moolah/compare/v1.12.0...v1.13.0) (2026-03-14)
+
+
+### Features
+
+* add asset management functionality ([64b59bb](https://github.com/garnizeh/moolah/commit/64b59bb31be3df6fc563e87946c375b711466108))
+
 ## [1.12.0](https://github.com/garnizeh/moolah/compare/v1.11.0...v1.12.0) (2026-03-13)
 
 
