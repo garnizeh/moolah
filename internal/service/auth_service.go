@@ -13,6 +13,7 @@ import (
 	pkgpaseto "github.com/garnizeh/moolah/pkg/paseto"
 )
 
+// authService provides authentication-related functions such as requesting OTPs, verifying OTPs, and refreshing tokens. It is used by the AuthHandler to implement the authentication API endpoints.
 type authService struct {
 	authRepo  domain.AuthRepository
 	userRepo  domain.UserRepository
@@ -38,6 +39,7 @@ func NewAuthService(
 	}
 }
 
+// RequestOTP generates a one-time password (OTP) for the given email address, saves the OTP request in the database, sends the OTP to the user's email, and logs the OTP request action in the audit trail.
 func (s *authService) RequestOTP(ctx context.Context, email string) error {
 	user, err := s.userRepo.GetByEmail(ctx, email)
 	if err != nil {
@@ -84,6 +86,7 @@ func (s *authService) RequestOTP(ctx context.Context, email string) error {
 	return nil
 }
 
+// VerifyOTP checks if the provided OTP code is valid for the given email address, marks the OTP as used, updates the user's last login time, generates access and refresh tokens, and logs the OTP verification action in the audit trail.
 func (s *authService) VerifyOTP(ctx context.Context, email, code string) (*domain.TokenPair, error) {
 	otpReq, err := s.authRepo.GetActiveOTPRequest(ctx, email)
 	if err != nil {
@@ -185,6 +188,7 @@ func (s *authService) VerifyOTP(ctx context.Context, email, code string) (*domai
 	}, nil
 }
 
+// RefreshToken validates the provided refresh token, checks if the associated user still exists, and if valid, issues a new pair of access and refresh tokens. It also logs the token refresh action in the audit trail.
 func (s *authService) RefreshToken(ctx context.Context, refreshToken string) (*domain.TokenPair, error) {
 	claims, err := pkgpaseto.Parse(refreshToken, s.pasetoKey)
 	if err != nil {

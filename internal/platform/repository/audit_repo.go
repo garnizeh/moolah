@@ -11,6 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+// auditRepo implements the domain.AuditRepository interface using a sqlc.Querier for database interactions.
 type auditRepo struct {
 	q sqlc.Querier
 }
@@ -110,6 +111,7 @@ func (r *auditRepo) ListByEntity(ctx context.Context, tenantID, entityType, enti
 	return logs, nil
 }
 
+// mapToDomain converts a sqlc.AuditLog to a domain.AuditLog, handling nullable fields appropriately.
 func (r *auditRepo) mapToDomain(row sqlc.AuditLog) *domain.AuditLog {
 	log := &domain.AuditLog{
 		ID:         row.ID,

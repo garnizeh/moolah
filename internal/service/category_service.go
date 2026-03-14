@@ -9,6 +9,7 @@ import (
 	"github.com/garnizeh/moolah/internal/domain"
 )
 
+// CategoryService provides business logic for managing categories, including creation, retrieval, updating, and deletion of categories. It also handles related audit logging.
 type categoryService struct {
 	categoryRepo domain.CategoryRepository
 	auditRepo    domain.AuditRepository
@@ -22,6 +23,7 @@ func NewCategoryService(categoryRepo domain.CategoryRepository, auditRepo domain
 	}
 }
 
+// Create creates a new category for the specified tenant, and logs the creation action in the audit trail. It also enforces a maximum hierarchy depth of 1 (i.e., a category can have a parent, but not a grandparent).
 func (s *categoryService) Create(ctx context.Context, tenantID string, input domain.CreateCategoryInput) (*domain.Category, error) {
 	// 1. Hierarchy depth validation.
 	if input.ParentID != "" {
@@ -72,6 +74,7 @@ func (s *categoryService) Create(ctx context.Context, tenantID string, input dom
 	return category, nil
 }
 
+// GetByID retrieves a category by its ID and tenant ID. It returns domain.ErrNotFound if the category does not exist.
 func (s *categoryService) GetByID(ctx context.Context, tenantID, id string) (*domain.Category, error) {
 	category, err := s.categoryRepo.GetByID(ctx, tenantID, id)
 	if err != nil {
@@ -80,6 +83,7 @@ func (s *categoryService) GetByID(ctx context.Context, tenantID, id string) (*do
 	return category, nil
 }
 
+// ListByTenant returns all categories for a given tenant.
 func (s *categoryService) ListByTenant(ctx context.Context, tenantID string) ([]domain.Category, error) {
 	categories, err := s.categoryRepo.ListByTenant(ctx, tenantID)
 	if err != nil {
@@ -88,6 +92,7 @@ func (s *categoryService) ListByTenant(ctx context.Context, tenantID string) ([]
 	return categories, nil
 }
 
+// ListChildren returns all child categories for a given tenant and parent category ID.
 func (s *categoryService) ListChildren(ctx context.Context, tenantID, parentID string) ([]domain.Category, error) {
 	categories, err := s.categoryRepo.ListChildren(ctx, tenantID, parentID)
 	if err != nil {
@@ -96,6 +101,7 @@ func (s *categoryService) ListChildren(ctx context.Context, tenantID, parentID s
 	return categories, nil
 }
 
+// Update modifies an existing category's details, and logs the update action in the audit trail, including the old and new values of the changed fields.
 func (s *categoryService) Update(ctx context.Context, tenantID, id string, input domain.UpdateCategoryInput) (*domain.Category, error) {
 	oldCategory, err := s.categoryRepo.GetByID(ctx, tenantID, id)
 	if err != nil {
@@ -150,6 +156,7 @@ func (s *categoryService) Update(ctx context.Context, tenantID, id string, input
 	return category, nil
 }
 
+// Delete performs a soft delete of the category, and logs the deletion action in the audit trail. It first checks if the category exists before attempting deletion.
 func (s *categoryService) Delete(ctx context.Context, tenantID, id string) error {
 	// Fetch to ensure it exists.
 	_, err := s.categoryRepo.GetByID(ctx, tenantID, id)

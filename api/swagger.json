@@ -1158,6 +1158,274 @@
                 }
             }
         },
+        "/v1/assets": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns the global asset catalogue with optional filtering.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "assets"
+                ],
+                "summary": "List assets",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Filter by asset type (stock, bond, fund, crypto, real_estate, income_source)",
+                        "name": "asset_type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by currency (e.g., USD, BRL)",
+                        "name": "currency",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/domain.Asset"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Creates a new global asset in the catalogue. Restricted to administrators.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "assets"
+                ],
+                "summary": "Create asset",
+                "parameters": [
+                    {
+                        "description": "Asset details",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/domain.CreateAssetInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/domain.Asset"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/assets/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns a single global asset by its ID, merging global values with tenant-specific overrides if they exist.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "assets"
+                ],
+                "summary": "Get asset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Asset ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/domain.Asset"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Asset not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Soft-deletes a global asset from the catalogue. Restricted to administrators.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "assets"
+                ],
+                "summary": "Delete asset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Asset ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/v1/auth/otp/request": {
             "post": {
                 "description": "Validates email and generates a 6-digit verification code sent via email.",
@@ -2044,6 +2312,187 @@
                 }
             }
         },
+        "/v1/me/asset-configs": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns all asset overrides (configs) for the current tenant.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "assets"
+                ],
+                "summary": "List my asset configurations",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/domain.TenantAssetConfig"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/me/asset-configs/{asset_id}": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Creates or updates overrides for a global asset for the current tenant.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "assets"
+                ],
+                "summary": "Upsert asset configuration",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Asset ID",
+                        "name": "asset_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Configuration details",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/domain.UpsertTenantAssetConfigInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/domain.TenantAssetConfig"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Removes overrides for a global asset for the current tenant.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "assets"
+                ],
+                "summary": "Delete asset configuration",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Asset ID",
+                        "name": "asset_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/v1/tenants/me": {
             "get": {
                 "security": [
@@ -2712,6 +3161,54 @@
                 "AccountTypeInvestment"
             ]
         },
+        "domain.Asset": {
+            "type": "object",
+            "properties": {
+                "asset_type": {
+                    "$ref": "#/definitions/domain.AssetType"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "currency": {
+                    "type": "string"
+                },
+                "details": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "isin": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "ticker": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.AssetType": {
+            "type": "string",
+            "enum": [
+                "stock",
+                "bond",
+                "fund",
+                "crypto",
+                "real_estate",
+                "income_source"
+            ],
+            "x-enum-varnames": [
+                "AssetTypeStock",
+                "AssetTypeBond",
+                "AssetTypeFund",
+                "AssetTypeCrypto",
+                "AssetTypeRealEstate",
+                "AssetTypeIncomeSource"
+            ]
+        },
         "domain.Category": {
             "type": "object",
             "properties": {
@@ -2762,6 +3259,38 @@
                 "CategoryTypeExpense",
                 "CategoryTypeTransfer"
             ]
+        },
+        "domain.CreateAssetInput": {
+            "type": "object",
+            "required": [
+                "asset_type",
+                "currency",
+                "name",
+                "ticker"
+            ],
+            "properties": {
+                "asset_type": {
+                    "$ref": "#/definitions/domain.AssetType"
+                },
+                "currency": {
+                    "type": "string"
+                },
+                "details": {
+                    "type": "string"
+                },
+                "isin": {
+                    "type": "string",
+                    "maxLength": 12
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 200
+                },
+                "ticker": {
+                    "type": "string",
+                    "maxLength": 20
+                }
+            }
         },
         "domain.MasterPurchase": {
             "type": "object",
@@ -2878,6 +3407,35 @@
                 }
             }
         },
+        "domain.TenantAssetConfig": {
+            "type": "object",
+            "properties": {
+                "asset_id": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "currency": {
+                    "description": "overrides Asset.Currency",
+                    "type": "string"
+                },
+                "details": {
+                    "description": "overrides Asset.Details",
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "description": "overrides Asset.Name",
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
         "domain.TenantPlan": {
             "type": "string",
             "enum": [
@@ -2949,6 +3507,27 @@
                 "TransactionTypeExpense",
                 "TransactionTypeTransfer"
             ]
+        },
+        "domain.UpsertTenantAssetConfigInput": {
+            "type": "object",
+            "required": [
+                "asset_id"
+            ],
+            "properties": {
+                "asset_id": {
+                    "type": "string"
+                },
+                "currency": {
+                    "type": "string"
+                },
+                "details": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 200
+                }
+            }
         },
         "domain.User": {
             "type": "object",

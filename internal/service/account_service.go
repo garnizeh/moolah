@@ -9,6 +9,7 @@ import (
 	"github.com/garnizeh/moolah/internal/domain"
 )
 
+// AccountService provides business logic for managing accounts, including creation, retrieval, updating, and deletion of accounts. It also handles related audit logging.
 type accountService struct {
 	accountRepo domain.AccountRepository
 	userRepo    domain.UserRepository
@@ -28,6 +29,7 @@ func NewAccountService(
 	}
 }
 
+// Create creates a new account for the specified tenant and user, and logs the creation action in the audit trail.
 func (s *accountService) Create(ctx context.Context, tenantID string, input domain.CreateAccountInput) (*domain.Account, error) {
 	// 1. Verify that the user belongs to the tenant.
 	user, err := s.userRepo.GetByID(ctx, tenantID, input.UserID)
@@ -71,6 +73,7 @@ func (s *accountService) Create(ctx context.Context, tenantID string, input doma
 	return account, nil
 }
 
+// GetByID retrieves an account by its ID and tenant ID.
 func (s *accountService) GetByID(ctx context.Context, tenantID, id string) (*domain.Account, error) {
 	account, err := s.accountRepo.GetByID(ctx, tenantID, id)
 	if err != nil {
@@ -79,6 +82,7 @@ func (s *accountService) GetByID(ctx context.Context, tenantID, id string) (*dom
 	return account, nil
 }
 
+// ListByTenant returns all accounts for a given tenant.
 func (s *accountService) ListByTenant(ctx context.Context, tenantID string) ([]domain.Account, error) {
 	accounts, err := s.accountRepo.ListByTenant(ctx, tenantID)
 	if err != nil {
@@ -87,6 +91,7 @@ func (s *accountService) ListByTenant(ctx context.Context, tenantID string) ([]d
 	return accounts, nil
 }
 
+// ListByUser returns all accounts for a given tenant and user.
 func (s *accountService) ListByUser(ctx context.Context, tenantID, userID string) ([]domain.Account, error) {
 	accounts, err := s.accountRepo.ListByUser(ctx, tenantID, userID)
 	if err != nil {
@@ -95,6 +100,7 @@ func (s *accountService) ListByUser(ctx context.Context, tenantID, userID string
 	return accounts, nil
 }
 
+// Update modifies an existing account's details and logs the update action in the audit trail, capturing changed fields.
 func (s *accountService) Update(ctx context.Context, tenantID, id string, input domain.UpdateAccountInput) (*domain.Account, error) {
 	oldAccount, err := s.accountRepo.GetByID(ctx, tenantID, id)
 	if err != nil {
@@ -146,6 +152,7 @@ func (s *accountService) Update(ctx context.Context, tenantID, id string, input 
 	return account, nil
 }
 
+// Delete performs a soft delete of the account and logs the deletion action in the audit trail.
 func (s *accountService) Delete(ctx context.Context, tenantID, id string) error {
 	account, err := s.accountRepo.GetByID(ctx, tenantID, id)
 	if err != nil {

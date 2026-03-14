@@ -23,6 +23,7 @@ func TestNew(t *testing.T) {
 	categorySvc := new(mocks.CategoryService)
 	transactionSvc := new(mocks.TransactionService)
 	masterPurchaseSvc := new(mocks.MasterPurchaseService)
+	investmentSvc := new(mocks.InvestmentService)
 	adminSvc := new(mocks.AdminService)
 	idempotencyStore := new(mocks.IdempotencyStore)
 
@@ -34,6 +35,7 @@ func TestNew(t *testing.T) {
 		categorySvc,
 		transactionSvc,
 		masterPurchaseSvc,
+		investmentSvc,
 		new(mocks.InvoiceCloser),
 		adminSvc,
 		idempotencyStore,
@@ -58,6 +60,7 @@ func TestServer_ListenAndServe_Shutdown(t *testing.T) {
 	categorySvc := new(mocks.CategoryService)
 	transactionSvc := new(mocks.TransactionService)
 	masterPurchaseSvc := new(mocks.MasterPurchaseService)
+	investmentSvc := new(mocks.InvestmentService)
 	adminSvc := new(mocks.AdminService)
 	idempotencyStore := new(mocks.IdempotencyStore)
 
@@ -69,6 +72,7 @@ func TestServer_ListenAndServe_Shutdown(t *testing.T) {
 		categorySvc,
 		transactionSvc,
 		masterPurchaseSvc,
+		investmentSvc,
 		new(mocks.InvoiceCloser),
 		adminSvc,
 		idempotencyStore,
@@ -126,6 +130,7 @@ func TestServer_ListenAndServe_BindError(t *testing.T) {
 		new(mocks.CategoryService),
 		new(mocks.TransactionService),
 		new(mocks.MasterPurchaseService),
+		new(mocks.InvestmentService),
 		new(mocks.InvoiceCloser),
 		new(mocks.AdminService),
 		new(mocks.IdempotencyStore),
@@ -149,6 +154,7 @@ func TestServer_Shutdown_NoHTTPServer(t *testing.T) {
 		new(mocks.CategoryService),
 		new(mocks.TransactionService),
 		new(mocks.MasterPurchaseService),
+		new(mocks.InvestmentService),
 		new(mocks.InvoiceCloser),
 		new(mocks.AdminService),
 		new(mocks.IdempotencyStore),

@@ -10,6 +10,7 @@ import (
 	"github.com/garnizeh/moolah/pkg/ulid"
 )
 
+// tenantRepo implements the domain.TenantRepository interface using a sqlc.Querier for database interactions.
 type tenantRepo struct {
 	q sqlc.Querier
 }
@@ -99,6 +100,7 @@ func (r *tenantRepo) Delete(ctx context.Context, id string) error {
 	return nil
 }
 
+// ListAll returns all tenants, including those that are suspended or deleted. This is typically used by admin interfaces to manage tenants.
 func (r *tenantRepo) mapTenant(t sqlc.Tenant) *domain.Tenant {
 	var deletedAt *time.Time
 	if t.DeletedAt.Valid {

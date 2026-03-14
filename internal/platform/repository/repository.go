@@ -3,10 +3,12 @@ package repository
 
 import (
 	"errors"
+	"time"
 
 	"github.com/garnizeh/moolah/internal/domain"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 // TranslateError maps database-specific errors (pgx, postgres) to domain-specific errors.
@@ -29,4 +31,29 @@ func TranslateError(err error) error {
 	}
 
 	return err
+}
+
+// fromTime converts a pgtype.Timestamptz to a *time.Time, returning nil if the value is not valid.
+func fromTime(t pgtype.Timestamptz) *time.Time {
+	if !t.Valid {
+		return nil
+	}
+	return &t.Time
+}
+
+// toTime converts a *time.Time to a pgtype.Timestamptz, marking it as invalid if the pointer is nil.
+func toText(s *string) pgtype.Text {
+	if s == nil {
+		return pgtype.Text{Valid: false}
+	}
+	return pgtype.Text{String: *s, Valid: true}
+}
+
+// fromText converts a pgtype.Text to a *string, returning nil if the value is not valid.
+func fromText(t pgtype.Text) *string {
+	if !t.Valid {
+		return nil
+	}
+	s := t.String
+	return &s
 }

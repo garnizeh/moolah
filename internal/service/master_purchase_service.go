@@ -7,6 +7,7 @@ import (
 	"github.com/garnizeh/moolah/internal/domain"
 )
 
+// masterPurchaseService provides business logic for managing master purchases, including creation, retrieval, updating, and deletion of master purchase records. It also includes logic for projecting installment details based on the total amount and installment count.
 type masterPurchaseService struct {
 	mpRepo      domain.MasterPurchaseRepository
 	accountRepo domain.AccountRepository
@@ -26,6 +27,7 @@ func NewMasterPurchaseService(
 	}
 }
 
+// Create validates the input and creates a new master purchase record. It checks that the referenced account exists and is a credit card, and that the referenced category exists and is an expense category. It returns the created master purchase or an error if validation fails or the record cannot be created.
 func (s *masterPurchaseService) Create(ctx context.Context, tenantID string, input domain.CreateMasterPurchaseInput) (*domain.MasterPurchase, error) {
 	// 1. Verify account belongs to tenant and is of type credit_card.
 	acc, err := s.accountRepo.GetByID(ctx, tenantID, input.AccountID)
@@ -54,6 +56,7 @@ func (s *masterPurchaseService) Create(ctx context.Context, tenantID string, inp
 	return mp, nil
 }
 
+// GetByID retrieves a master purchase by its ID and tenant ID. It returns the master purchase or an error if the record cannot be found or retrieved.
 func (s *masterPurchaseService) GetByID(ctx context.Context, tenantID, id string) (*domain.MasterPurchase, error) {
 	mp, err := s.mpRepo.GetByID(ctx, tenantID, id)
 	if err != nil {
@@ -62,6 +65,7 @@ func (s *masterPurchaseService) GetByID(ctx context.Context, tenantID, id string
 	return mp, nil
 }
 
+// ListByTenant returns all master purchases for a given tenant ID. It retrieves the list of master purchases or returns an error if the records cannot be retrieved.
 func (s *masterPurchaseService) ListByTenant(ctx context.Context, tenantID string) ([]domain.MasterPurchase, error) {
 	mps, err := s.mpRepo.ListByTenant(ctx, tenantID)
 	if err != nil {
@@ -70,6 +74,7 @@ func (s *masterPurchaseService) ListByTenant(ctx context.Context, tenantID strin
 	return mps, nil
 }
 
+// ListByAccount returns all master purchases for a given tenant ID and account ID. It retrieves the list of master purchases or returns an error if the records cannot be retrieved.
 func (s *masterPurchaseService) ListByAccount(ctx context.Context, tenantID, accountID string) ([]domain.MasterPurchase, error) {
 	mps, err := s.mpRepo.ListByAccount(ctx, tenantID, accountID)
 	if err != nil {
@@ -78,6 +83,7 @@ func (s *masterPurchaseService) ListByAccount(ctx context.Context, tenantID, acc
 	return mps, nil
 }
 
+// Update validates the input and updates an existing master purchase record. It checks that if the category is being updated, the new category exists and is an expense category. It returns the updated master purchase or an error if validation fails or the record cannot be updated.
 func (s *masterPurchaseService) Update(ctx context.Context, tenantID, id string, input domain.UpdateMasterPurchaseInput) (*domain.MasterPurchase, error) {
 	// If category is provided, verify it exists and is an expense.
 	if input.CategoryID != nil {
@@ -100,6 +106,7 @@ func (s *masterPurchaseService) Update(ctx context.Context, tenantID, id string,
 	return mp, nil
 }
 
+// Delete performs a soft delete of a master purchase record by its ID and tenant ID. It returns an error if the record cannot be deleted.
 func (s *masterPurchaseService) Delete(ctx context.Context, tenantID, id string) error {
 	err := s.mpRepo.Delete(ctx, tenantID, id)
 	if err != nil {

@@ -125,6 +125,8 @@ func TestSmoke_Phase1HappyPath(t *testing.T) {
 	categoryRepo := repository.NewCategoryRepository(pgDB.Queries)
 	transactionRepo := repository.NewTransactionRepository(pgDB.Queries)
 	masterPurchaseRepo := repository.NewMasterPurchaseRepository(pgDB.Queries)
+	assetRepo := repository.NewAssetRepository(pgDB.Queries)
+	tenantAssetConfigRepo := repository.NewTenantAssetConfigRepository(pgDB.Queries)
 	auditRepo := repository.NewAuditRepository(pgDB.Queries)
 	adminTenantRepo := repository.NewAdminTenantRepository(pgDB.Queries)
 	adminUserRepo := repository.NewAdminUserRepository(pgDB.Queries)
@@ -140,6 +142,7 @@ func TestSmoke_Phase1HappyPath(t *testing.T) {
 	categorySvc := service.NewCategoryService(categoryRepo, auditRepo)
 	transactionSvc := service.NewTransactionService(transactionRepo, accountRepo, categoryRepo, auditRepo)
 	masterPurchaseSvc := service.NewMasterPurchaseService(masterPurchaseRepo, accountRepo, categoryRepo)
+	investmentSvc := service.NewInvestmentService(nil, nil, assetRepo, tenantAssetConfigRepo, accountRepo, transactionRepo, auditRepo, nil)
 	invoiceCloser := service.NewInvoiceCloser(masterPurchaseRepo, transactionRepo, auditRepo, accountRepo, masterPurchaseSvc, pgDB.Pool)
 	adminSvc := service.NewAdminService(adminTenantRepo, adminUserRepo, adminAuditRepo, auditRepo)
 
@@ -154,6 +157,7 @@ func TestSmoke_Phase1HappyPath(t *testing.T) {
 		categorySvc,
 		transactionSvc,
 		masterPurchaseSvc,
+		investmentSvc,
 		invoiceCloser,
 		adminSvc,
 		idempotencyStore,
@@ -596,6 +600,8 @@ func TestSmoke_Phase2HappyPath(t *testing.T) {
 	categoryRepo := repository.NewCategoryRepository(pgDB.Queries)
 	transactionRepo := repository.NewTransactionRepository(pgDB.Queries)
 	masterPurchaseRepo := repository.NewMasterPurchaseRepository(pgDB.Queries)
+	assetRepo := repository.NewAssetRepository(pgDB.Queries)
+	tenantAssetConfigRepo := repository.NewTenantAssetConfigRepository(pgDB.Queries)
 	auditRepo := repository.NewAuditRepository(pgDB.Queries)
 	adminTenantRepo := repository.NewAdminTenantRepository(pgDB.Queries)
 	adminUserRepo := repository.NewAdminUserRepository(pgDB.Queries)
@@ -611,6 +617,7 @@ func TestSmoke_Phase2HappyPath(t *testing.T) {
 	categorySvc := service.NewCategoryService(categoryRepo, auditRepo)
 	transactionSvc := service.NewTransactionService(transactionRepo, accountRepo, categoryRepo, auditRepo)
 	masterPurchaseSvc := service.NewMasterPurchaseService(masterPurchaseRepo, accountRepo, categoryRepo)
+	investmentSvc := service.NewInvestmentService(nil, nil, assetRepo, tenantAssetConfigRepo, accountRepo, transactionRepo, auditRepo, nil)
 	invoiceCloser := service.NewInvoiceCloser(masterPurchaseRepo, transactionRepo, auditRepo, accountRepo, masterPurchaseSvc, pgDB.Pool)
 	adminSvc := service.NewAdminService(adminTenantRepo, adminUserRepo, adminAuditRepo, auditRepo)
 
@@ -625,6 +632,7 @@ func TestSmoke_Phase2HappyPath(t *testing.T) {
 		categorySvc,
 		transactionSvc,
 		masterPurchaseSvc,
+		investmentSvc,
 		invoiceCloser,
 		adminSvc,
 		idempotencyStore,

@@ -24,6 +24,7 @@ deps:
 	@gofumpt -w .
 	@go fmt .
 	@go fix ./...
+	@fieldalignment -fix ./...
 
 ## swagger: Generate Swagger documentation
 swagger:

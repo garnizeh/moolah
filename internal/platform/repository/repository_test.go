@@ -3,10 +3,12 @@ package repository
 import (
 	"errors"
 	"testing"
+	"time"
 
 	"github.com/garnizeh/moolah/internal/domain"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -50,5 +52,43 @@ func TestTranslateError(t *testing.T) {
 		pgErr := &pgconn.PgError{Code: "99999"}
 		err := TranslateError(pgErr)
 		assert.Equal(t, pgErr, err)
+	})
+}
+
+func TestMappingHelpers(t *testing.T) {
+	t.Parallel()
+
+	t.Run("fromTime", func(t *testing.T) {
+		t.Parallel()
+		now := time.Now()
+
+		valid := pgtype.Timestamptz{Time: now, Valid: true}
+		invalid := pgtype.Timestamptz{Valid: false}
+
+		assert.Equal(t, &now, fromTime(valid))
+		assert.Nil(t, fromTime(invalid))
+	})
+
+	t.Run("toText", func(t *testing.T) {
+		t.Parallel()
+		str := "hello"
+
+		resValid := toText(&str)
+		resInvalid := toText(nil)
+
+		assert.True(t, resValid.Valid)
+		assert.Equal(t, str, resValid.String)
+		assert.False(t, resInvalid.Valid)
+	})
+
+	t.Run("fromText", func(t *testing.T) {
+		t.Parallel()
+		str := "world"
+
+		valid := pgtype.Text{String: str, Valid: true}
+		invalid := pgtype.Text{Valid: false}
+
+		assert.Equal(t, &str, fromText(valid))
+		assert.Nil(t, fromText(invalid))
 	})
 }

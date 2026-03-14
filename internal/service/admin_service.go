@@ -8,6 +8,7 @@ import (
 	"github.com/garnizeh/moolah/internal/domain"
 )
 
+// AdminService provides system-wide administrative functions such as managing tenants and users, and viewing audit logs. It is intended for use by internal admin tools and dashboards.
 type adminService struct {
 	tenantRepo domain.AdminTenantRepository
 	userRepo   domain.AdminUserRepository
@@ -30,6 +31,7 @@ func NewAdminService(
 	}
 }
 
+// ListAllTenants returns a list of all tenants in the system, including suspended ones if withDeleted is true.
 func (s *adminService) ListAllTenants(ctx context.Context, withDeleted bool) ([]domain.Tenant, error) {
 	tenants, err := s.tenantRepo.ListAll(ctx, withDeleted)
 	if err != nil {
@@ -38,6 +40,7 @@ func (s *adminService) ListAllTenants(ctx context.Context, withDeleted bool) ([]
 	return tenants, nil
 }
 
+// GetTenantByID retrieves a tenant by its ID. It returns domain.ErrNotFound if the tenant does not exist.
 func (s *adminService) GetTenantByID(ctx context.Context, id string) (*domain.Tenant, error) {
 	tenant, err := s.tenantRepo.GetByID(ctx, id)
 	if err != nil {
@@ -49,6 +52,7 @@ func (s *adminService) GetTenantByID(ctx context.Context, id string) (*domain.Te
 	return tenant, nil
 }
 
+// UpdateTenantPlan changes the subscription plan of a tenant and logs the update action in the audit trail.
 func (s *adminService) UpdateTenantPlan(ctx context.Context, id string, plan domain.TenantPlan) (*domain.Tenant, error) {
 	tenant, err := s.tenantRepo.UpdatePlan(ctx, id, plan)
 	if err != nil {
@@ -70,6 +74,7 @@ func (s *adminService) UpdateTenantPlan(ctx context.Context, id string, plan dom
 	return tenant, nil
 }
 
+// SuspendTenant performs a soft delete of the tenant, effectively suspending it, and logs the suspension action in the audit trail.
 func (s *adminService) SuspendTenant(ctx context.Context, id string) error {
 	err := s.tenantRepo.Suspend(ctx, id)
 	if err != nil {
@@ -90,6 +95,7 @@ func (s *adminService) SuspendTenant(ctx context.Context, id string) error {
 	return nil
 }
 
+// RestoreTenant restores a previously suspended tenant and logs the restoration action in the audit trail.
 func (s *adminService) RestoreTenant(ctx context.Context, id string) error {
 	err := s.tenantRepo.Restore(ctx, id)
 	if err != nil {
@@ -110,6 +116,7 @@ func (s *adminService) RestoreTenant(ctx context.Context, id string) error {
 	return nil
 }
 
+// HardDeleteTenant permanently deletes a tenant from the system after verifying the confirmation token, and logs the deletion action in the audit trail.
 func (s *adminService) HardDeleteTenant(ctx context.Context, id, confirmationToken string) error {
 	if confirmationToken != id {
 		return domain.ErrInvalidInput
@@ -135,6 +142,7 @@ func (s *adminService) HardDeleteTenant(ctx context.Context, id, confirmationTok
 	return nil
 }
 
+// ListAllUsers returns a list of all users in the system, including those from suspended tenants.
 func (s *adminService) ListAllUsers(ctx context.Context) ([]domain.User, error) {
 	users, err := s.userRepo.ListAll(ctx)
 	if err != nil {
@@ -143,6 +151,7 @@ func (s *adminService) ListAllUsers(ctx context.Context) ([]domain.User, error) 
 	return users, nil
 }
 
+// GetUserByID retrieves a user by their ID. It returns domain.ErrNotFound if the user does not exist.
 func (s *adminService) GetUserByID(ctx context.Context, id string) (*domain.User, error) {
 	user, err := s.userRepo.GetByID(ctx, id)
 	if err != nil {
@@ -154,6 +163,7 @@ func (s *adminService) GetUserByID(ctx context.Context, id string) (*domain.User
 	return user, nil
 }
 
+// ForceDeleteUser permanently deletes a user from the system and logs the deletion action in the audit trail.
 func (s *adminService) ForceDeleteUser(ctx context.Context, id string) error {
 	// Write audit record.
 	_, auditErr := s.auditRepo.Create(ctx, domain.CreateAuditLogInput{
@@ -175,6 +185,7 @@ func (s *adminService) ForceDeleteUser(ctx context.Context, id string) error {
 	return nil
 }
 
+// ListAuditLogs returns a list of all audit logs in the system, with optional filtering by tenant ID, user ID, action type, and time range.
 func (s *adminService) ListAuditLogs(ctx context.Context, params domain.ListAuditLogsParams) ([]domain.AuditLog, error) {
 	logs, err := s.adminAudit.ListAll(ctx, params)
 	if err != nil {

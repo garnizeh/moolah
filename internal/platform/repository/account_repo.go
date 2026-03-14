@@ -9,6 +9,7 @@ import (
 	"github.com/garnizeh/moolah/pkg/ulid"
 )
 
+// accountRepo implements the domain.AccountRepository interface using a sqlc.Querier for database interactions.
 type accountRepo struct {
 	q sqlc.Querier
 }
@@ -150,6 +151,7 @@ func (r *accountRepo) Delete(ctx context.Context, tenantID, id string) error {
 	return nil
 }
 
+// CreateOTPRequest creates a new OTP request for the given email, code hash, and expiration time.
 func mapAccount(row sqlc.Account) *domain.Account {
 	return &domain.Account{
 		ID:           row.ID,

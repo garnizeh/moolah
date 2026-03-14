@@ -19,6 +19,7 @@ func (s *Server) routes() http.Handler {
 
 	// Inject middleware helpers
 	requireAuth := middleware.RequireAuth(s.tokenParser)
+	sysadminOnly := middleware.RequireRole(domain.RoleSysadmin)
 	rateLimit := s.rateLimiterStore.OTPRateLimiter()
 	idempotency := middleware.Idempotency(s.idempotencyStore)
 
@@ -62,8 +63,16 @@ func (s *Server) routes() http.Handler {
 	mux.Handle("PATCH /v1/master-purchases/{id}", requireAuth(idempotency(http.HandlerFunc(s.handleUpdateMasterPurchase))))
 	mux.Handle("DELETE /v1/master-purchases/{id}", requireAuth(http.HandlerFunc(s.handleDeleteMasterPurchase)))
 
-	// 7. Admin Routes (Task 1.5.9)
-	sysadminOnly := middleware.RequireRole(domain.RoleSysadmin)
+	// 7. Investment & Asset Routes (Task 3.7)
+	mux.Handle("GET /v1/assets", requireAuth(http.HandlerFunc(s.handleListAssets)))
+	mux.Handle("GET /v1/assets/{id}", requireAuth(http.HandlerFunc(s.handleGetAssetByID)))
+	mux.Handle("POST /v1/assets", requireAuth(sysadminOnly(idempotency(http.HandlerFunc(s.handleCreateAsset)))))
+	mux.Handle("DELETE /v1/assets/{id}", requireAuth(sysadminOnly(http.HandlerFunc(s.handleDeleteAsset))))
+	mux.Handle("GET /v1/me/asset-configs", requireAuth(http.HandlerFunc(s.handleListMyAssetConfigs)))
+	mux.Handle("PUT /v1/me/asset-configs/{asset_id}", requireAuth(idempotency(http.HandlerFunc(s.handleUpsertMyAssetConfig))))
+	mux.Handle("DELETE /v1/me/asset-configs/{asset_id}", requireAuth(http.HandlerFunc(s.handleDeleteMyAssetConfig)))
+
+	// 8. Admin Routes (Task 1.5.9)
 	mux.Handle("GET /v1/admin/tenants", requireAuth(sysadminOnly(http.HandlerFunc(s.handleAdminListTenants))))
 	mux.Handle("GET /v1/admin/tenants/{id}", requireAuth(sysadminOnly(http.HandlerFunc(s.handleAdminGetTenant))))
 	mux.Handle("PATCH /v1/admin/tenants/{id}/plan", requireAuth(sysadminOnly(http.HandlerFunc(s.handleAdminUpdatePlan))))
@@ -151,6 +160,34 @@ func (s *Server) handleUpdateTransaction(w http.ResponseWriter, r *http.Request)
 
 func (s *Server) handleDeleteTransaction(w http.ResponseWriter, r *http.Request) {
 	s.transactionHandler.Delete(w, r)
+}
+
+func (s *Server) handleListAssets(w http.ResponseWriter, r *http.Request) {
+	s.assetHandler.ListAssets(w, r)
+}
+
+func (s *Server) handleGetAssetByID(w http.ResponseWriter, r *http.Request) {
+	s.assetHandler.GetAsset(w, r)
+}
+
+func (s *Server) handleCreateAsset(w http.ResponseWriter, r *http.Request) {
+	s.assetHandler.CreateAsset(w, r)
+}
+
+func (s *Server) handleDeleteAsset(w http.ResponseWriter, r *http.Request) {
+	s.assetHandler.DeleteAsset(w, r)
+}
+
+func (s *Server) handleListMyAssetConfigs(w http.ResponseWriter, r *http.Request) {
+	s.assetHandler.ListMyConfigs(w, r)
+}
+
+func (s *Server) handleUpsertMyAssetConfig(w http.ResponseWriter, r *http.Request) {
+	s.assetHandler.UpsertMyConfig(w, r)
+}
+
+func (s *Server) handleDeleteMyAssetConfig(w http.ResponseWriter, r *http.Request) {
+	s.assetHandler.DeleteMyConfig(w, r)
 }
 
 func (s *Server) handleAdminListTenants(w http.ResponseWriter, r *http.Request) {

@@ -9,6 +9,7 @@ import (
 	"github.com/garnizeh/moolah/internal/domain"
 )
 
+// transactionService provides business logic for managing transactions, including creation, retrieval, updating, and deletion of transactions. It also handles related audit logging and ensures that account balances are updated accordingly.
 type transactionService struct {
 	txRepo       domain.TransactionRepository
 	accountRepo  domain.AccountRepository
@@ -31,6 +32,7 @@ func NewTransactionService(
 	}
 }
 
+// Create validates the input and creates a new transaction record. It checks that the referenced account exists, that the referenced category exists and matches the transaction type, and then persists the transaction. It also updates the account balance accordingly and logs the creation action in the audit trail. It returns the created transaction or an error if validation fails or the record cannot be created.
 func (s *transactionService) Create(ctx context.Context, tenantID string, input domain.CreateTransactionInput) (*domain.Transaction, error) {
 	// 1. Verify account belongs to tenant.
 	account, err := s.accountRepo.GetByID(ctx, tenantID, input.AccountID)
@@ -95,6 +97,7 @@ func (s *transactionService) Create(ctx context.Context, tenantID string, input 
 	return tx, nil
 }
 
+// GetByID retrieves a transaction by its ID and tenant ID. It returns the transaction or an error if the record cannot be found or retrieved.
 func (s *transactionService) GetByID(ctx context.Context, tenantID, id string) (*domain.Transaction, error) {
 	tx, err := s.txRepo.GetByID(ctx, tenantID, id)
 	if err != nil {
@@ -103,6 +106,7 @@ func (s *transactionService) GetByID(ctx context.Context, tenantID, id string) (
 	return tx, nil
 }
 
+// List returns all transactions for a given tenant ID, optionally filtered by account, category, date range, or type. It retrieves the list of transactions or returns an error if the records cannot be retrieved.
 func (s *transactionService) List(ctx context.Context, tenantID string, params domain.ListTransactionsParams) ([]domain.Transaction, error) {
 	txs, err := s.txRepo.List(ctx, tenantID, params)
 	if err != nil {
@@ -111,6 +115,7 @@ func (s *transactionService) List(ctx context.Context, tenantID string, params d
 	return txs, nil
 }
 
+// Update validates the input and updates an existing transaction record. It checks that if the account is being updated, the new account exists; if the category is being updated, the new category exists and matches the transaction type. It then persists the transaction update, adjusts the account balance if the amount or type changed, and logs the update action in the audit trail. It returns the updated transaction or an error if validation fails or the record cannot be updated.
 func (s *transactionService) Update(ctx context.Context, tenantID, id string, input domain.UpdateTransactionInput) (*domain.Transaction, error) {
 	// 1. Fetch existing transaction.
 	oldTx, err := s.txRepo.GetByID(ctx, tenantID, id)
@@ -183,6 +188,7 @@ func (s *transactionService) Update(ctx context.Context, tenantID, id string, in
 	return newTx, nil
 }
 
+// Delete performs a soft delete of a transaction record by its ID and tenant ID. It reverts the account balance accordingly, logs the deletion action in the audit trail, and then marks the transaction as deleted. It returns an error if the record cannot be deleted.
 func (s *transactionService) Delete(ctx context.Context, tenantID, id string) error {
 	// 1. Fetch existing.
 	tx, err := s.txRepo.GetByID(ctx, tenantID, id)
@@ -220,6 +226,7 @@ func (s *transactionService) Delete(ctx context.Context, tenantID, id string) er
 	return nil
 }
 
+// calculateDelta computes the balance adjustment for a transaction based on its type and amount. Income transactions increase balance, while expense and transfer transactions decrease balance.
 func (s *transactionService) calculateDelta(txType domain.TransactionType, amount int64) int64 {
 	switch txType {
 	case domain.TransactionTypeIncome:

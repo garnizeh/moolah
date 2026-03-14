@@ -9,6 +9,7 @@ import (
 	"github.com/garnizeh/moolah/pkg/ulid"
 )
 
+// userRepo implements the domain.UserRepository interface using a sqlc.Querier for database interactions.
 type userRepo struct {
 	q sqlc.Querier
 }
@@ -127,6 +128,7 @@ func (r *userRepo) Delete(ctx context.Context, tenantID, id string) error {
 	return nil
 }
 
+// mapUser converts a sqlc.User to a domain.User, handling nullable fields appropriately.
 func (r *userRepo) mapUser(u sqlc.User) *domain.User {
 	user := &domain.User{
 		ID:        u.ID,

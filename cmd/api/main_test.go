@@ -35,6 +35,7 @@ func Test_run(t *testing.T) {
 	t.Setenv("SMTP_USER", "test")
 	t.Setenv("SMTP_PASSWORD", "test")
 	t.Setenv("EMAIL_FROM", "noreply@moolah.com")
+	t.Setenv("SYSADMIN_EMAIL", "admin@moolah.com")
 
 	// Build Config
 	cfg := config.Load()

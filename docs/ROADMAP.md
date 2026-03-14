@@ -1,6 +1,6 @@
 # Moolah — Project Roadmap
 
-> **Version:** 1.0.0 | **Last Updated:** 2026-03-13 | **Status:** 🟡 In Progress
+> **Version:** 1.0.0 | **Last Updated:** 2026-03-14 | **Status:** 🟡 In Progress
 
 ---
 
@@ -102,9 +102,9 @@
 | 3.2  | [DB migrations — all 6 tables + 3 enums](tasks/TASK_3.2_db-migrations-investment.md) | ✅ `done` | 2026-03-13 | `00010`–`00014` migration files |
 | 3.3  | [Domain: `Asset` + `TenantAssetConfig` entities + interfaces](tasks/TASK_3.3_domain-investment.md) | ✅ `done` | 2026-03-13 | `internal/domain/asset.go` |
 | 3.4  | [SQLC queries: `assets` + `tenant_asset_configs`](tasks/TASK_3.4_sqlc-queries-investment.md) | ✅ `done` | 2026-03-13 | Includes COALESCE merge query (ADR §2.7) |
-| 3.5  | [Repository: `AssetRepository` + `TenantAssetConfigRepository`](tasks/TASK_3.5_repository-investment.md) | 🔵 `backlog` | 2026-03-13 | |
-| 3.6  | [Service: `InvestmentService` — position CRUD, allocation, receivable lifecycle](tasks/TASK_3.6_service-investment.md) | 🔵 `backlog` | 2026-03-13 | |
-| 3.7  | [HTTP handlers: asset catalogue + tenant asset configs](tasks/TASK_3.7_handler-investment.md) | 🔵 `backlog` | 2026-03-13 | `GET/POST /v1/assets`, `PUT /v1/me/asset-configs/{asset_id}` |
+| 3.5  | [Repository: `AssetRepository` + `TenantAssetConfigRepository`](tasks/TASK_3.5_repository-investment.md) | ✅ `done` | 2026-03-13 | |
+| 3.6  | [Service: `InvestmentService` — position CRUD, allocation, receivable lifecycle](tasks/TASK_3.6_service-investment.md) | ✅ `done` | 2026-03-14 | |
+| 3.7  | [HTTP handlers: asset catalogue + tenant asset configs](tasks/TASK_3.7_handler-investment.md) | ✅ `done` | 2026-03-14 | |
 | 3.8  | [Portfolio snapshot job (`SNAPSHOT_CRON_SCHEDULE`)](tasks/TASK_3.8_snapshot-job.md) | 🔵 `backlog` | 2026-03-13 | Default `"0 5 1 * *"` |
 | 3.9  | [Domain: position family (`Position`, `PositionSnapshot`, `PositionIncomeEvent`, `PortfolioSnapshot`)](tasks/TASK_3.9_summary-endpoint.md) | 🔵 `backlog` | 2026-03-13 | `internal/domain/position.go` |
 | 3.10 | [CurrencyConverter interface + static rate implementation](tasks/TASK_3.10_currency-conversion-hook.md) | 🔵 `backlog` | 2026-03-13 | Integer-cents arithmetic; no external API in MVP |
