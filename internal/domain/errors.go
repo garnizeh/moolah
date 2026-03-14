@@ -27,4 +27,10 @@ var (
 
 	// ErrTokenExpired is returned when the PASETO token has expired.
 	ErrTokenExpired = errors.New("token expired")
+
+	// ErrAssetNotFound is returned when a requested global asset does not exist.
+	ErrAssetNotFound = errors.New("asset not found")
+
+	// ErrAssetConfigNotFound is returned when a requested tenant asset config does not exist.
+	ErrAssetConfigNotFound = errors.New("tenant asset configuration not found")
 )

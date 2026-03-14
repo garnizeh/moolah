@@ -20,6 +20,7 @@ type Querier interface {
 	AdminSuspendTenant(ctx context.Context, id string) error
 	AdminUpdateTenantPlan(ctx context.Context, arg AdminUpdateTenantPlanParams) (Tenant, error)
 	CreateAccount(ctx context.Context, arg CreateAccountParams) (Account, error)
+	CreateAsset(ctx context.Context, arg CreateAssetParams) (Asset, error)
 	CreateAuditLog(ctx context.Context, arg CreateAuditLogParams) (AuditLog, error)
 	CreateCategory(ctx context.Context, arg CreateCategoryParams) (Category, error)
 	CreateMasterPurchase(ctx context.Context, arg CreateMasterPurchaseParams) (MasterPurchase, error)
@@ -27,12 +28,19 @@ type Querier interface {
 	CreateTenant(ctx context.Context, arg CreateTenantParams) (Tenant, error)
 	CreateTransaction(ctx context.Context, arg CreateTransactionParams) (Transaction, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
+	DeleteAsset(ctx context.Context, id string) error
 	DeleteExpiredOTPs(ctx context.Context) error
 	DeleteMasterPurchase(ctx context.Context, arg DeleteMasterPurchaseParams) error
 	GetAccountByID(ctx context.Context, arg GetAccountByIDParams) (Account, error)
 	GetActiveOTPByEmail(ctx context.Context, email string) (OtpRequest, error)
+	GetAssetByID(ctx context.Context, id string) (Asset, error)
+	GetAssetByTicker(ctx context.Context, ticker string) (Asset, error)
+	// Returns the global asset with tenant overrides applied via COALESCE.
+	// Use this query in all asset-display contexts (ADR §2.7).
+	GetAssetWithTenantConfig(ctx context.Context, arg GetAssetWithTenantConfigParams) (GetAssetWithTenantConfigRow, error)
 	GetCategoryByID(ctx context.Context, arg GetCategoryByIDParams) (Category, error)
 	GetMasterPurchaseByID(ctx context.Context, arg GetMasterPurchaseByIDParams) (MasterPurchase, error)
+	GetTenantAssetConfigByAssetID(ctx context.Context, arg GetTenantAssetConfigByAssetIDParams) (TenantAssetConfig, error)
 	GetTenantByID(ctx context.Context, id string) (Tenant, error)
 	GetTransactionByID(ctx context.Context, arg GetTransactionByIDParams) (Transaction, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
@@ -40,6 +48,7 @@ type Querier interface {
 	IncrementPaidInstallments(ctx context.Context, arg IncrementPaidInstallmentsParams) (MasterPurchase, error)
 	ListAccountsByTenant(ctx context.Context, tenantID string) ([]Account, error)
 	ListAccountsByUser(ctx context.Context, arg ListAccountsByUserParams) ([]Account, error)
+	ListAssets(ctx context.Context) ([]Asset, error)
 	ListAuditLogsByEntity(ctx context.Context, arg ListAuditLogsByEntityParams) ([]AuditLog, error)
 	ListAuditLogsByTenant(ctx context.Context, arg ListAuditLogsByTenantParams) ([]AuditLog, error)
 	ListCategoriesByTenant(ctx context.Context, tenantID string) ([]Category, error)
@@ -47,6 +56,7 @@ type Querier interface {
 	ListMasterPurchasesByAccount(ctx context.Context, arg ListMasterPurchasesByAccountParams) ([]MasterPurchase, error)
 	ListMasterPurchasesByTenant(ctx context.Context, tenantID string) ([]MasterPurchase, error)
 	ListPendingMasterPurchasesByClosingDay(ctx context.Context, arg ListPendingMasterPurchasesByClosingDayParams) ([]MasterPurchase, error)
+	ListTenantAssetConfigs(ctx context.Context, tenantID string) ([]TenantAssetConfig, error)
 	ListTenants(ctx context.Context) ([]Tenant, error)
 	ListTransactionsByTenant(ctx context.Context, arg ListTransactionsByTenantParams) ([]Transaction, error)
 	ListUsersByTenant(ctx context.Context, tenantID string) ([]User, error)
@@ -54,6 +64,7 @@ type Querier interface {
 	SoftDeleteAccount(ctx context.Context, arg SoftDeleteAccountParams) error
 	SoftDeleteCategory(ctx context.Context, arg SoftDeleteCategoryParams) error
 	SoftDeleteTenant(ctx context.Context, id string) error
+	SoftDeleteTenantAssetConfig(ctx context.Context, arg SoftDeleteTenantAssetConfigParams) error
 	SoftDeleteTransaction(ctx context.Context, arg SoftDeleteTransactionParams) error
 	SoftDeleteUser(ctx context.Context, arg SoftDeleteUserParams) error
 	UpdateAccount(ctx context.Context, arg UpdateAccountParams) (Account, error)
@@ -64,6 +75,7 @@ type Querier interface {
 	UpdateTransaction(ctx context.Context, arg UpdateTransactionParams) (Transaction, error)
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)
 	UpdateUserLastLogin(ctx context.Context, id string) error
+	UpsertTenantAssetConfig(ctx context.Context, arg UpsertTenantAssetConfigParams) (TenantAssetConfig, error)
 }
 
 var _ Querier = (*Queries)(nil)
