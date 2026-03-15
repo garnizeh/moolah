@@ -163,7 +163,7 @@ func buildMux(_ *config.Config, authHandler *auth.AuthHandler, tokenParser func(
 	mux.Handle("GET /dashboard", sessionAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		// For dashboard, we'll implement a proper page later.
-		if _, err := fmt.Fprint(w, "<h1>Dashboard</h1><p>Welcome!</p><form hx-post='/web/auth/logout'><button>Logout</button></form>"); err != nil {
+		if _, err := fmt.Fprint(w, "<h1>Dashboard</h1><p>Welcome!</p><form method='post' action='/web/auth/logout' hx-post='/web/auth/logout'><button type='submit'>Logout</button></form>"); err != nil {
 			slog.ErrorContext(r.Context(), "failed to write dashboard response", "error", err)
 		}
 	})))

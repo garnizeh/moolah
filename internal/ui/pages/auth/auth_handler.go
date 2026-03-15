@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/garnizeh/moolah/internal/domain"
+	"github.com/garnizeh/moolah/internal/ui/middleware"
 )
 
 type AuthHandler struct {
@@ -62,7 +63,7 @@ func (h *AuthHandler) VerifyOTP(w http.ResponseWriter, r *http.Request) {
 	code := r.FormValue("code")
 
 	if email == "" || code == "" {
-		props := OTPVerifyProps{Email: email, Error: "Code is required"}
+		props := OTPVerifyProps{Email: email, Error: "Email and code are required"}
 		if err := OTPVerifyForm(props).Render(r.Context(), w); err != nil {
 			slog.ErrorContext(r.Context(), "failed to render otp verify form", "error", err)
 		}
@@ -90,9 +91,8 @@ func (h *AuthHandler) VerifyOTP(w http.ResponseWriter, r *http.Request) {
 		MaxAge:   int(time.Until(tokens.ExpiresAt).Seconds()),
 	})
 
-	// HTMX redirect to dashboard
-	w.Header().Set("HX-Redirect", "/dashboard")
-	w.WriteHeader(http.StatusOK)
+	// Redirect to dashboard (handles both HTMX and non-HTMX)
+	middleware.RedirectForClient(w, r, "/dashboard")
 }
 
 // Logout clears the session cookie.
@@ -107,8 +107,7 @@ func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 		MaxAge:   -1,
 	})
 
-	w.Header().Set("HX-Redirect", "/web/login")
-	w.WriteHeader(http.StatusOK)
+	middleware.RedirectForClient(w, r, "/web/login")
 }
 
 func maskEmail(email string) string {

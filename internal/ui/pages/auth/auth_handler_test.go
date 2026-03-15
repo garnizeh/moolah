@@ -122,6 +122,9 @@ func TestAuthHandler_VerifyOTP(t *testing.T) {
 		mockAuthSvc.On("VerifyOTP", mock.Anything, "test@example.com", "123456").
 			Return(&domain.TokenPair{AccessToken: "fake_token"}, nil)
 
+		// Set HX-Request header to get HX-Redirect
+		req.Header.Set("HX-Request", "true")
+
 		h.VerifyOTP(w, req)
 
 		res := w.Result()
@@ -175,6 +178,7 @@ func TestAuthHandler_Logout(t *testing.T) {
 
 	h := NewAuthHandler(nil, false)
 	req := httptest.NewRequest(http.MethodPost, "/web/auth/logout", nil)
+	req.Header.Set("HX-Request", "true")
 	w := httptest.NewRecorder()
 
 	h.Logout(w, req)
