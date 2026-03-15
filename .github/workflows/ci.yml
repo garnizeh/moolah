@@ -188,10 +188,8 @@ jobs:
       - name: Build CSS (Tailwind)
         run: tailwindcss -i web/static/css/app.css -o web/static/css/app.min.css --minify
 
-      - name: Build binaries (moolah-web & moolah-api)
-        run: |
-          go build -o bin/moolah-web ./cmd/web/
-          go build -o bin/moolah-api ./cmd/api/
+      - name: Build binaries (API & Web)
+        run: make build
 
       - name: Lint generated code and handlers
         uses: golangci/golangci-lint-action@v9

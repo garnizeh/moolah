@@ -19,6 +19,7 @@ all: deps lint generate test build swagger
 ## task-check: Run all checks required before completing a task (Linter, SQLC, Security, Unit Tests with Coverage)
 task-check: deps lint-check sqlc-check security-check test-coverage swagger-check
 
+# deps: Install Go dependencies, run code formatters and fixers
 deps:
 	@echo "Installing dependencies..."
 	@go mod tidy
@@ -27,6 +28,13 @@ deps:
 	@go fmt .
 	@go fix ./...
 	@fieldalignment -fix ./...
+
+## build: Build API and Web binaries
+build: generate tailwind
+	@echo "🏗️ Building binaries..."
+	@mkdir -p $(OUT_DIR)
+	$(GO) build -o $(OUT_DIR)/$(BINARY_NAME) $(CMD_DIR)
+	$(GO) build -o $(OUT_DIR)/$(WEB_BINARY_NAME) $(WEB_CMD_DIR)
 
 ## swagger: Generate Swagger documentation
 swagger:
