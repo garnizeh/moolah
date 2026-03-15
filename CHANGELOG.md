@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.15.0](https://github.com/garnizeh/moolah/compare/v1.14.0...v1.15.0) (2026-03-15)
+
+
+### Features
+
+* Investment Portfolio Tracking ([29448e0](https://github.com/garnizeh/moolah/commit/29448e036123f75e51139da5bc10ed78b151f6dd))
+
 ## [1.14.0](https://github.com/garnizeh/moolah/compare/v1.13.0...v1.14.0) (2026-03-14)
 
 
