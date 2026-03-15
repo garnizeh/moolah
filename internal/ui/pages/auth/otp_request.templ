@@ -1,0 +1,65 @@
+package auth
+
+import (
+	"github.com/garnizeh/moolah/internal/ui/components"
+	"github.com/garnizeh/moolah/internal/ui/layout"
+)
+
+type OTPRequestProps struct {
+	Email string
+	Error string
+}
+
+templ OTPRequest(props OTPRequestProps) {
+	@layout.AuthLayout("Sign In") {
+		@OTPRequestForm(props)
+	}
+}
+
+templ OTPRequestForm(props OTPRequestProps) {
+	<div id="auth-container">
+		<p class="mt-2 text-center text-sm text-neutral-600 dark:text-neutral-400">
+			Enter your email address to receive a 6-digit verification code.
+		</p>
+
+		<div class="mt-8">
+			<form 
+				method="post"
+				action="/web/auth/otp/request"
+				hx-post="/web/auth/otp/request" 
+				hx-target="#auth-container" 
+				hx-swap="outerHTML" 
+				class="space-y-6"
+			>
+				@components.FormField(components.FormFieldProps{
+					ID:    "email",
+					Label: "Email address",
+					Error: props.Error,
+					Required: true,
+					Content: components.Input(components.InputProps{
+						ID:          "email",
+						Name:        "email",
+						Type:        "email",
+						Value:       props.Email,
+						Placeholder: "you@example.com",
+						Required:    true,
+						Autocomplete: "email",
+					}),
+				})
+
+				<div class="flex flex-col gap-4">
+					@components.Button(components.ButtonProps{
+						Label:   "Send verification code",
+						Variant: components.ButtonPrimary,
+						Type:    "submit",
+						Class:   "w-full",
+					})
+				</div>
+			</form>
+		</div>
+
+		<div class="mt-6 text-center text-xs text-neutral-500 dark:text-neutral-400">
+			<p>Don't have an account? Contact your administrator.</p>
+		</div>
+	</div>
+}

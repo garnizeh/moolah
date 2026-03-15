@@ -16,16 +16,19 @@ const (
 )
 
 type InputProps struct {
-	ID          string
-	Name        string
-	Type        InputType
-	Value       string
-	Placeholder string
-	Required    bool
-	Disabled    bool
-	Error       string
-	Class       string
-	Attrs       templ.Attributes
+	ID           string
+	Name         string
+	Type         InputType
+	Value        string
+	Placeholder  string
+	Required     bool
+	Disabled     bool
+	Error        string
+	Class        string
+	Autocomplete string
+	Inputmode    string
+	Maxlength    int
+	Attrs        templ.Attributes
 }
 
 func getInputStyles(hasError bool) string {
@@ -49,6 +52,15 @@ templ Input(props InputProps) {
 			placeholder={ props.Placeholder }
 			required?={ props.Required }
 			disabled?={ props.Disabled }
+			if props.Autocomplete != "" {
+				autocomplete={ props.Autocomplete }
+			}
+			if props.Inputmode != "" {
+				inputmode={ props.Inputmode }
+			}
+			if props.Maxlength > 0 {
+				maxlength={ fmt.Sprintf("%d", props.Maxlength) }
+			}
 			aria-invalid={ fmt.Sprintf("%t", props.Error != "") }
 			if props.Error != "" {
 				aria-describedby={ props.ID + "-error" }

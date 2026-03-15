@@ -28,6 +28,9 @@ type Config struct {
 	SysadminEmail      string
 	SysadminTenantName string
 
+	// Environment
+	Environment string
+
 	// Jobs
 	SnapshotCronSchedule    string
 	IncomeSchedulerInterval time.Duration
@@ -38,6 +41,11 @@ type Config struct {
 	ShutdownTimeout time.Duration
 	TokenTTL        time.Duration
 	SMTPPort        int
+}
+
+// IsDevelopment returns true if the environment is explicitly set to development.
+func (c *Config) IsDevelopment() bool {
+	return c.Environment == "development"
 }
 
 // Log outputs the current configuration values at the info level.
@@ -95,6 +103,8 @@ func Load() *Config {
 
 		SysadminEmail:      getRequiredEnv("SYSADMIN_EMAIL"),
 		SysadminTenantName: getEnv("SYSADMIN_TENANT_NAME", "System"),
+
+		Environment: getEnv("APP_ENV", "production"),
 
 		SnapshotCronSchedule:    getEnv("SNAPSHOT_CRON_SCHEDULE", "0 5 1 * *"),
 		IncomeSchedulerInterval: getDurationEnv("INCOME_SCHEDULER_INTERVAL", "1h"),

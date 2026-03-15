@@ -50,15 +50,22 @@ func TestOTP(t *testing.T) {
 
 	t.Run("Uniqueness check", func(t *testing.T) {
 		t.Parallel()
+		// Birthday paradox: with 100 random 6-digit codes (1M space),
+		// p(collision) is ~0.5%. While rare, it can happen in CI.
+		// We allow up to 1 collision in 100 tries for high-volume CI stability.
 		const iterations = 100
 		codes := make(map[string]bool)
+		collisions := 0
 
 		for range iterations {
 			plain, _, err := GenerateWithCost(bcrypt.MinCost)
 			require.NoError(t, err)
-			assert.False(t, codes[plain], "Duplicate code generated: %s", plain)
+			if codes[plain] {
+				collisions++
+			}
 			codes[plain] = true
 		}
+		assert.LessOrEqual(t, collisions, 1, "Too many duplicate codes in 100 iterations")
 	})
 
 	t.Run("Generate with default cost", func(t *testing.T) {

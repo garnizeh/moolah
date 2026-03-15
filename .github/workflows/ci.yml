@@ -236,5 +236,8 @@ jobs:
     steps:
       - uses: googleapis/release-please-action@v4
         id: release
+        env:
+          DEBUG: "release-please" 
         with:
           release-type: go
+          token: ${{ secrets.GITHUB_TOKEN }}
