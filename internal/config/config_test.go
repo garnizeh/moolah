@@ -34,6 +34,7 @@ func TestLoad(t *testing.T) {
 
 		assert.Equal(t, "postgres://user:pass@localhost:5432/db", cfg.DatabaseURL)
 		assert.Equal(t, "8080", cfg.HTTPPort)
+		assert.Equal(t, "8081", cfg.WebPort)
 		assert.Equal(t, 10*time.Second, cfg.ReadTimeout)
 		assert.Equal(t, 587, cfg.SMTPPort)
 		assert.Equal(t, "info", cfg.LogLevel)

@@ -2188,3 +2188,11 @@ func CreateTenant(t *testing.T, ctx context.Context, q sqlc.Querier) domain.Tena
 - **Context:** A hand-maintained OpenAPI spec drifts out of sync with the implementation. The API surface is the primary integration contract for the web client and any future mobile apps.
 - **Decision:** Use `swaggo/swag` to generate `swagger.json` / `swagger.yaml` from structured Go doc comments on handler functions. The spec is regenerated in CI (`swag init`) and committed; `git diff --exit-code docs/swagger/` enforces that the committed spec is always fresh.
 - **Consequences:** Handler functions require annotation comments. Swagger UI is served only when `cfg.EnableSwagger = true` (disabled in production). Spec generation adds one CI step but removes all manual spec maintenance.
+
+### ADR-010: UI Architecture — Templ + HTMX + Alpine.js + Tailwind CSS v4
+
+- **Status:** Accepted (Phase 4)
+- **Context:** The API is complete. The web UI must be lightweight (<100 KB JS), maintainable by a Go-specialist team, real-time capable, and deployable as a single binary. Evaluated React/Next.js, SvelteKit, pure `html/template`, and full-HTMX-without-Alpine.
+- **Decision:** SSR-first with `a-h/templ` (type-safe Go templates), HTMX 2 (declarative partial updates via HTML attributes), Alpine.js 3 (~15 KB client reactivity for modals/dropdowns/reconnect), Tailwind CSS v4 (CSS-first design tokens via `@theme {}`), and Go stdlib WebSocket (per-tenant real-time broadcast hub). Web UI runs as a separate `cmd/web/` binary sharing `internal/` service packages with the API.
+- **Consequences:** Single-language stack (Go + minimal JS), compile-time template safety, ~62 KB total JS bundle, zero client-side routing, self-contained deployment. Trade-off: `templ generate` must precede `go build`; enforced by Makefile and CI.
+- **Full ADR:** [docs/ADR-010-ui-architecture.md](ADR-010-ui-architecture.md)

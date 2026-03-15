@@ -126,3 +126,9 @@ To avoid recurring linting and testing errors found in `make task-check`, always
 - **Variable Naming:** NEVER use underscores in variable names (e.g., use `u1Accs` instead of `u1_accs`) to satisfy `ST1003` (staticcheck).
 - **Error Wrapping:** In mock implementations or manual error returns, if you are returning an error from an external package (like `testify/mock`), wrap it or use `args.Error(i)` correctly. For `wrapcheck` compliance in mocks, ensure the returned error is handled according to project standards.
 - **Blank Imports:** Avoid unused imports and ensure all imports are used or removed.
+
+### C. Makefile & CI Consistency
+- **Vendor Isolation:** The project uses `go build -mod=vendor`. NEVER assume the `vendor/` directory exists in CI/remote environments; always run `make deps` (which handles `go mod vendor`) before any build or generation step.
+- **Tool Availability:** When adding or modifying steps in `ci.yml`, ensure all required binaries (e.g., `gofumpt`, `fieldalignment`, `templ`) are explicitly installed via `go install` or a `Makefile` target within that specific CI job.
+- **Makefile Source of Truth:** Orchestrate complex build flows (like `templ` + `tailwind` + `go build`) inside the `Makefile` rather than chaining commands in `ci.yml` to ensure local and remote parity.
+- **No Command Duplication:** Avoid duplicating build logic between `Makefile` and `ci.yml`. The CI should primarily invoke Makefile targets.
