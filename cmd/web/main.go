@@ -85,7 +85,7 @@ func run(ctx context.Context, cfg *config.Config, _ *slog.Logger, showConfig boo
 		slog.InfoContext(ctx, "web server shutting down")
 	}
 
-	shutdownCtx, cancel := context.WithTimeout(context.Background(), cfg.ShutdownTimeout)
+	shutdownCtx, cancel := context.WithTimeout(ctx, cfg.ShutdownTimeout)
 	defer cancel()
 
 	if err := srv.Shutdown(shutdownCtx); err != nil {
@@ -114,5 +114,7 @@ func buildMux(_ *config.Config) *http.ServeMux {
 func handleHealthz(w http.ResponseWriter, _ *http.Request) {
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.WriteHeader(http.StatusOK)
-	_, _ = w.Write([]byte("ok"))
+	if _, err := w.Write([]byte("ok")); err != nil {
+		slog.Error("failed to write healthz response", "err", err)
+	}
 }

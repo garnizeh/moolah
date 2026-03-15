@@ -20,12 +20,14 @@ import (
 )
 
 func Test_WebRun(t *testing.T) {
+	t.Parallel()
+
 	if testing.Short() {
 		t.Skip("skipping integration test")
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
-	defer cancel()
+	t.Cleanup(cancel)
 
 	pg := containers.NewPostgresDB(t)
 	rdb := containers.NewRedisClient(t)
@@ -52,7 +54,11 @@ func Test_WebRun(t *testing.T) {
 	webWaitForPort(t, cfg.WebPort, 5*time.Second)
 
 	t.Run("healthz returns 200", func(t *testing.T) {
-		resp, err := http.Get(baseURL + "/healthz") //nolint:noctx
+		t.Parallel()
+		req, err := http.NewRequestWithContext(ctx, http.MethodGet, baseURL+"/healthz", nil)
+		require.NoError(t, err)
+
+		resp, err := http.DefaultClient.Do(req)
 		require.NoError(t, err)
 		defer func() { require.NoError(t, resp.Body.Close()) }()
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
@@ -62,7 +68,11 @@ func Test_WebRun(t *testing.T) {
 	})
 
 	t.Run("htmx.min.js is served", func(t *testing.T) {
-		resp, err := http.Get(baseURL + "/static/js/htmx.min.js") //nolint:noctx
+		t.Parallel()
+		req, err := http.NewRequestWithContext(ctx, http.MethodGet, baseURL+"/static/js/htmx.min.js", nil)
+		require.NoError(t, err)
+
+		resp, err := http.DefaultClient.Do(req)
 		require.NoError(t, err)
 		defer func() { require.NoError(t, resp.Body.Close()) }()
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
@@ -70,7 +80,11 @@ func Test_WebRun(t *testing.T) {
 	})
 
 	t.Run("alpine.min.js is served", func(t *testing.T) {
-		resp, err := http.Get(baseURL + "/static/js/alpine.min.js") //nolint:noctx
+		t.Parallel()
+		req, err := http.NewRequestWithContext(ctx, http.MethodGet, baseURL+"/static/js/alpine.min.js", nil)
+		require.NoError(t, err)
+
+		resp, err := http.DefaultClient.Do(req)
 		require.NoError(t, err)
 		defer func() { require.NoError(t, resp.Body.Close()) }()
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
@@ -78,7 +92,11 @@ func Test_WebRun(t *testing.T) {
 	})
 
 	t.Run("unknown route returns 404", func(t *testing.T) {
-		resp, err := http.Get(baseURL + "/does-not-exist") //nolint:noctx
+		t.Parallel()
+		req, err := http.NewRequestWithContext(ctx, http.MethodGet, baseURL+"/does-not-exist", nil)
+		require.NoError(t, err)
+
+		resp, err := http.DefaultClient.Do(req)
 		require.NoError(t, err)
 		defer func() { require.NoError(t, resp.Body.Close()) }()
 		assert.Equal(t, http.StatusNotFound, resp.StatusCode)
@@ -115,7 +133,10 @@ func webFreePort(t *testing.T) string {
 	t.Helper()
 	ln, err := net.Listen("tcp", ":0")
 	require.NoError(t, err, "failed to find a free port")
-	port := ln.Addr().(*net.TCPAddr).Port
-	require.NoError(t, ln.Close())
-	return fmt.Sprintf("%d", port)
+	defer func() { require.NoError(t, ln.Close()) }()
+
+	addr, ok := ln.Addr().(*net.TCPAddr)
+	require.True(t, ok, "failed to cast network address to TCP")
+
+	return fmt.Sprintf("%d", addr.Port)
 }
