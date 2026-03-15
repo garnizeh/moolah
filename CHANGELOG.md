@@ -1,5 +1,27 @@
 # Changelog
 
+## [1.19.0](https://github.com/garnizeh/moolah/compare/v1.18.0...v1.19.0) (2026-03-15)
+
+
+### Features
+
+* UI Foundation - Layout ([90d74de](https://github.com/garnizeh/moolah/commit/90d74def6d86720a1cdc30d7dba38b5251252cbf))
+
+
+### Bug Fixes
+
+* add dependency installation step before running tests in CI pipeline ([70be699](https://github.com/garnizeh/moolah/commit/70be6999793be5f16c5eecc18e98d351871633ed))
+* correct spelling in design tokens and update acceptance criteria in task documentation ([5b4d5ce](https://github.com/garnizeh/moolah/commit/5b4d5cea7f332753bc491199cc52497c3f156974))
+* enhance user menu accessibility with ARIA attributes and keyboard navigation ([3e621b0](https://github.com/garnizeh/moolah/commit/3e621b0bf449ed00a892626f8584629325603e15))
+* enhance user menu rendering in topbar and add tests for user initials and nil handling ([f8927fc](https://github.com/garnizeh/moolah/commit/f8927fc5eb7aa22bd57e8c1fe920aab64c555bcf))
+* update CSS variable syntax in sidebar component for consistency ([3738613](https://github.com/garnizeh/moolah/commit/373861349528507bf7275db9273c904026becd4d))
+* update smoke tests job name for consistency ([70c5f7e](https://github.com/garnizeh/moolah/commit/70c5f7e998f5b5345d6f280a3b02332f26701b6d))
+* update smoke-test target to include dependency installation ([dd7aee1](https://github.com/garnizeh/moolah/commit/dd7aee159c0081cb42ec8dd7d8b620cbb86dc860))
+* update sqlc and templ CLI installation in CI and Makefile ([f9b1b00](https://github.com/garnizeh/moolah/commit/f9b1b00c4c8fa3ae55645b5ed95432cc3f6b116c))
+* update templ and sqlc versions in Makefile, enhance sidebar and topbar for better user experience ([202907f](https://github.com/garnizeh/moolah/commit/202907ffc51788416260bc3fce0830720848276f))
+* update test command to exclude web directory in unit tests ([ddb0286](https://github.com/garnizeh/moolah/commit/ddb0286799a451980c6fea69a10b4ada275de8f7))
+* update user name handling in sidebar and topbar templates for proper character support ([ee98999](https://github.com/garnizeh/moolah/commit/ee98999bec908c6eada34cd7b2382b14f10bf111))
+
 ## [1.18.0](https://github.com/garnizeh/moolah/compare/v1.17.0...v1.18.0) (2026-03-15)
 
 
