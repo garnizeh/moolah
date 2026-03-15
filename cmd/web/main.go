@@ -81,6 +81,8 @@ func run(ctx context.Context, cfg *config.Config, _ *slog.Logger, showConfig boo
 	select {
 	case err := <-serverErr:
 		return err
+	case <-ctx.Done():
+		slog.InfoContext(ctx, "web server context canceled", "err", ctx.Err())
 	case <-quit:
 		slog.InfoContext(ctx, "web server shutting down")
 	}
