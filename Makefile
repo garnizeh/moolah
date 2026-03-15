@@ -8,6 +8,7 @@ WEB_CMD_DIR=./cmd/web
 OUT_DIR=bin
 SWAGGER_OUT=api
 GO=go
+TAILWIND_VERSION=4.1.8
 
 BUILD_TIME := $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
 COMMIT_HASH := $(shell git rev-parse HEAD)
@@ -20,7 +21,7 @@ all: deps lint generate test build swagger
 task-check: deps lint-check sqlc-check security-check test-coverage swagger-check
 
 # deps: Install Go dependencies, run code formatters and fixers
-deps:
+deps: install-tailwind
 	@echo "Installing dependencies..."
 	@go mod tidy
 	@go mod vendor
@@ -29,12 +30,31 @@ deps:
 	@go fix ./...
 	@fieldalignment -fix ./...
 
-## build: Build API and Web binaries
-build: generate tailwind
-	@echo "🏗️ Building binaries..."
+## install-tailwind: Install Standalone Tailwind CSS CLI with checksum verification
+install-tailwind:
+	@echo "Standalone Tailwind CSS CLI..."
+	@if [ ! -f /usr/local/bin/tailwindcss ]; then \
+		curl -fsSL "https://github.com/tailwindlabs/tailwindcss/releases/download/v$(TAILWIND_VERSION)/tailwindcss-linux-x64" -o tailwindcss-linux-x64; \
+		curl -fsSL "https://github.com/tailwindlabs/tailwindcss/releases/download/v$(TAILWIND_VERSION)/sha256sums.txt" -o sha256sums.txt; \
+		grep "tailwindcss-linux-x64" sha256sums.txt | sha256sum -c -; \
+		sudo install -m 0755 tailwindcss-linux-x64 /usr/local/bin/tailwindcss; \
+		rm tailwindcss-linux-x64 sha256sums.txt; \
+	fi
+
+## build-api: Build the API binary
+build-api:
+	@echo "🏗️ Building API binary..."
 	@mkdir -p $(OUT_DIR)
-	$(GO) build -o $(OUT_DIR)/$(BINARY_NAME) $(CMD_DIR)
-	$(GO) build -o $(OUT_DIR)/$(WEB_BINARY_NAME) $(WEB_CMD_DIR)
+	$(GO) build -mod=vendor -ldflags="-s -w -X 'main.tagVersion=$(VERSION_TAG)' -X 'main.buildTime=$(BUILD_TIME)' -X 'main.commitHash=$(COMMIT_HASH)' -X 'main.goVersion=$(GO_VERSION)'" -o $(OUT_DIR)/$(BINARY_NAME) $(CMD_DIR)
+
+## build-web: Build the web binary (templ + tailwind + go build)
+build-web: templ tailwind
+	@echo "🏗️ Building web binary..."
+	@mkdir -p $(OUT_DIR)
+	$(GO) build -mod=vendor -ldflags="-s -w -X 'main.tagVersion=$(VERSION_TAG)' -X 'main.buildTime=$(BUILD_TIME)' -X 'main.commitHash=$(COMMIT_HASH)' -X 'main.goVersion=$(GO_VERSION)'" -o $(OUT_DIR)/$(WEB_BINARY_NAME) $(WEB_CMD_DIR)
+
+## build: Build API and Web binaries
+build: build-api build-web
 
 ## swagger: Generate Swagger documentation
 swagger:
@@ -92,12 +112,6 @@ test-coverage:
 	fi
 	@echo "✅ Tests passed with sufficient coverage."
 
-## build: Build the API binary
-build:
-	@echo "Building binary..."
-	@mkdir -p $(OUT_DIR)
-	$(GO) build -mod=vendor -ldflags="-s -w -X 'main.tagVersion=$(VERSION_TAG)' -X 'main.buildTime=$(BUILD_TIME)' -X 'main.commitHash=$(COMMIT_HASH)' -X 'main.goVersion=$(GO_VERSION)'" -o $(OUT_DIR)/$(BINARY_NAME) $(CMD_DIR)
-
 ## templ: Run templ code generation
 templ:
 	@echo "==> Running templ generate..."
@@ -108,18 +122,12 @@ tailwind:
 	@echo "==> Building Tailwind CSS..."
 	tailwindcss -i web/static/css/app.css -o web/static/css/app.min.css --minify
 
-## web-build: Build the web UI binary (templ + tailwind + go build)
-web-build: templ tailwind
-	@echo "==> Building web binary..."
-	@mkdir -p $(OUT_DIR)
-	$(GO) build -mod=vendor -ldflags="-s -w -X 'main.tagVersion=$(VERSION_TAG)' -X 'main.buildTime=$(BUILD_TIME)' -X 'main.commitHash=$(COMMIT_HASH)' -X 'main.goVersion=$(GO_VERSION)'" -o $(OUT_DIR)/$(WEB_BINARY_NAME) $(WEB_CMD_DIR)
-
-## web: Run the web UI server locally (development)
-web:
+## run-web: Run the web UI server locally (development)
+run-web:
 	$(GO) run $(WEB_CMD_DIR)
 
-## run: Run the API application
-run:
+## run-api: Run the API application
+run-api:
 	$(GO) run $(CMD_DIR)
 
 ## test: Run unit tests

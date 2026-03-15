@@ -40,12 +40,7 @@ jobs:
         run: go install github.com/a-h/templ/cmd/templ@${{ env.TEMPL_VERSION }}
 
       - name: Install Tailwind CSS CLI
-        run: |
-          curl -fsSL "https://github.com/tailwindlabs/tailwindcss/releases/download/v${{ env.TAILWIND_VERSION }}/tailwindcss-linux-x64" -o tailwindcss
-          curl -fsSL "https://github.com/tailwindlabs/tailwindcss/releases/download/v${{ env.TAILWIND_VERSION }}/sha256sums.txt" -o sha256sums.txt
-          grep "tailwindcss-linux-x64" sha256sums.txt | sha256sum -c -
-          sudo mv tailwindcss /usr/local/bin/tailwindcss
-          chmod +x /usr/local/bin/tailwindcss
+        run: make install-tailwind
 
       - name: Check templ generation is up to date
         run: |
@@ -181,18 +176,7 @@ jobs:
         run: go install github.com/a-h/templ/cmd/templ@${{ env.TEMPL_VERSION }}
 
       - name: Install Tailwind CSS CLI
-        run: |
-          curl -fsSL "https://github.com/tailwindlabs/tailwindcss/releases/download/v${{ env.TAILWIND_VERSION }}/tailwindcss-linux-x64" -o tailwindcss
-          curl -fsSL "https://github.com/tailwindlabs/tailwindcss/releases/download/v${{ env.TAILWIND_VERSION }}/sha256sums.txt" -o sha256sums.txt
-          grep "tailwindcss-linux-x64" sha256sums.txt | sha256sum -c -
-          sudo mv tailwindcss /usr/local/bin/tailwindcss
-          chmod +x /usr/local/bin/tailwindcss
-
-      - name: Generate templates (templ)
-        run: templ generate ./...
-
-      - name: Build CSS (Tailwind)
-        run: tailwindcss -i web/static/css/app.css -o web/static/css/app.min.css --minify
+        run: make install-tailwind
 
       - name: Build binaries (API & Web)
         run: make build
