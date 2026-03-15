@@ -45,6 +45,9 @@ templ topbar(props BaseProps) {
 						type="button"
 						class="flex items-center gap-2 rounded-full p-1 hover:bg-neutral-100 dark:hover:bg-neutral-800"
 						@click="open = !open"
+						aria-haspopup="menu"
+						:aria-expanded="open.toString()"
+						aria-controls="user-menu"
 					>
 						<div class="w-8 h-8 rounded-full bg-brand-500 flex items-center justify-center text-white font-bold text-sm">
 							{ string([]rune(props.User.Name)[0]) }
@@ -55,7 +58,9 @@ templ topbar(props BaseProps) {
 					</button>
 
 					<div 
+						id="user-menu"
 						x-show="open"
+						@keydown.escape.window="open = false"
 						x-transition:enter="transition ease-out duration-100"
 						x-transition:enter-start="transform opacity-0 scale-95"
 						x-transition:enter-end="transform opacity-100 scale-100"

@@ -47,27 +47,27 @@ func topbar(props BaseProps) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		if props.User != nil && len([]rune(props.User.Name)) > 0 {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<div class=\"relative\" x-data=\"{ open: false }\" @click.away=\"open = false\"><button type=\"button\" class=\"flex items-center gap-2 rounded-full p-1 hover:bg-neutral-100 dark:hover:bg-neutral-800\" @click=\"open = !open\"><div class=\"w-8 h-8 rounded-full bg-brand-500 flex items-center justify-center text-white font-bold text-sm\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<div class=\"relative\" x-data=\"{ open: false }\" @click.away=\"open = false\"><button type=\"button\" class=\"flex items-center gap-2 rounded-full p-1 hover:bg-neutral-100 dark:hover:bg-neutral-800\" @click=\"open = !open\" aria-haspopup=\"menu\" :aria-expanded=\"open.toString()\" aria-controls=\"user-menu\"><div class=\"w-8 h-8 rounded-full bg-brand-500 flex items-center justify-center text-white font-bold text-sm\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var3 string
 			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(string([]rune(props.User.Name)[0]))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/ui/layout/topbar.templ`, Line: 50, Col: 43}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/ui/layout/topbar.templ`, Line: 53, Col: 43}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</div><svg class=\"h-4 w-4 text-neutral-400 hidden sm:block\" fill=\"none\" viewBox=\"0 0 24 24\" stroke-width=\"1.5\" stroke=\"currentColor\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M19.5 8.25l-7.5 7.5-7.5-7.5\"></path></svg></button><div x-show=\"open\" x-transition:enter=\"transition ease-out duration-100\" x-transition:enter-start=\"transform opacity-0 scale-95\" x-transition:enter-end=\"transform opacity-100 scale-100\" x-transition:leave=\"transition ease-in duration-75\" x-transition:leave-start=\"transform opacity-100 scale-100\" x-transition:leave-end=\"transform opacity-0 scale-95\" class=\"absolute right-0 mt-2 w-48 origin-top-right rounded-md bg-white dark:bg-neutral-800 py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none\" role=\"menu\"><div class=\"px-4 py-2 border-b border-neutral-100 dark:border-neutral-700\"><p class=\"text-xs font-semibold text-neutral-900 dark:text-neutral-100\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</div><svg class=\"h-4 w-4 text-neutral-400 hidden sm:block\" fill=\"none\" viewBox=\"0 0 24 24\" stroke-width=\"1.5\" stroke=\"currentColor\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M19.5 8.25l-7.5 7.5-7.5-7.5\"></path></svg></button><div id=\"user-menu\" x-show=\"open\" @keydown.escape.window=\"open = false\" x-transition:enter=\"transition ease-out duration-100\" x-transition:enter-start=\"transform opacity-0 scale-95\" x-transition:enter-end=\"transform opacity-100 scale-100\" x-transition:leave=\"transition ease-in duration-75\" x-transition:leave-start=\"transform opacity-100 scale-100\" x-transition:leave-end=\"transform opacity-0 scale-95\" class=\"absolute right-0 mt-2 w-48 origin-top-right rounded-md bg-white dark:bg-neutral-800 py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none\" role=\"menu\"><div class=\"px-4 py-2 border-b border-neutral-100 dark:border-neutral-700\"><p class=\"text-xs font-semibold text-neutral-900 dark:text-neutral-100\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var4 string
 			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(props.User.Name)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/ui/layout/topbar.templ`, Line: 69, Col: 96}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/ui/layout/topbar.templ`, Line: 74, Col: 96}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 			if templ_7745c5c3_Err != nil {
@@ -80,7 +80,7 @@ func topbar(props BaseProps) templ.Component {
 			var templ_7745c5c3_Var5 string
 			templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(props.User.Email)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/ui/layout/topbar.templ`, Line: 70, Col: 74}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/ui/layout/topbar.templ`, Line: 75, Col: 74}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 			if templ_7745c5c3_Err != nil {
