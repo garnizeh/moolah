@@ -30,6 +30,9 @@ jobs:
           version: v2.10
           args: --timeout=5m
 
+      - name: Install dependencies
+        run: make deps
+
       - name: Check sqlc generation is up to date
         run: make sqlc-check
 
@@ -70,7 +73,9 @@ jobs:
           cache: true
 
       - name: Run unit tests
-        run: make test
+        run: |
+          make deps
+          make test
 
       - name: Upload unit coverage artifact
         uses: actions/upload-artifact@v7
@@ -90,7 +95,9 @@ jobs:
           cache: true
 
       - name: Run UI tests
-        run: make test-ui
+        run: |
+          make deps
+          make test-ui
 
       - name: Upload UI coverage artifact
         uses: actions/upload-artifact@v7
