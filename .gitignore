@@ -8,7 +8,7 @@ tmp/
 *.dylib
 
 # Test artifacts
-coverage.out
+*.out
 coverage.html
 *.test
 *.prof

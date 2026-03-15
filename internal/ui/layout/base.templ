@@ -1,0 +1,122 @@
+package layout
+
+import (
+	"github.com/garnizeh/moolah/internal/domain"
+)
+
+type BaseProps struct {
+	Title       string
+	CurrentPath string
+	User        *domain.User
+	Tenant      *domain.Tenant
+	Content     templ.Component
+}
+
+templ base(props BaseProps) {
+	<!DOCTYPE html>
+	<html lang="en" x-data x-bind:class="{ dark: $store.theme.dark }">
+		<head>
+			<meta charset="UTF-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+			<title>{ props.Title } — Moolah</title>
+			<link rel="stylesheet" href="/static/css/app.min.css"/>
+			<script defer src="/static/js/alpine.min.js"></script>
+			<script defer src="/static/js/htmx.min.js"></script>
+			<script>
+				document.addEventListener('alpine:init', () => {
+					Alpine.store('nav', {
+						open: false,
+						toggle() { this.open = !this.open; },
+						close() { this.open = false; }
+					});
+
+					Alpine.store('theme', {
+						dark: localStorage.getItem('theme') === 'dark' ||
+							(!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches),
+						toggle() {
+							this.dark = !this.dark;
+							localStorage.setItem('theme', this.dark ? 'dark' : 'light');
+						}
+					});
+
+					Alpine.store('toasts', {
+						items: [],
+						add(msg, type = 'info', duration = 4000) {
+							const id = Date.now();
+							this.items.push({ id, msg, type });
+							setTimeout(() => this.remove(id), duration);
+						},
+						remove(id) { this.items = this.items.filter(t => t.id !== id); }
+					});
+				});
+			</script>
+		</head>
+		<body class="bg-[var(--color-bg)] text-[var(--color-text-primary)] transition-colors duration-[var(--duration-base)]">
+			<!-- Mobile sidebar overlay backdrop -->
+			<div 
+				x-show="$store.nav.open" 
+				x-transition:enter="transition ease-out duration-300"
+				x-transition:enter-start="opacity-0"
+				x-transition:enter-end="opacity-100"
+				x-transition:leave="transition ease-in duration-200"
+				x-transition:leave-start="opacity-100"
+				x-transition:leave-end="opacity-0"
+				@click="$store.nav.close()"
+				class="fixed inset-0 z-20 bg-black/50 lg:hidden"
+			></div>
+
+			<!-- Sidebar -->
+			@sidebar(props)
+
+			<!-- Main column -->
+			<div class="lg:pl-64 flex flex-col min-h-screen">
+				@topbar(props)
+
+				<!-- HTMX progress bar -->
+				<div id="htmx-progress" class="htmx-indicator fixed top-0 left-0 right-0 h-1 bg-brand-500 z-50"></div>
+
+				<!-- Page content slot -->
+				<main id="main-content" class="flex-1 p-4 lg:p-8">
+					if props.Content != nil {
+						@props.Content
+					}
+				</main>
+			</div>
+
+			<!-- Global toast container -->
+			@toastContainer()
+		</body>
+	</html>
+}
+
+templ toastContainer() {
+	<div 
+		class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"
+		x-data
+	>
+		<template x-for="toast in $store.toasts.items" :key="toast.id">
+			<div 
+				class="p-4 rounded-lg shadow-lg text-white font-medium pointer-events-auto min-w-[300px]"
+				:class="{
+					'bg-success-600': toast.type === 'success',
+					'bg-danger-600': toast.type === 'error',
+					'bg-brand-600': toast.type === 'info',
+					'bg-warning-600': toast.type === 'warning'
+				}"
+				x-transition:enter="transition ease-out duration-300"
+				x-transition:enter-start="translate-y-2 opacity-0"
+				x-transition:enter-end="translate-y-0 opacity-100"
+				x-transition:leave="transition ease-in duration-200"
+				x-transition:leave-start="translate-y-0 opacity-100"
+				x-transition:leave-end="translate-y-2 opacity-0"
+			>
+				<div class="flex items-center justify-between">
+					<span x-text="toast.msg"></span>
+					<button @click="$store.toasts.remove(toast.id)" class="ml-4 opacity-70 hover:opacity-100">
+						&times;
+					</button>
+				</div>
+			</div>
+		</template>
+	</div>
+}

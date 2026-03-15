@@ -1,7 +1,7 @@
 # Task 4.3 — Tailwind Configuration & Design Tokens
 
 > **Roadmap Ref:** Phase 4 — UI Foundation & Design System › Styling
-> **Status:** 🔵 `backlog`
+> **Status:** ✅ `done`
 > **Last Updated:** 2026-03-15
 > **Assignee:** —
 > **Estimated Effort:** S
@@ -33,25 +33,25 @@ The UI must support:
 
 ### In scope
 
-- [ ] Define the `@theme` block in `web/static/css/app.css` with all design tokens.
-- [ ] Colour palette:
+- [x] Define the `@theme` block in `web/static/css/app.css` with all design tokens.
+- [x] Colour palette:
   - `brand-*`: primary blue-indigo scale (50–950) — used for primary actions, links, active states.
   - `neutral-*`: cool grey scale (50–950) — used for text, borders, backgrounds.
   - `success-*`: green scale — income, positive balance, confirmed states.
   - `danger-*`: red scale — expenses, negative balance, errors.
   - `warning-*`: amber scale — pending, overdue, caution states.
   - `surface-*`: light/dark surface layers (background, card, popover).
-- [ ] Semantic CSS variables for light/dark themes:
+- [x] Semantic CSS variables for light/dark themes:
   - `--color-bg`, `--color-surface`, `--color-border`, `--color-text-primary`, `--color-text-muted`.
   - `--color-income`, `--color-expense`, `--color-pending`.
-- [ ] Typography scale: `font-sans` (Inter), `font-mono` (JetBrains Mono for amounts).
-- [ ] Spacing scale: default Tailwind 4 scale is sufficient; document deviations.
-- [ ] Border radius tokens: `radius-sm`, `radius-md`, `radius-lg`, `radius-xl`, `radius-full`.
-- [ ] Shadow tokens: `shadow-card`, `shadow-dropdown`, `shadow-modal`.
-- [ ] Animation/transition tokens: `duration-fast` (100ms), `duration-base` (200ms), `duration-slow` (350ms).
-- [ ] Google Fonts import or self-hosted font files for Inter + JetBrains Mono.
-- [ ] Dark mode toggle mechanism documented (Alpine.js reads `localStorage`, sets `.dark` on `<html>`).
-- [ ] Visual reference card `docs/design/tokens.md` listing all tokens and their values.
+- [x] Typography scale: `font-sans` (Inter), `font-mono` (JetBrains Mono for amounts).
+- [x] Spacing scale: default Tailwind 4 scale is sufficient; document deviations.
+- [x] Border radius tokens: `radius-sm`, `radius-md`, `radius-lg`, `radius-xl`, `radius-full`.
+- [x] Shadow tokens: `shadow-card`, `shadow-dropdown`, `shadow-modal`.
+- [x] Animation/transition tokens: `duration-fast` (100ms), `duration-base` (200ms), `duration-slow` (350ms).
+- [x] Google Fonts import or self-hosted font files for Inter + JetBrains Mono.
+- [x] Dark mode toggle mechanism documented (Alpine.js reads `localStorage`, sets `.dark` on `<html>`).
+- [x] Visual reference card `docs/design/tokens.md` listing all tokens and their values.
 
 ### Out of scope
 
@@ -193,14 +193,14 @@ Alpine.store('theme', {
 
 ## 5. Acceptance Criteria
 
-- [ ] `make tailwind` compiles without errors and produces `web/static/css/app.min.css`.
-- [ ] All colour, typography, spacing, radius, shadow, and duration tokens are defined.
-- [ ] Light mode and dark mode semantic variables are correct (`--color-bg`, etc.).
-- [ ] Inter and JetBrains Mono fonts are served from `web/static/fonts/` (no CDN call).
-- [ ] Dark mode toggling via `.dark` class is documented in `docs/design/tokens.md`.
-- [ ] `docs/design/tokens.md` lists every token name, value in light mode, and value in dark mode.
-- [ ] Contrast ratios for primary text/bg combinations meet WCAG AA (verified manually).
-- [ ] `docs/ROADMAP.md` row 4.3 updated to ✅ `done`.
+- [x] `make tailwind` compiles without errors and produces `web/static/css/app.min.css`.
+- [x] All colour, typography, spacing, radius, shadow, and duration tokens are defined.
+- [x] Light mode and dark mode semantic variables are correct (`--color-bg`, etc.).
+- [x] Inter and JetBrains Mono fonts are served from `web/static/fonts/` (no CDN call).
+- [x] Dark mode toggling via `.dark` class is documented in `docs/design/tokens.md`.
+- [x] `docs/design/tokens.md` lists every token name, value in light mode, and value in dark mode.
+- [x] Contrast ratios for primary text/bg combinations meet WCAG AA (verified manually).
+- [x] `docs/ROADMAP.md` row 4.3 updated to ✅ `done`.
 
 ---
 
