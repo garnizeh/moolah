@@ -36,7 +36,7 @@ func navItem(props BaseProps, link NavLink) templ.Component {
 		}
 		ctx = templ.ClearChildren(ctx)
 		isActive := props.CurrentPath == link.Href
-		var templ_7745c5c3_Var2 = []any{"flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-[--duration-fast] group",
+		var templ_7745c5c3_Var2 = []any{"flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-[var(--duration-fast)] group",
 			templ.KV("bg-brand-50 text-brand-500 font-medium border-l-4 border-brand-500", isActive),
 			templ.KV("text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:text-neutral-900 dark:hover:text-neutral-50", !isActive),
 		}

@@ -10,7 +10,7 @@ templ navItem(props BaseProps, link NavLink) {
 	{{ isActive := props.CurrentPath == link.Href }}
 	<a 
 		href={ templ.SafeURL(link.Href) }
-		class={ "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-[--duration-fast] group",
+		class={ "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-[var(--duration-fast)] group",
 			templ.KV("bg-brand-50 text-brand-500 font-medium border-l-4 border-brand-500", isActive),
 			templ.KV("text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:text-neutral-900 dark:hover:text-neutral-50", !isActive),
 		}

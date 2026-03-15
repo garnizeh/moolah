@@ -87,7 +87,7 @@ lint-check:
 sqlc-check:
 	@echo "⚙️ Checking sqlc generation..."
 	@if [ -n "$$(ls internal/platform/db/queries/*.sql 2>/dev/null)" ]; then \
-		@go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest; \
+		go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest; \
 		sqlc generate; \
 		if [ -n "$$(git diff --name-only internal/platform/db/sqlc/)" ]; then \
 			echo "❌ Error: sqlc generated code is out of date. Commit the changes."; \

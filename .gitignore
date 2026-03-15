@@ -8,10 +8,7 @@ tmp/
 *.dylib
 
 # Test artifacts
-coverage.out
-unit.out
-ui.out
-integration.out
+*.out
 coverage.html
 *.test
 *.prof
