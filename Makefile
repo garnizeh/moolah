@@ -159,10 +159,10 @@ run-web:
 run-api:
 	$(GO) run $(CMD_DIR)
 
-## test: Run API and business logic unit tests (excludes UI and integration-tagged files)
+## test: Run API and business logic unit tests (excludes UI and integration tests)
 test:
 	@echo "🧪 Running API unit tests..."
-	@$(GO) test -v -race -count=1 -timeout=300s -coverprofile=unit.out -covermode=atomic $$(go list ./... | grep -v /internal/ui | grep -v /cmd/api | grep -v /internal/platform/db/sqlc | grep -v /testutil/mocks | grep -v /api)
+	@$(GO) test -v -race -count=1 -timeout=300s -coverprofile=unit.out -covermode=atomic $$(go list ./... | grep -v /internal/ui | grep -v /cmd/api | grep -v /cmd/web | grep -v /internal/platform/db/sqlc | grep -v /testutil/mocks | grep -v /api)
 
 ## test-ui: Run UI/Templ component tests
 test-ui: templ
