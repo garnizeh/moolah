@@ -1,0 +1,32 @@
+package components
+
+type EmptyStateProps struct {
+	Icon        templ.Component
+	Title       string
+	Description string
+	Actions     templ.Component
+	Class       string
+}
+
+templ EmptyState(props EmptyStateProps) {
+	<div class={ "text-center py-12 px-6 rounded-lg", props.Class }>
+		if props.Icon != nil {
+			<div class="mx-auto h-12 w-12 text-neutral-400 dark:text-neutral-500 mb-4">
+				@props.Icon
+			</div>
+		}
+		<h3 class="mt-2 text-sm font-semibold text-neutral-900 dark:text-neutral-100">
+			{ props.Title }
+		</h3>
+		if props.Description != "" {
+			<p class="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+				{ props.Description }
+			</p>
+		}
+		if props.Actions != nil {
+			<div class="mt-6">
+				@props.Actions
+			</div>
+		}
+	</div>
+}

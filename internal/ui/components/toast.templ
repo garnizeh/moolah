@@ -1,0 +1,72 @@
+package components
+
+type ToastVariant string
+
+const (
+	ToastSuccess ToastVariant = "success"
+	ToastError   ToastVariant = "error"
+	ToastWarning ToastVariant = "warning"
+	ToastInfo    ToastVariant = "info"
+)
+
+type ToastProps struct {
+	ID      string
+	Variant ToastVariant
+	Title   string
+	Message string
+}
+
+templ Toast(props ToastProps) {
+	<div 
+		class="pointer-events-auto w-full max-w-sm overflow-hidden rounded-lg bg-white dark:bg-neutral-900 shadow-lg ring-1 ring-black ring-opacity-5"
+		if props.Variant == ToastError || props.Variant == ToastWarning {
+			role="alert"
+		} else {
+			role="status"
+		}
+		aria-live="polite"
+	>
+		<div class="p-4">
+			<div class="flex items-start">
+				<div class="flex-shrink-0">
+					switch props.Variant {
+						case ToastSuccess:
+							<svg class="h-6 w-6 text-success-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+								<path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+							</svg>
+						case ToastError:
+							<svg class="h-6 w-6 text-danger-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+								<path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+							</svg>
+						case ToastWarning:
+							<svg class="h-6 w-6 text-warning-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+								<path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.008v.008H12v-.008z" />
+							</svg>
+						default:
+							<svg class="h-6 w-6 text-info-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+								<path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+							</svg>
+					}
+				</div>
+				<div class="ml-3 w-0 flex-1 pt-0.5">
+					<p class="text-sm font-medium text-neutral-900 dark:text-neutral-100">{ props.Title }</p>
+					if props.Message != "" {
+						<p class="mt-1 text-sm text-neutral-500 dark:text-neutral-400">{ props.Message }</p>
+					}
+				</div>
+				<div class="ml-4 flex flex-shrink-0">
+					<button 
+						type="button" 
+						class="inline-flex rounded-md bg-white dark:bg-neutral-900 text-neutral-400 hover:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2"
+						@click={ "$store.toasts.remove('" + props.ID + "')" }
+					>
+						<span class="sr-only">Close</span>
+						<svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+							<path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
+						</svg>
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
+}

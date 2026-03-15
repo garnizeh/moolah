@@ -1,0 +1,37 @@
+package components
+
+type FormFieldProps struct {
+	ID          string // Shared with Input/Select/etc
+	Label       string
+	Hint        string
+	Error       string
+	Required    bool
+	Content     templ.Component // Input/Select/Checkbox component goes here
+	Class       string
+}
+
+templ FormField(props FormFieldProps) {
+	<div class={ "w-full", props.Class }>
+		<div class="flex justify-between items-center mb-1">
+			<label for={ props.ID } class="block text-sm font-medium leading-6 text-neutral-900 dark:text-neutral-100">
+				{ props.Label }
+				if props.Required {
+					<span class="text-danger-500 ml-1" title="Required">*</span>
+				}
+			</label>
+			if props.Hint != "" {
+				<span class="text-xs text-neutral-500 dark:text-neutral-400" id={ props.ID + "-hint" }>
+					{ props.Hint }
+				</span>
+			}
+		</div>
+
+		@props.Content
+
+		if props.Error != "" {
+			<p class="mt-2 text-sm text-danger-600 dark:text-danger-400" id={ props.ID + "-error" }>
+				{ props.Error }
+			</p>
+		}
+	</div>
+}

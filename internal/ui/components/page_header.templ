@@ -1,0 +1,28 @@
+package components
+
+type PageHeaderProps struct {
+	Title    string
+	Subtitle string
+	Actions  templ.Component
+	Class    string
+}
+
+templ PageHeader(props PageHeaderProps) {
+	<div class={ "md:flex md:items-center md:justify-between mb-8", props.Class }>
+		<div class="min-w-0 flex-1">
+			<h2 class="text-2xl font-bold leading-7 text-neutral-900 dark:text-neutral-100 sm:truncate sm:text-3xl sm:tracking-tight">
+				{ props.Title }
+			</h2>
+			if props.Subtitle != "" {
+				<p class="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+					{ props.Subtitle }
+				</p>
+			}
+		</div>
+		if props.Actions != nil {
+			<div class="mt-4 flex md:ml-4 md:mt-0 gap-3">
+				@props.Actions
+			</div>
+		}
+	</div>
+}

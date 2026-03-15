@@ -1,0 +1,48 @@
+package components
+
+type CardPadding string
+
+const (
+	CardPaddingNone CardPadding = "none"
+	CardPaddingSm   CardPadding = "sm"
+	CardPaddingMd   CardPadding = "md"
+	CardPaddingLg   CardPadding = "lg"
+)
+
+type CardProps struct {
+	Header  templ.Component
+	Footer  templ.Component
+	Padding CardPadding
+	Class   string
+}
+
+func getCardPadding(padding CardPadding) string {
+	switch padding {
+	case CardPaddingNone:
+		return ""
+	case CardPaddingSm:
+		return "px-4 py-4 sm:px-6"
+	case CardPaddingLg:
+		return "px-8 py-8 sm:px-10"
+	default:
+		return "px-6 py-6 sm:px-8"
+	}
+}
+
+templ Card(props CardProps) {
+	<div class={ "overflow-hidden rounded-lg bg-white shadow dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800", props.Class }>
+		if props.Header != nil {
+			<div class="border-b border-neutral-200 px-4 py-5 dark:border-neutral-800 sm:px-6">
+				@props.Header
+			</div>
+		}
+		<div class={ getCardPadding(props.Padding) }>
+			{ children... }
+		</div>
+		if props.Footer != nil {
+			<div class="bg-neutral-50 px-4 py-4 dark:bg-neutral-800/50 sm:px-6">
+				@props.Footer
+			</div>
+		}
+	</div>
+}

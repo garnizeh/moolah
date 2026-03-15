@@ -1,0 +1,64 @@
+package components
+
+import "fmt"
+
+type SelectOption struct {
+	Label    string
+	Value    string
+	Selected bool
+	Disabled bool
+}
+
+type SelectProps struct {
+	ID          string
+	Name        string
+	Options     []SelectOption
+	Placeholder string
+	Required    bool
+	Disabled    bool
+	Error       string
+	Class       string
+	Attrs       templ.Attributes
+}
+
+func getSelectStyles(hasError bool) string {
+	styles := "block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-neutral-900 shadow-sm ring-1 ring-inset ring-neutral-300 focus:ring-2 focus:ring-inset focus:ring-brand-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-neutral-100 dark:ring-neutral-700 dark:focus:ring-brand-500"
+
+	if hasError {
+		styles += " ring-danger-300 text-danger-900 focus:ring-danger-500"
+	}
+
+	return styles
+}
+
+templ Select(props SelectProps) {
+	<div class="mt-2">
+		<select
+			id={ props.ID }
+			name={ props.Name }
+			class={ getSelectStyles(props.Error != ""), props.Class }
+			required?={ props.Required }
+			disabled?={ props.Disabled }
+			aria-invalid={ fmt.Sprintf("%t", props.Error != "") }
+			if props.Error != "" {
+				aria-describedby={ props.ID + "-error" }
+			}
+			{ props.Attrs... }
+		>
+			if props.Placeholder != "" {
+				<option value="" disabled?={ props.Required } selected?={ true }>
+					{ props.Placeholder }
+				</option>
+			}
+			for _, option := range props.Options {
+				<option 
+					value={ option.Value } 
+					selected?={ option.Selected } 
+					disabled?={ option.Disabled }
+				>
+					{ option.Label }
+				</option>
+			}
+		</select>
+	</div>
+}

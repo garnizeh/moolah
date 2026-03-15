@@ -1,0 +1,25 @@
+package components
+
+type SkeletonShape string
+
+const (
+	SkeletonRect   SkeletonShape = "rect"
+	SkeletonCircle SkeletonShape = "circle"
+)
+
+type SkeletonProps struct {
+	Shape SkeletonShape
+	Class string // used to set height/width
+}
+
+templ Skeleton(props SkeletonProps) {
+	<div 
+		class={ 
+			"animate-pulse bg-neutral-200 dark:bg-neutral-800",
+			templ.KV("rounded", props.Shape == SkeletonRect),
+			templ.KV("rounded-full", props.Shape == SkeletonCircle),
+			props.Class 
+		}
+		aria-hidden="true"
+	></div>
+}
