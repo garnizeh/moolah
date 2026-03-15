@@ -1,4 +1,4 @@
-.PHONY: all build run test lint generate clean help task-check deps up down swagger templ tailwind web-build web
+.PHONY: all build run test test-ui lint generate clean help task-check deps up down swagger templ tailwind web-build web
 
 # Configuration
 BINARY_NAME=moolah-api
@@ -18,7 +18,7 @@ VERSION_TAG := $(shell git describe --tags --match "v*" --abbrev=0 2>/dev/null |
 all: deps format lint generate test build swagger
 
 ## task-check: Run all checks required before completing a task (Linter, SQLC, Security, Unit Tests with Coverage)
-task-check: deps format lint-check sqlc-check security-check test-coverage swagger-check
+task-check: deps format lint-check sqlc-check templ-check security-check test-coverage swagger-check
 
 # deps: Install Go dependencies
 deps: install-tailwind
@@ -106,22 +106,37 @@ security-check:
 	@gosec ./...
 
 ## test-coverage: Run unit tests and enforce coverage (80% threshold)
-test-coverage:
-	@echo "🧪 Running unit tests with coverage..."
-	@$(GO) test -v -race -count=1 -tags=integration -timeout=600s -coverprofile=coverage.out -covermode=atomic $$(go list ./... | grep -v /platform/db/sqlc | grep -v /testutil/mocks | grep -v /api)
-	@COVERAGE=$$(go tool cover -func=coverage.out | grep total | awk '{print $$3}' | tr -d '%'); \
-	echo "Total coverage: $${COVERAGE}%"; \
+test-coverage: test-all test-integration
+	@echo "📊 Aggregating coverage reports..."
+	@COVERAGE=$$(go tool cover -func=unit.out -func=ui.out -func=integration.out | grep total | awk '{print $$3}' | tr -d '%'); \
+	echo "Total combined coverage: $${COVERAGE}%"; \
 	awk "BEGIN { if ($${COVERAGE} < 80) exit 1 }"; \
 	if [ $$? -ne 0 ]; then \
-		echo "❌ ERROR: Coverage $${COVERAGE}% is below the 80% threshold"; \
+		echo "❌ ERROR: Combined Coverage $${COVERAGE}% is below the 80% threshold"; \
 		exit 1; \
 	fi
 	@echo "✅ Tests passed with sufficient coverage."
+
+## smoke-test: Run Phase 1 end-to-end smoke test (docker required)
+smoke-test:
+	@echo "Running Phase 1 smoke test..."
+	$(GO) test -v -race -count=1 -tags=integration -timeout=300s \
+		-run TestSmoke_Phase1HappyPath \
+		./internal/server/...
 
 ## templ: Run templ code generation
 templ:
 	@echo "==> Running templ generate..."
 	templ generate ./...
+
+## templ-check: Verify if templ generation is up to date
+templ-check: templ
+	@echo "⚙️ Checking templ generation..."
+	@if [ -n "$$(git diff --name-only internal/ui/)" ]; then \
+		echo "❌ Error: Templ generated code is out of date. Run 'make templ' and commit the changes."; \
+		exit 1; \
+	fi; \
+	echo "✅ Templ is up to date."
 
 ## tailwind: Build optimised Tailwind CSS bundle
 tailwind:
@@ -136,22 +151,41 @@ run-web:
 run-api:
 	$(GO) run $(CMD_DIR)
 
-## test: Run unit tests
+## test: Run API and business logic unit tests (excludes UI)
 test:
-	@echo "Running unit tests..."
-	$(GO) test -v -tags=integration ./...
+	@echo "🧪 Running API unit tests..."
+	@$(GO) test -v -race -tags=integration -count=1 -timeout=300s -coverprofile=unit.out -covermode=atomic $$(go list ./... | grep -v /internal/ui | grep -v /cmd/api | grep -v /internal/platform/db/sqlc | grep -v /testutil/mocks | grep -v /api)
 
-## test-integration: Run integration tests (docker required)
+## test-ui: Run UI/Templ component tests
+test-ui: templ
+	@echo "🎨 Running UI component tests..."
+	@$(GO) test -v -race -count=1 -timeout=300s -coverprofile=ui.out -covermode=atomic ./internal/ui/...
+
+## test-all: Run API and UI tests in parallel
+test-all:
+	@echo "🚀 Running all tests in parallel..."
+	@$(MAKE) -j2 test test-ui
+
+## test-integration: Run integration tests (excludes UI)
 test-integration:
-	@echo "Running integration tests..."
-	$(GO) test -v -tags=integration ./...
+	@echo "🧪 Running API integration tests..."
+	@$(GO) test -v -race -count=1 -timeout=120s \
+		-tags=integration \
+		-coverprofile=integration.out \
+		-covermode=atomic \
+		./internal/platform/repository/...
 
-## smoke-test: Run Phase 1 end-to-end smoke test (docker required)
-smoke-test:
-	@echo "Running Phase 1 smoke test..."
-	$(GO) test -v -race -count=1 -tags=integration -timeout=300s \
-		-run TestSmoke_Phase1HappyPath \
-		./internal/server/...
+## test-coverage: Run unit tests and enforce coverage (80% threshold)
+test-coverage: test-all test-integration
+	@echo "📊 Aggregating coverage reports..."
+	@COVERAGE=$$(go tool cover -func=unit.out -func=ui.out -func=integration.out | grep total | awk '{print $$3}' | tr -d '%'); \
+	echo "Total combined coverage: $${COVERAGE}%"; \
+	awk "BEGIN { if ($${COVERAGE} < 80) exit 1 }"; \
+	if [ $$? -ne 0 ]; then \
+		echo "❌ ERROR: Combined Coverage $${COVERAGE}% is below the 80% threshold"; \
+		exit 1; \
+	fi
+	@echo "✅ Tests passed with sufficient coverage."
 
 ## lint: Run golangci-lint
 lint:

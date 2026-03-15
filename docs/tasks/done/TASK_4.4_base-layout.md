@@ -1,7 +1,7 @@
 # Task 4.4 — Base Layout Template
 
 > **Roadmap Ref:** Phase 4 — UI Foundation & Design System › Layout
-> **Status:** 🔵 `backlog`
+> **Status:** ✅ `done`
 > **Last Updated:** 2026-03-15
 > **Assignee:** —
 > **Estimated Effort:** M
@@ -31,18 +31,18 @@ All authenticated pages share the same outer shell. Building it once — correct
 
 ### In scope
 
-- [ ] `internal/ui/layout/base.templ` — root document shell with `content templ.Component` parameter.
-- [ ] `internal/ui/layout/sidebar.templ` — navigation sidebar with grouped links and active-route highlighting.
-- [ ] `internal/ui/layout/topbar.templ` — sticky top bar; hamburger (mobile), page title slot, user menu dropdown, theme toggle.
-- [ ] `internal/ui/layout/nav_item.templ` — reusable navigation link component (icon + label + active state).
-- [ ] Responsive sidebar behaviour: Alpine.js `open` store drives visibility; overlay closes on outside click or `Escape`.
-- [ ] Active route detection: current URL path passed from handler and compared against nav item `href`.
-- [ ] User menu dropdown in topbar: displays user email, links to tenant settings and logout.
-- [ ] Dark/light theme toggle button in topbar (calls `$store.theme.toggle()`).
-- [ ] HTMX progress bar indicator wired to `htmx:beforeRequest` / `htmx:afterRequest` events.
-- [ ] `<meta>` tags: charset, viewport, CSRF token (for non-idempotent HTMX requests), Open Graph basics.
-- [ ] Favicon and web app manifest (`/static/img/logo.svg`).
-- [ ] Unit test: render the base layout and assert key structural HTML elements are present.
+- [x] `internal/ui/layout/base.templ` — root document shell with `content templ.Component` parameter.
+- [x] `internal/ui/layout/sidebar.templ` — navigation sidebar with grouped links and active-route highlighting.
+- [x] `internal/ui/layout/topbar.templ` — sticky top bar; hamburger (mobile), page title slot, user menu dropdown, theme toggle.
+- [x] `internal/ui/layout/nav_item.templ` — reusable navigation link component (icon + label + active state).
+- [x] Responsive sidebar behaviour: Alpine.js `open` store drives visibility; overlay closes on outside click or `Escape`.
+- [x] Active route detection: current URL path passed from handler and compared against nav item `href`.
+- [x] User menu dropdown in topbar: displays user email, links to tenant settings and logout.
+- [x] Dark/light theme toggle button in topbar (calls `$store.theme.toggle()`).
+- [x] HTMX progress bar indicator wired to `htmx:beforeRequest` / `htmx:afterRequest` events.
+- [x] `<meta>` tags: charset, viewport, CSRF token (for non-idempotent HTMX requests), Open Graph basics.
+- [x] Favicon and web app manifest (`/static/img/logo.svg`).
+- [x] Unit test: render the base layout and assert key structural HTML elements are present.
 
 ### Out of scope
 
@@ -161,18 +161,18 @@ Alpine.store('toasts', {
 
 ## 5. Acceptance Criteria
 
-- [ ] `make templ` compiles `base.templ`, `sidebar.templ`, `topbar.templ`, `nav_item.templ` without errors.
-- [ ] Rendered HTML passes W3C structural validation (no unclosed tags, correct nesting).
-- [ ] Sidebar collapses to hidden on `< lg` screen width; hamburger shows.
-- [ ] Sidebar opens as overlay when hamburger is clicked; closes on backdrop click and `Escape`.
-- [ ] Active nav item is visually highlighted for the current route.
-- [ ] Dark mode toggle persists to `localStorage` and applies `.dark` class to `<html>`.
-- [ ] Theme respects `prefers-color-scheme` on first visit when no `localStorage` value is set.
-- [ ] User menu dropdown shows user email and links to settings / logout.
-- [ ] HTMX progress bar appears during HTMX requests.
-- [ ] `layout_test.go` asserts: `<title>`, `<main id="main-content">`, sidebar link to `/dashboard`, theme toggle button.
-- [ ] `golangci-lint run ./internal/ui/...` passes.
-- [ ] `docs/ROADMAP.md` row 4.4 updated to ✅ `done`.
+- [x] `make templ` compiles `base.templ`, `sidebar.templ`, `topbar.templ`, `nav_item.templ` without errors.
+- [x] Rendered HTML passes W3C structural validation (no unclosed tags, correct nesting).
+- [x] Sidebar collapses to hidden on `< lg` screen width; hamburger shows.
+- [x] Sidebar opens as overlay when hamburger is clicked; closes on backdrop click and `Escape`.
+- [x] Active nav item is visually highlighted for the current route.
+- [x] Dark mode toggle persists to `localStorage` and applies `.dark` class to `<html>`.
+- [x] Theme respects `prefers-color-scheme` on first visit when no `localStorage` value is set.
+- [x] User menu dropdown shows user email and links to settings / logout.
+- [x] HTMX progress bar appears during HTMX requests.
+- [x] `layout_test.go` asserts: `<title>`, `<main id="main-content">`, sidebar link to `/dashboard`, theme toggle button.
+- [x] `golangci-lint run ./internal/ui/...` passes.
+- [x] `docs/ROADMAP.md` row 4.4 updated to ✅ `done`.
 
 ---
 

@@ -120,14 +120,14 @@
 
 > **Goal:** Establish the complete front-end stack (Templ + HTMX + Alpine.js + Tailwind CSS), the design system, reusable component library, authentication UI, WebSocket infrastructure, and responsive base layout that all subsequent UI phases build on.
 > **Stack:** `a-h/templ` (Go server-side templates) · HTMX 2 (partial page updates) · Alpine.js (lightweight reactivity) · Tailwind CSS v4 (utility-first styling) · WebSocket (real-time push)
-> **Status:** 🔵 `backlog` | **Last Updated:** 2026-03-15
+> **Status:** � `in-progress` | **Last Updated:** 2026-03-15
 
 | # | Task | Status | Last Updated | Notes |
 | --- | --- | --- | --- | --- |
 | 4.1 | ADR: UI architecture — Templ + HTMX + Alpine + Tailwind | ✅ `done` | 2026-03-15 | Justify SSR-first, minimal JS, progressive enhancement |
 | 4.2 | Toolchain setup — `templ generate` in Makefile + CI; Tailwind CLI build step | ✅ `done` | 2026-03-15 | `cmd/web/` entry point; static asset embedding via `embed.FS` |
-| 4.3 | Tailwind configuration — design tokens (colours, typography, spacing, breakpoints) | 🔵 `backlog` | 2026-03-15 | Dark/light theme variables; mobile-first breakpoints |
-| 4.4 | Base layout template — shell, responsive sidebar/nav, topbar, footer | 🔵 `backlog` | 2026-03-15 | Collapsible sidebar on mobile; sticky topbar |
+| 4.3 | Tailwind configuration — design tokens (colours, typography, spacing, breakpoints) | ✅ `done` | 2026-03-15 | Dark/light theme variables; mobile-first breakpoints |
+| 4.4 | Base layout template — shell, responsive sidebar/nav, topbar, footer | ✅ `done` | 2026-03-15 | Collapsible sidebar on mobile; sticky topbar |
 | 4.5 | Component library — buttons, inputs, selects, modals, toasts, tables, cards, badges, skeleton loaders | 🔵 `backlog` | 2026-03-15 | Templ components; Alpine.js for interactive state |
 | 4.6 | Authentication UI — OTP request page + OTP verify page | 🔵 `backlog` | 2026-03-15 | HTMX form submission; inline validation errors; countdown timer |
 | 4.7 | WebSocket hub — server-side broadcast infrastructure (`internal/platform/ws/`) | 🔵 `backlog` | 2026-03-15 | Per-tenant rooms; `gorilla/websocket` or stdlib; reconnect logic in Alpine |
