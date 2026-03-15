@@ -22,7 +22,10 @@ func renderToDoc(t *testing.T, component templ.Component) *goquery.Document {
 		if err != nil {
 			t.Errorf("failed to render component: %v", err)
 		}
-		_ = w.Close()
+
+		if err := w.Close(); err != nil {
+			t.Errorf("failed to close pipe writer: %v", err)
+		}
 	}()
 
 	doc, err := goquery.NewDocumentFromReader(r)

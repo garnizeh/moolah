@@ -90,6 +90,7 @@ templ sidebar(props BaseProps) {
 			</div>
 
 			<!-- Footer footer info -->
+            if props.User != nil && props.Tenant != nil && len(props.User.Name) > 0 {
 			<div class="p-4 border-t border-neutral-100 dark:border-neutral-800">
 				<div class="flex items-center gap-3 px-3 py-2 bg-neutral-100 dark:bg-neutral-800 rounded-lg">
 					<div class="w-8 h-8 rounded-full bg-brand-500 flex items-center justify-center text-white font-bold">
@@ -101,6 +102,7 @@ templ sidebar(props BaseProps) {
 					</div>
 				</div>
 			</div>
+            }
 		</div>
 	</aside>
 }

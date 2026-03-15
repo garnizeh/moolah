@@ -52,7 +52,7 @@ Alpine.store('theme', {
 
 ### Shadows
 
-- `shadow-card`: Suble lift for dashboard cards.
+- `shadow-card`: Subtle lift for dashboard cards.
 - `shadow-dropdown`: Medium lift for menus.
 - `shadow-modal`: High lift for dialogs.
 

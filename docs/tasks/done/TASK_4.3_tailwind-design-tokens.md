@@ -193,14 +193,14 @@ Alpine.store('theme', {
 
 ## 5. Acceptance Criteria
 
-- [ ] `make tailwind` compiles without errors and produces `web/static/css/app.min.css`.
+- [x] `make tailwind` compiles without errors and produces `web/static/css/app.min.css`.
 - [x] All colour, typography, spacing, radius, shadow, and duration tokens are defined.
 - [x] Light mode and dark mode semantic variables are correct (`--color-bg`, etc.).
 - [x] Inter and JetBrains Mono fonts are served from `web/static/fonts/` (no CDN call).
-- [ ] Dark mode toggling via `.dark` class is documented in `docs/design/tokens.md`.
-- [ ] `docs/design/tokens.md` lists every token name, value in light mode, and value in dark mode.
+- [x] Dark mode toggling via `.dark` class is documented in `docs/design/tokens.md`.
+- [x] `docs/design/tokens.md` lists every token name, value in light mode, and value in dark mode.
 - [x] Contrast ratios for primary text/bg combinations meet WCAG AA (verified manually).
-- [ ] `docs/ROADMAP.md` row 4.3 updated to ✅ `done`.
+- [x] `docs/ROADMAP.md` row 4.3 updated to ✅ `done`.
 
 ---
 
