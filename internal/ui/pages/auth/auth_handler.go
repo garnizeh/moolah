@@ -3,27 +3,24 @@ package auth
 import (
 	"log/slog"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/garnizeh/moolah/internal/domain"
-	"github.com/garnizeh/moolah/pkg/paseto"
 )
 
 type AuthHandler struct {
 	authService domain.AuthService
-	tokenParser func(token string) (*paseto.Claims, error)
-	isProd      bool
+	isDev       bool
 }
 
 func NewAuthHandler(
 	authService domain.AuthService,
-	tokenParser func(token string) (*paseto.Claims, error),
-	isProd bool,
+	isDev bool,
 ) *AuthHandler {
 	return &AuthHandler{
 		authService: authService,
-		tokenParser: tokenParser,
-		isProd:      isProd,
+		isDev:       isDev,
 	}
 }
 
@@ -49,7 +46,7 @@ func (h *AuthHandler) RequestOTP(w http.ResponseWriter, r *http.Request) {
 
 	err := h.authService.RequestOTP(r.Context(), email)
 	if err != nil {
-		slog.ErrorContext(r.Context(), "failed to request otp", "error", err, "email", email)
+		slog.ErrorContext(r.Context(), "failed to request otp", "error", err, "masked_email", maskEmail(email))
 	}
 
 	props := OTPVerifyProps{Email: email}
@@ -74,7 +71,7 @@ func (h *AuthHandler) VerifyOTP(w http.ResponseWriter, r *http.Request) {
 
 	tokens, err := h.authService.VerifyOTP(r.Context(), email, code)
 	if err != nil {
-		slog.WarnContext(r.Context(), "failed to verify otp", "error", err, "email", email)
+		slog.WarnContext(r.Context(), "failed to verify otp", "error", err, "masked_email", maskEmail(email))
 		props := OTPVerifyProps{Email: email, Error: "Invalid or expired code"}
 		if err := OTPVerifyForm(props).Render(r.Context(), w); err != nil {
 			slog.ErrorContext(r.Context(), "failed to render otp verify form", "error", err)
@@ -88,7 +85,7 @@ func (h *AuthHandler) VerifyOTP(w http.ResponseWriter, r *http.Request) {
 		Value:    tokens.AccessToken,
 		Path:     "/",
 		HttpOnly: true,
-		Secure:   h.isProd,
+		Secure:   !h.isDev,
 		SameSite: http.SameSiteStrictMode,
 		MaxAge:   int(time.Until(tokens.ExpiresAt).Seconds()),
 	})
@@ -105,11 +102,25 @@ func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 		Value:    "",
 		Path:     "/",
 		HttpOnly: true,
-		Secure:   h.isProd,
+		Secure:   !h.isDev,
 		SameSite: http.SameSiteStrictMode,
 		MaxAge:   -1,
 	})
 
 	w.Header().Set("HX-Redirect", "/web/login")
 	w.WriteHeader(http.StatusOK)
+}
+
+func maskEmail(email string) string {
+	parts := strings.Split(email, "@")
+	if len(parts) != 2 {
+		return "****"
+	}
+	user := parts[0]
+	domain := parts[1]
+
+	if len(user) <= 2 {
+		return user + "*****@" + domain
+	}
+	return user[:2] + "*****@" + domain
 }

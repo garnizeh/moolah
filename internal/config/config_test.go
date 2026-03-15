@@ -39,7 +39,7 @@ func TestLoad(t *testing.T) {
 		assert.Equal(t, 587, cfg.SMTPPort)
 		assert.Equal(t, "info", cfg.LogLevel)
 		assert.Equal(t, "production", cfg.Environment)
-		assert.True(t, cfg.IsProduction())
+		assert.False(t, cfg.IsDevelopment())
 		assert.Equal(t, "0 5 1 * *", cfg.SnapshotCronSchedule)
 	})
 
@@ -60,7 +60,7 @@ func TestLoad(t *testing.T) {
 		assert.Equal(t, time.Hour, cfg.TokenTTL)
 		assert.Equal(t, "0 0 * * *", cfg.SnapshotCronSchedule)
 		assert.Equal(t, "development", cfg.Environment)
-		assert.False(t, cfg.IsProduction())
+		assert.True(t, cfg.IsDevelopment())
 	})
 
 	requiredVars := []string{

@@ -43,9 +43,9 @@ type Config struct {
 	SMTPPort        int
 }
 
-// IsProduction returns true if the environment is set to production.
-func (c *Config) IsProduction() bool {
-	return c.Environment != "development"
+// IsDevelopment returns true if the environment is explicitly set to development.
+func (c *Config) IsDevelopment() bool {
+	return c.Environment == "development"
 }
 
 // Log outputs the current configuration values at the info level.

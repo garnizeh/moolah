@@ -10,7 +10,6 @@ import (
 
 	"github.com/garnizeh/moolah/internal/domain"
 	"github.com/garnizeh/moolah/internal/testutil/mocks"
-	"github.com/garnizeh/moolah/pkg/paseto"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -19,7 +18,7 @@ import (
 func TestAuthHandler_Login(t *testing.T) {
 	t.Parallel()
 
-	h := NewAuthHandler(nil, nil, false)
+	h := NewAuthHandler(nil, false)
 	req := httptest.NewRequest(http.MethodGet, "/web/login", nil)
 	w := httptest.NewRecorder()
 
@@ -38,7 +37,7 @@ func TestAuthHandler_RequestOTP(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		t.Parallel()
 		mockAuthSvc := new(mocks.AuthService)
-		h := NewAuthHandler(mockAuthSvc, nil, false)
+		h := NewAuthHandler(mockAuthSvc, false)
 
 		form := url.Values{}
 		form.Add("email", "test@example.com")
@@ -61,7 +60,7 @@ func TestAuthHandler_RequestOTP(t *testing.T) {
 	t.Run("invalid_email", func(t *testing.T) {
 		t.Parallel()
 		mockAuthSvc := new(mocks.AuthService)
-		h := NewAuthHandler(mockAuthSvc, nil, false)
+		h := NewAuthHandler(mockAuthSvc, false)
 
 		form := url.Values{}
 		form.Add("email", "invalid")
@@ -84,7 +83,7 @@ func TestAuthHandler_RequestOTP(t *testing.T) {
 	t.Run("service_error", func(t *testing.T) {
 		t.Parallel()
 		mockAuthSvc := new(mocks.AuthService)
-		h := NewAuthHandler(mockAuthSvc, nil, false)
+		h := NewAuthHandler(mockAuthSvc, false)
 
 		form := url.Values{}
 		form.Add("email", "error@example.com")
@@ -108,16 +107,10 @@ func TestAuthHandler_RequestOTP(t *testing.T) {
 func TestAuthHandler_VerifyOTP(t *testing.T) {
 	t.Parallel()
 
-	tokenParser := func(token string) (*paseto.Claims, error) {
-		return &paseto.Claims{
-			UserID: "user_123",
-		}, nil
-	}
-
 	t.Run("success", func(t *testing.T) {
 		t.Parallel()
 		mockAuthSvc := new(mocks.AuthService)
-		h := NewAuthHandler(mockAuthSvc, tokenParser, false)
+		h := NewAuthHandler(mockAuthSvc, false)
 
 		form := url.Values{}
 		form.Add("email", "test@example.com")
@@ -154,7 +147,7 @@ func TestAuthHandler_VerifyOTP(t *testing.T) {
 	t.Run("invalid_code", func(t *testing.T) {
 		t.Parallel()
 		mockAuthSvc := new(mocks.AuthService)
-		h := NewAuthHandler(mockAuthSvc, tokenParser, false)
+		h := NewAuthHandler(mockAuthSvc, false)
 
 		form := url.Values{}
 		form.Add("email", "test@example.com")
@@ -180,7 +173,7 @@ func TestAuthHandler_VerifyOTP(t *testing.T) {
 func TestAuthHandler_Logout(t *testing.T) {
 	t.Parallel()
 
-	h := NewAuthHandler(nil, nil, false)
+	h := NewAuthHandler(nil, false)
 	req := httptest.NewRequest(http.MethodPost, "/web/auth/logout", nil)
 	w := httptest.NewRecorder()
 
@@ -202,4 +195,47 @@ func TestAuthHandler_Logout(t *testing.T) {
 		}
 	}
 	assert.True(t, found, "moolah_token cookie deletion not found")
+}
+
+func TestMaskEmail(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name     string
+		email    string
+		expected string
+	}{
+		{
+			name:     "standard email",
+			email:    "john.doe@example.com",
+			expected: "jo*****@example.com",
+		},
+		{
+			name:     "short username",
+			email:    "a@domain.com",
+			expected: "a*****@domain.com",
+		},
+		{
+			name:     "two char username",
+			email:    "ab@domain.com",
+			expected: "ab*****@domain.com",
+		},
+		{
+			name:     "invalid email format",
+			email:    "invalid-email",
+			expected: "****",
+		},
+		{
+			name:     "empty string",
+			email:    "",
+			expected: "****",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			assert.Equal(t, tt.expected, maskEmail(tt.email))
+		})
+	}
 }

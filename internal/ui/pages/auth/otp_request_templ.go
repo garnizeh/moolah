@@ -86,7 +86,7 @@ func OTPRequestForm(props OTPRequestProps) templ.Component {
 			templ_7745c5c3_Var3 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div id=\"auth-container\"><p class=\"mt-2 text-center text-sm text-neutral-600 dark:text-neutral-400\">Enter your email address to receive a 6-digit verification code.</p><div class=\"mt-8\"><form hx-post=\"/web/auth/otp/request\" hx-target=\"#auth-container\" hx-swap=\"outerHTML\" class=\"space-y-6\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div id=\"auth-container\"><p class=\"mt-2 text-center text-sm text-neutral-600 dark:text-neutral-400\">Enter your email address to receive a 6-digit verification code.</p><div class=\"mt-8\"><form method=\"post\" action=\"/web/auth/otp/request\" hx-post=\"/web/auth/otp/request\" hx-target=\"#auth-container\" hx-swap=\"outerHTML\" class=\"space-y-6\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

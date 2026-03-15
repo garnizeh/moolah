@@ -86,27 +86,27 @@ func OTPVerifyForm(props OTPVerifyProps) templ.Component {
 			templ_7745c5c3_Var3 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div id=\"auth-container\" x-data=\"{ timer: 600, resendVisible: false }\" x-init=\"setInterval(() => { if (timer > 0) timer--; if (timer <= 540) resendVisible = true }, 1000)\"><p class=\"mt-2 text-center text-sm text-neutral-600 dark:text-neutral-400\">We sent a 6-digit code to <span class=\"font-medium text-neutral-900 dark:text-white\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div id=\"auth-container\" x-data=\"{ \n\t\t\ttimer: 600, \n\t\t\tresendVisible: false,\n\t\t\tinterval: null,\n\t\t\tinit() {\n\t\t\t\tthis.interval = setInterval(() => { \n\t\t\t\t\tif (this.timer > 0) this.timer--; \n\t\t\t\t\tif (this.timer <= 540) this.resendVisible = true \n\t\t\t\t}, 1000)\n\t\t\t},\n\t\t\tdestroy() {\n\t\t\t\tclearInterval(this.interval)\n\t\t\t}\n\t\t}\"><p class=\"mt-2 text-center text-sm text-neutral-600 dark:text-neutral-400\">We sent a 6-digit code to <span class=\"font-medium text-neutral-900 dark:text-white\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var4 string
 		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(props.Email)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/ui/pages/auth/otp_verify.templ`, Line: 26, Col: 101}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/ui/pages/auth/otp_verify.templ`, Line: 38, Col: 101}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</span></p><p class=\"mt-4 text-center text-xs font-medium text-brand-600 dark:text-brand-400 uppercase tracking-widest\">Expires in: <span x-text=\"Math.floor(timer / 60) + ':' + (timer % 60).toString().padStart(2, '0')\">10:00</span></p><div class=\"mt-8\"><form hx-post=\"/web/auth/otp/verify\" hx-target=\"#auth-container\" hx-swap=\"outerHTML\" class=\"space-y-6\"><input type=\"hidden\" name=\"email\" value=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</span></p><p class=\"mt-4 text-center text-xs font-medium text-brand-600 dark:text-brand-400 uppercase tracking-widest\">Expires in: <span x-text=\"Math.floor(timer / 60) + ':' + (timer % 60).toString().padStart(2, '0')\">10:00</span></p><div class=\"mt-8\"><form method=\"post\" action=\"/web/auth/otp/verify\" hx-post=\"/web/auth/otp/verify\" hx-target=\"#auth-container\" hx-swap=\"outerHTML\" class=\"space-y-6\"><input type=\"hidden\" name=\"email\" value=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var5 string
 		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(props.Email)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/ui/pages/auth/otp_verify.templ`, Line: 40, Col: 57}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/ui/pages/auth/otp_verify.templ`, Line: 54, Col: 57}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 		if templ_7745c5c3_Err != nil {
@@ -149,20 +149,20 @@ func OTPVerifyForm(props OTPVerifyProps) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "</div></form></div><div class=\"mt-6 flex flex-col items-center gap-4 text-sm\"><button x-show=\"resendVisible\" hx-post=\"/web/auth/otp/request\" hx-target=\"#auth-container\" hx-swap=\"outerHTML\" hx-vals=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "</div></form></div><div class=\"mt-6 flex flex-col items-center gap-4 text-sm\"><form x-show=\"resendVisible\" method=\"post\" action=\"/web/auth/otp/request\" hx-post=\"/web/auth/otp/request\" hx-target=\"#auth-container\" hx-swap=\"outerHTML\" class=\"contents\"><input type=\"hidden\" name=\"email\" value=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var6 string
-		templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(`{"email": "` + props.Email + `"}`)
+		templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(props.Email)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/ui/pages/auth/otp_verify.templ`, Line: 77, Col: 48}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/ui/pages/auth/otp_verify.templ`, Line: 95, Col: 57}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "\" class=\"font-medium text-brand-600 hover:text-brand-500 dark:text-brand-400 dark:hover:text-brand-300 transition-colors\">Resend verification code &rarr;</button> <a href=\"/web/login\" class=\"text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-300\">&larr; Use a different email</a></div></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "\"> <button type=\"submit\" class=\"font-medium text-brand-600 hover:text-brand-500 dark:text-brand-400 dark:hover:text-brand-300 transition-colors\">Resend verification code &rarr;</button></form><a href=\"/web/login\" class=\"text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-300\">&larr; Use a different email</a></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

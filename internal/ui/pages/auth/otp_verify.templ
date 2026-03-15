@@ -19,8 +19,20 @@ templ OTPVerify(props OTPVerifyProps) {
 templ OTPVerifyForm(props OTPVerifyProps) {
 	<div 
 		id="auth-container" 
-		x-data="{ timer: 600, resendVisible: false }" 
-		x-init="setInterval(() => { if (timer > 0) timer--; if (timer <= 540) resendVisible = true }, 1000)"
+		x-data="{ 
+			timer: 600, 
+			resendVisible: false,
+			interval: null,
+			init() {
+				this.interval = setInterval(() => { 
+					if (this.timer > 0) this.timer--; 
+					if (this.timer <= 540) this.resendVisible = true 
+				}, 1000)
+			},
+			destroy() {
+				clearInterval(this.interval)
+			}
+		}" 
 	>
 		<p class="mt-2 text-center text-sm text-neutral-600 dark:text-neutral-400">
 			We sent a 6-digit code to <span class="font-medium text-neutral-900 dark:text-white">{ props.Email }</span>
@@ -32,6 +44,8 @@ templ OTPVerifyForm(props OTPVerifyProps) {
 
 		<div class="mt-8">
 			<form 
+				method="post"
+				action="/web/auth/otp/verify"
 				hx-post="/web/auth/otp/verify" 
 				hx-target="#auth-container" 
 				hx-swap="outerHTML" 
@@ -69,16 +83,23 @@ templ OTPVerifyForm(props OTPVerifyProps) {
 		</div>
 
 		<div class="mt-6 flex flex-col items-center gap-4 text-sm">
-			<button 
-				x-show="resendVisible" 
-				hx-post="/web/auth/otp/request" 
-				hx-target="#auth-container" 
+			<form
+				x-show="resendVisible"
+				method="post"
+				action="/web/auth/otp/request"
+				hx-post="/web/auth/otp/request"
+				hx-target="#auth-container"
 				hx-swap="outerHTML"
-				hx-vals={ `{"email": "` + props.Email + `"}` }
-				class="font-medium text-brand-600 hover:text-brand-500 dark:text-brand-400 dark:hover:text-brand-300 transition-colors"
+				class="contents"
 			>
-				Resend verification code &rarr;
-			</button>
+				<input type="hidden" name="email" value={ props.Email } />
+				<button
+					type="submit"
+					class="font-medium text-brand-600 hover:text-brand-500 dark:text-brand-400 dark:hover:text-brand-300 transition-colors"
+				>
+					Resend verification code &rarr;
+				</button>
+			</form>
 			
 			<a href="/web/login" class="text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-300">
 				&larr; Use a different email

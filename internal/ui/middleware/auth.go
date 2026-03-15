@@ -17,7 +17,7 @@ func SessionAuth(parseToken func(token string) (*paseto.Claims, error), loginURL
 			cookie, err := r.Cookie("moolah_token")
 			if err != nil {
 				// No cookie, redirect to login
-				http.Redirect(w, r, loginURL, http.StatusSeeOther)
+				handleUnauthorized(w, r, loginURL)
 				return
 			}
 
@@ -29,7 +29,7 @@ func SessionAuth(parseToken func(token string) (*paseto.Claims, error), loginURL
 					MaxAge: -1,
 					Path:   "/",
 				})
-				http.Redirect(w, r, loginURL, http.StatusSeeOther)
+				handleUnauthorized(w, r, loginURL)
 				return
 			}
 
@@ -53,11 +53,21 @@ func RedirectIfAuthenticated(parseToken func(token string) (*paseto.Claims, erro
 				_, err := parseToken(cookie.Value)
 				if err == nil {
 					// Valid session exists, redirect to dashboard
-					http.Redirect(w, r, dashboardURL, http.StatusSeeOther)
+					handleUnauthorized(w, r, dashboardURL)
 					return
 				}
 			}
 			next.ServeHTTP(w, r)
 		})
 	}
+}
+
+// handleUnauthorized handles redirects for both standard and HTMX requests.
+func handleUnauthorized(w http.ResponseWriter, r *http.Request, targetURL string) {
+	if r.Header.Get("HX-Request") == "true" {
+		w.Header().Set("HX-Redirect", targetURL)
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+	http.Redirect(w, r, targetURL, http.StatusSeeOther)
 }

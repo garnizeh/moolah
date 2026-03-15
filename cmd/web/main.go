@@ -93,7 +93,7 @@ func run(ctx context.Context, cfg *config.Config, _ *slog.Logger, showConfig boo
 	tokenParser := paseto.NewTokenParser(pasetoKey)
 
 	// Wire Handlers
-	authHandler := auth.NewAuthHandler(authSvc, tokenParser, cfg.IsProduction())
+	authHandler := auth.NewAuthHandler(authSvc, cfg.IsDevelopment())
 
 	mux := buildMux(cfg, authHandler, tokenParser)
 
@@ -163,7 +163,9 @@ func buildMux(_ *config.Config, authHandler *auth.AuthHandler, tokenParser func(
 	mux.Handle("GET /dashboard", sessionAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		// For dashboard, we'll implement a proper page later.
-		fmt.Fprintf(w, "<h1>Dashboard</h1><p>Welcome!</p><form hx-post='/web/auth/logout'><button>Logout</button></form>")
+		if _, err := fmt.Fprint(w, "<h1>Dashboard</h1><p>Welcome!</p><form hx-post='/web/auth/logout'><button>Logout</button></form>"); err != nil {
+			slog.ErrorContext(r.Context(), "failed to write dashboard response", "error", err)
+		}
 	})))
 
 	mux.Handle("POST /web/auth/logout", sessionAuth(http.HandlerFunc(authHandler.Logout)))

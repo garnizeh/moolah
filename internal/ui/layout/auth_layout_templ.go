@@ -44,7 +44,7 @@ func AuthLayout(title string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, " | Moolah</title><link rel=\"stylesheet\" href=\"/static/css/app.min.css\"><script defer src=\"https://unpkg.com/htmx.org@2.0.0\"></script><script defer src=\"https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js\"></script></head><body class=\"h-full\"><div class=\"flex min-h-full flex-col justify-center py-12 sm:px-6 lg:px-8\"><div class=\"sm:mx-auto sm:w-full sm:max-w-md\"><div class=\"flex justify-center\"><!-- Logo placeholder --><div class=\"h-12 w-12 rounded-xl bg-brand-600 flex items-center justify-center text-white font-bold text-2xl shadow-lg\">M</div></div><h2 class=\"mt-6 text-center text-2xl font-bold leading-9 tracking-tight text-neutral-900 dark:text-white\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, " | Moolah</title><link rel=\"stylesheet\" href=\"/static/css/app.min.css\"><script defer src=\"/static/js/htmx.min.js\"></script><script defer src=\"/static/js/alpine.min.js\"></script></head><body class=\"h-full\"><div class=\"flex min-h-full flex-col justify-center py-12 sm:px-6 lg:px-8\"><div class=\"sm:mx-auto sm:w-full sm:max-w-md\"><div class=\"flex justify-center\"><!-- Logo placeholder --><div class=\"h-12 w-12 rounded-xl bg-brand-600 flex items-center justify-center text-white font-bold text-2xl shadow-lg\">M</div></div><h2 class=\"mt-6 text-center text-2xl font-bold leading-9 tracking-tight text-neutral-900 dark:text-white\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
