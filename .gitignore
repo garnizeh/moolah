@@ -9,6 +9,9 @@ tmp/
 
 # Test artifacts
 coverage.out
+unit.out
+ui.out
+integration.out
 coverage.html
 *.test
 *.prof

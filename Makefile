@@ -18,7 +18,7 @@ VERSION_TAG := $(shell git describe --tags --match "v*" --abbrev=0 2>/dev/null |
 all: deps format lint generate test build swagger
 
 ## task-check: Run all checks required before completing a task (Linter, SQLC, Security, Unit Tests with Coverage)
-task-check: deps format lint-check sqlc-check templ-check security-check test-coverage swagger-check
+task-check: deps format lint-check sqlc-check templ-check swagger-check security-check test-coverage
 
 # deps: Install Go dependencies
 deps: install-tailwind
