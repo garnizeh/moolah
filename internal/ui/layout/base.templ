@@ -77,7 +77,9 @@ templ base(props BaseProps) {
 
 				<!-- Page content slot -->
 				<main id="main-content" class="flex-1 p-4 lg:p-8">
-					@props.Content
+					if props.Content != nil {
+						@props.Content
+					}
 				</main>
 			</div>
 

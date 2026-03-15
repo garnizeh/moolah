@@ -155,8 +155,9 @@ func TestBaseLayout(t *testing.T) {
 	t.Run("renders logout link", func(t *testing.T) {
 		t.Parallel()
 		doc := renderToDoc(t, base(props))
-		logoutLink := doc.Find("a[href='/auth/logout']").First()
-		assert.Positive(t, logoutLink.Length())
+		logoutForm := doc.Find("form[action='/auth/logout']").First()
+		assert.Positive(t, logoutForm.Length())
+		assert.Equal(t, "POST", strings.ToUpper(logoutForm.AttrOr("method", "")))
 	})
 
 	t.Run("renders all sidebar links including icons", func(t *testing.T) {

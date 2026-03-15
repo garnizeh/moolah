@@ -158,7 +158,7 @@ func sidebar(props BaseProps) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "</div></section><!-- Planning Navigation --><section><h3 class=\"px-3 text-xs font-semibold text-neutral-400 uppercase tracking-wider mb-2\">Planejamento</h3><div class=\"space-y-1\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "</div></section><!-- Planning Navigation --><section><h3 class=\"px-3 text-xs font-semibold text-neutral-400 uppercase tracking-wider mb-2\">Planning</h3><div class=\"space-y-1\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -170,7 +170,7 @@ func sidebar(props BaseProps) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "</div></section><!-- Investment Navigation --><section><h3 class=\"px-3 text-xs font-semibold text-neutral-400 uppercase tracking-wider mb-2\">Investimentos</h3><div class=\"space-y-1\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "</div></section><!-- Investment Navigation --><section><h3 class=\"px-3 text-xs font-semibold text-neutral-400 uppercase tracking-wider mb-2\">Investments</h3><div class=\"space-y-1\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

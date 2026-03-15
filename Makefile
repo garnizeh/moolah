@@ -9,6 +9,8 @@ OUT_DIR=bin
 SWAGGER_OUT=api
 GO=go
 TAILWIND_VERSION=4.1.8
+SQLC_VERSION=v1.30.0
+TEMPL_VERSION=v0.3.1001
 
 BUILD_TIME := $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
 COMMIT_HASH := $(shell git rev-parse HEAD)
@@ -87,7 +89,7 @@ lint-check:
 sqlc-check:
 	@echo "⚙️ Checking sqlc generation..."
 	@if [ -n "$$(ls internal/platform/db/queries/*.sql 2>/dev/null)" ]; then \
-		go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest; \
+		go install github.com/sqlc-dev/sqlc/cmd/sqlc@$(SQLC_VERSION); \
 		sqlc generate; \
 		if [ -n "$$(git diff --name-only internal/platform/db/sqlc/)" ]; then \
 			echo "❌ Error: sqlc generated code is out of date. Commit the changes."; \
@@ -132,7 +134,7 @@ smoke-test:
 ## templ: Run templ code generation
 templ:
 	@echo "==> Running templ generate..."
-	@go install github.com/a-h/templ/cmd/templ@latest
+	@go install github.com/a-h/templ/cmd/templ@$(TEMPL_VERSION)
 	templ generate ./...
 
 ## templ-check: Verify if templ generation is up to date
@@ -167,10 +169,15 @@ test-ui: templ
 	@echo "🎨 Running UI component tests..."
 	@$(GO) test -v -race -count=1 -timeout=300s -coverprofile=ui.out -covermode=atomic ./internal/ui/...
 
-## test-all: Run API and UI tests in parallel
-test-all:
+## test-all: Run API and UI tests in parallel (ensures templ is up to date first)
+test-all: templ
 	@echo "🚀 Running all tests in parallel..."
-	@$(MAKE) -j2 test test-ui
+	@$(MAKE) -j2 test test-ui-noprep
+
+## test-ui-noprep: Run UI tests without calling templ generate (used by test-all)
+test-ui-noprep:
+	@echo "🎨 Running UI component tests (no prep)..."
+	@$(GO) test -v -race -count=1 -timeout=300s -coverprofile=ui.out -covermode=atomic ./internal/ui/...
 
 ## test-integration: Run integration tests (excludes UI)
 test-integration:

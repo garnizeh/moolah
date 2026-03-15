@@ -69,8 +69,12 @@ templ topbar(props BaseProps) {
 							<p class="text-xs font-semibold text-neutral-900 dark:text-neutral-100">{ props.User.Name }</p>
 							<p class="text-[10px] text-neutral-500 truncate">{ props.User.Email }</p>
 						</div>
-						<a href="/settings" class="block px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700" role="menuitem">Configurações</a>
-						<a href="/auth/logout" class="block px-4 py-2 text-sm text-danger-600 hover:bg-danger-50 dark:hover:bg-danger-900/20" role="menuitem">Sair</a>
+						<a href="/settings" class="block px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700" role="menuitem">Settings</a>
+						<form method="POST" action="/auth/logout">
+							<button type="submit" class="block w-full px-4 py-2 text-left text-sm text-danger-600 hover:bg-danger-50 dark:hover:bg-danger-900/20" role="menuitem">
+								Sign out
+							</button>
+						</form>
 					</div>
 				</div>
 			}
