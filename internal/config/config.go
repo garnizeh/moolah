@@ -22,6 +22,7 @@ type Config struct {
 	SMTPPassword       string
 	EmailFrom          string
 	HTTPPort           string
+	WebPort            string
 	LogLevel           string
 	LogFormat          string
 	SysadminEmail      string
@@ -51,6 +52,7 @@ func (c *Config) Log(ctx context.Context) {
 		"SMTPPassword", c.SMTPPassword,
 		"EmailFrom", c.EmailFrom,
 		"HTTPPort", c.HTTPPort,
+		"WebPort", c.WebPort,
 		"LogLevel", c.LogLevel,
 		"LogFormat", c.LogFormat,
 		"SysadminEmail", c.SysadminEmail,
@@ -69,6 +71,7 @@ func (c *Config) Log(ctx context.Context) {
 func Load() *Config {
 	return &Config{
 		HTTPPort:        getEnv("HTTP_PORT", "8080"),
+		WebPort:         getEnv("WEB_PORT", "8081"),
 		ReadTimeout:     getDurationEnv("READ_TIMEOUT", "10s"),
 		WriteTimeout:    getDurationEnv("WRITE_TIMEOUT", "30s"),
 		ShutdownTimeout: getDurationEnv("SHUTDOWN_TIMEOUT", "15s"),

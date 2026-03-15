@@ -1,6 +1,6 @@
 # Moolah — Project Roadmap
 
-> **Version:** 1.0.0 | **Last Updated:** 2026-03-14 | **Status:** 🟡 In Progress
+> **Version:** 1.0.0 | **Last Updated:** 2026-03-15 | **Status:** 🟡 In Progress
 
 ---
 
@@ -94,7 +94,7 @@
 ## Phase 3 — Investment Portfolio Tracking
 
 > **Goal:** Add investment accounts with position tracking, asset allocation views, income receivables, and periodic portfolio snapshots. Read-heavy; no monetary mutation beyond deposits/withdrawals recorded as transactions.
-> **Status:** 🟡 `in-progress` | **Last Updated:** 2026-03-14
+> **Status:** ✅ `done` | **Last Updated:** 2026-03-15
 
 | # | Task | Status | Last Updated | Notes |
 | --- | --- | --- | --- | --- |
@@ -116,37 +116,100 @@
 
 ---
 
-## Phase 4 — Billing, Plans & Monetisation
+## Phase 4 — UI Foundation & Design System
 
-> **Goal:** Implement subscription plan enforcement (`free`/`basic`/`premium` tiers), usage quotas, and integration with a payment gateway (Stripe or equivalent).
-> **Status:** 🔵 `backlog` | **Last Updated:** 2026-03-06
+> **Goal:** Establish the complete front-end stack (Templ + HTMX + Alpine.js + Tailwind CSS), the design system, reusable component library, authentication UI, WebSocket infrastructure, and responsive base layout that all subsequent UI phases build on.
+> **Stack:** `a-h/templ` (Go server-side templates) · HTMX 2 (partial page updates) · Alpine.js (lightweight reactivity) · Tailwind CSS v4 (utility-first styling) · WebSocket (real-time push)
+> **Status:** 🔵 `backlog` | **Last Updated:** 2026-03-15
 
 | # | Task | Status | Last Updated | Notes |
 | --- | --- | --- | --- | --- |
-| 4.1 | ADR: billing strategy (Stripe / Paddle / manual invoice) | 🔵 `backlog` | 2026-03-06 | |
-| 4.2 | Plan quota enforcement middleware (account/transaction limits) | 🔵 `backlog` | 2026-03-06 | |
-| 4.3 | Webhook handler for payment gateway events | 🔵 `backlog` | 2026-03-06 | |
-| 4.4 | `POST /v1/tenants/me/subscription` — upgrade/downgrade | 🔵 `backlog` | 2026-03-06 | |
-| 4.5 | Grace-period logic on plan downgrade | 🔵 `backlog` | 2026-03-06 | |
-| 4.6 | Admin dashboard endpoint: MRR, churn, plan distribution | 🔵 `backlog` | 2026-03-06 | |
+| 4.1 | ADR: UI architecture — Templ + HTMX + Alpine + Tailwind | ✅ `done` | 2026-03-15 | Justify SSR-first, minimal JS, progressive enhancement |
+| 4.2 | Toolchain setup — `templ generate` in Makefile + CI; Tailwind CLI build step | ✅ `done` | 2026-03-15 | `cmd/web/` entry point; static asset embedding via `embed.FS` |
+| 4.3 | Tailwind configuration — design tokens (colours, typography, spacing, breakpoints) | 🔵 `backlog` | 2026-03-15 | Dark/light theme variables; mobile-first breakpoints |
+| 4.4 | Base layout template — shell, responsive sidebar/nav, topbar, footer | 🔵 `backlog` | 2026-03-15 | Collapsible sidebar on mobile; sticky topbar |
+| 4.5 | Component library — buttons, inputs, selects, modals, toasts, tables, cards, badges, skeleton loaders | 🔵 `backlog` | 2026-03-15 | Templ components; Alpine.js for interactive state |
+| 4.6 | Authentication UI — OTP request page + OTP verify page | 🔵 `backlog` | 2026-03-15 | HTMX form submission; inline validation errors; countdown timer |
+| 4.7 | WebSocket hub — server-side broadcast infrastructure (`internal/platform/ws/`) | 🔵 `backlog` | 2026-03-15 | Per-tenant rooms; `gorilla/websocket` or stdlib; reconnect logic in Alpine |
+| 4.8 | Error pages — 404, 403, 500 with friendly UI | 🔵 `backlog` | 2026-03-15 | |
+| 4.9 | Smoke / E2E test harness for UI — `httptest` + response body assertions (no Playwright for MVP) | 🔵 `backlog` | 2026-03-15 | Validates rendered HTML structure |
 
 ---
 
-## Phase 5 — Observability & Production Hardening
+## Phase 5 — UI: Core Finance Dashboard
 
-> **Goal:** Ship the monitoring, alerting, and reliability features required to operate at scale with confidence.
-> **Status:** 🔵 `backlog` | **Last Updated:** 2026-03-06
+> **Goal:** Deliver the end-to-end UI for Phase 1 API features — dashboard overview, accounts, transactions, categories, and tenant/profile settings — fully responsive on desktop and mobile.
+> **Status:** 🔵 `backlog` | **Last Updated:** 2026-03-15
 
 | # | Task | Status | Last Updated | Notes |
 | --- | --- | --- | --- | --- |
-| 5.1 | `/healthz` and `/readyz` endpoints | 🔵 `backlog` | 2026-03-06 | Readiness checks DB + Redis |
-| 5.2 | Prometheus metrics middleware (`/metrics` scrape endpoint) | 🔵 `backlog` | 2026-03-06 | Request count, latency histograms |
-| 5.3 | OpenTelemetry tracing (OTLP exporter) | 🔵 `backlog` | 2026-03-06 | |
-| 5.4 | Centralized error tracking (Sentry or equivalent) | 🔵 `backlog` | 2026-03-06 | |
-| 5.5 | PgBouncer connection pooling config | 🔵 `backlog` | 2026-03-06 | Phase 2 scaling path from ARCHITECTURE.md |
-| 5.6 | Redis Sentinel config for HA | 🔵 `backlog` | 2026-03-06 | |
-| 5.7 | PostgreSQL read replicas for report queries | 🔵 `backlog` | 2026-03-06 | |
-| 5.8 | Runbook + on-call playbook in `docs/` | 🔵 `backlog` | 2026-03-06 | |
+| 5.1 | Dashboard page — net worth summary card, cash-flow chart, recent transactions widget | 🔵 `backlog` | 2026-03-15 | HTMX OOB swap for live balance via WebSocket |
+| 5.2 | Accounts list page — sortable table, balance badges, account-type icons | 🔵 `backlog` | 2026-03-15 | |
+| 5.3 | Account create/edit form — drawer overlay; HTMX submit with inline error handling | 🔵 `backlog` | 2026-03-15 | |
+| 5.4 | Account delete flow — confirmation modal; soft-delete with undo toast | 🔵 `backlog` | 2026-03-15 | |
+| 5.5 | Transactions list page — paginated table, search/filter bar (date range, category, account, type) | 🔵 `backlog` | 2026-03-15 | Infinite scroll or cursor-based pagination via HTMX |
+| 5.6 | Transaction create/edit form — HTMX drawer; amount formatting with cents | 🔵 `backlog` | 2026-03-15 | |
+| 5.7 | Transaction delete with balance revert confirmation | 🔵 `backlog` | 2026-03-15 | |
+| 5.8 | Categories management page — hierarchical tree view; create/edit/delete | 🔵 `backlog` | 2026-03-15 | Alpine.js tree toggle; drag to reorder (future) |
+| 5.9 | Tenant settings page — profile, invite member, plan info (read-only) | 🔵 `backlog` | 2026-03-15 | |
+| 5.10 | Admin panel — tenant list, user management, audit log viewer | 🔵 `backlog` | 2026-03-15 | Sysadmin-only; gated by role middleware |
+
+---
+
+## Phase 6 — UI: Credit Cards & Investment Portfolio
+
+> **Goal:** Deliver the UI for Phase 2 (credit card / installments) and Phase 3 (investments) features — master purchase flows, invoice closing, portfolio dashboard, position management, and income tracking.
+> **Status:** 🔵 `backlog` | **Last Updated:** 2026-03-15
+
+| # | Task | Status | Last Updated | Notes |
+| --- | --- | --- | --- | --- |
+| 6.1 | Credit card account view — current invoice balance, pending installments list | 🔵 `backlog` | 2026-03-15 | |
+| 6.2 | Master purchase create/edit form — instalment count, amount, category selection | 🔵 `backlog` | 2026-03-15 | Real-time installment projection preview (Alpine.js) |
+| 6.3 | Invoice closing flow — manual trigger modal; progress indicator; success/error feedback | 🔵 `backlog` | 2026-03-15 | WebSocket push to update dashboard balance |
+| 6.4 | Investment portfolio dashboard — total value, total income, allocation breakdown chart | 🔵 `backlog` | 2026-03-15 | WebSocket push for live price updates (when available) |
+| 6.5 | Positions list page — asset ticker, quantity, avg cost, current value, P&L badge | 🔵 `backlog` | 2026-03-15 | |
+| 6.6 | Position create/edit form — asset picker, account picker, income config | 🔵 `backlog` | 2026-03-15 | |
+| 6.7 | Income events page — calendar/list view of upcoming and received income | 🔵 `backlog` | 2026-03-15 | Mark-as-received inline action via HTMX |
+| 6.8 | Asset catalogue page (admin) — global assets list; create/edit; COALESCE override indicator | 🔵 `backlog` | 2026-03-15 | |
+| 6.9 | Tenant asset config override form — custom name/ticker/logo per tenant | 🔵 `backlog` | 2026-03-15 | |
+| 6.10 | Portfolio snapshot history page — time-series chart of net portfolio value | 🔵 `backlog` | 2026-03-15 | |
+
+---
+
+## Phase 7 — Billing, Plans & Monetisation
+
+> **Goal:** Implement subscription plan enforcement (`free`/`basic`/`premium` tiers), usage quotas, and integration with a payment gateway (Stripe or equivalent).
+> **Status:** ⏸️ `postponed` | **Last Updated:** 2026-03-15
+> **Reason:** Deferred until UI is functional and validated with real users. Billing complexity adds risk before product-market fit is confirmed.
+
+| # | Task | Status | Last Updated | Notes |
+| --- | --- | --- | --- | --- |
+| 7.1 | ADR: billing strategy (Stripe / Paddle / manual invoice) | ⏸️ `postponed` | 2026-03-15 | |
+| 7.2 | Plan quota enforcement middleware (account/transaction limits) | ⏸️ `postponed` | 2026-03-15 | |
+| 7.3 | Webhook handler for payment gateway events | ⏸️ `postponed` | 2026-03-15 | |
+| 7.4 | `POST /v1/tenants/me/subscription` — upgrade/downgrade | ⏸️ `postponed` | 2026-03-15 | |
+| 7.5 | Grace-period logic on plan downgrade | ⏸️ `postponed` | 2026-03-15 | |
+| 7.6 | Admin dashboard endpoint: MRR, churn, plan distribution | ⏸️ `postponed` | 2026-03-15 | |
+| 7.7 | Billing UI — subscription status, upgrade flow, invoice history | ⏸️ `postponed` | 2026-03-15 | |
+
+---
+
+## Phase 8 — Observability & Production Hardening
+
+> **Goal:** Ship the monitoring, alerting, and reliability features required to operate at scale with confidence.
+> **Status:** ⏸️ `postponed` | **Last Updated:** 2026-03-15
+> **Reason:** Deferred until product is validated end-to-end. Observability investment is most valuable once traffic patterns are known.
+
+| # | Task | Status | Last Updated | Notes |
+| --- | --- | --- | --- | --- |
+| 8.1 | `/healthz` and `/readyz` endpoints | ⏸️ `postponed` | 2026-03-15 | Readiness checks DB + Redis |
+| 8.2 | Prometheus metrics middleware (`/metrics` scrape endpoint) | ⏸️ `postponed` | 2026-03-15 | Request count, latency histograms |
+| 8.3 | OpenTelemetry tracing (OTLP exporter) | ⏸️ `postponed` | 2026-03-15 | |
+| 8.4 | Centralized error tracking (Sentry or equivalent) | ⏸️ `postponed` | 2026-03-15 | |
+| 8.5 | PgBouncer connection pooling config | ⏸️ `postponed` | 2026-03-15 | Phase 2 scaling path from ARCHITECTURE.md |
+| 8.6 | Redis Sentinel config for HA | ⏸️ `postponed` | 2026-03-15 | |
+| 8.7 | PostgreSQL read replicas for report queries | ⏸️ `postponed` | 2026-03-15 | |
+| 8.8 | Runbook + on-call playbook in `docs/` | ⏸️ `postponed` | 2026-03-15 | |
 
 ---
 
@@ -157,7 +220,7 @@
 | External router (chi, gorilla/mux) | ❌ **Rejected** | Go 1.22 stdlib routing covers all needs; zero-dependency preferred | ❌ `canceled` |
 | GraphQL API | ⏸️ **Deferred** | REST covers Phase 1–3 requirements; revisit if client demand justifies complexity | ⏸️ `postponed` |
 | gRPC internal transport | ⏸️ **Deferred** | Monolith for now; re-evaluate at Phase 5 if microservices split occurs | ⏸️ `postponed` |
-| Real-time push (WebSocket / SSE) | ⏸️ **Deferred** | Phase 3+ feature for live portfolio updates | ⏸️ `postponed` |
+| Real-time push (WebSocket / SSE) | ✅ **Adopted** | Used in Phase 4 UI via WebSocket hub for live balance and portfolio updates | ✅ `done` |
 | Mobile SDK / OpenAPI client gen | ⏸️ **Deferred** | Swagger spec is generated; client gen tooling deferred | ⏸️ `postponed` |
 | GORM / heavy ORM | ❌ **Rejected** | `sqlc` + raw SQL is explicit, auditable, and type-safe | ❌ `canceled` |
 | Float for monetary values | ❌ **Rejected** | `int64` cents only; floating-point drift is unacceptable for finance | ❌ `canceled` |

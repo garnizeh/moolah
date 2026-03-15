@@ -1,8 +1,10 @@
-.PHONY: all build run test lint generate clean help task-check deps up down swagger
+.PHONY: all build run test lint generate clean help task-check deps up down swagger templ tailwind web-build web
 
 # Configuration
 BINARY_NAME=moolah-api
+WEB_BINARY_NAME=moolah-web
 CMD_DIR=./cmd/api
+WEB_CMD_DIR=./cmd/web
 OUT_DIR=bin
 SWAGGER_OUT=api
 GO=go
@@ -88,6 +90,26 @@ build:
 	@mkdir -p $(OUT_DIR)
 	$(GO) build -mod=vendor -ldflags="-s -w -X 'main.tagVersion=$(VERSION_TAG)' -X 'main.buildTime=$(BUILD_TIME)' -X 'main.commitHash=$(COMMIT_HASH)' -X 'main.goVersion=$(GO_VERSION)'" -o $(OUT_DIR)/$(BINARY_NAME) $(CMD_DIR)
 
+## templ: Run templ code generation
+templ:
+	@echo "==> Running templ generate..."
+	templ generate ./...
+
+## tailwind: Build optimised Tailwind CSS bundle
+tailwind:
+	@echo "==> Building Tailwind CSS..."
+	tailwindcss -i web/static/css/app.css -o web/static/css/app.min.css --minify
+
+## web-build: Build the web UI binary (templ + tailwind + go build)
+web-build: templ tailwind
+	@echo "==> Building web binary..."
+	@mkdir -p $(OUT_DIR)
+	$(GO) build -mod=vendor -ldflags="-s -w -X 'main.tagVersion=$(VERSION_TAG)' -X 'main.buildTime=$(BUILD_TIME)' -X 'main.commitHash=$(COMMIT_HASH)' -X 'main.goVersion=$(GO_VERSION)'" -o $(OUT_DIR)/$(WEB_BINARY_NAME) $(WEB_CMD_DIR)
+
+## web: Run the web UI server locally (development)
+web:
+	$(GO) run $(WEB_CMD_DIR)
+
 ## run: Run the API application
 run:
 	$(GO) run $(CMD_DIR)
@@ -114,8 +136,8 @@ lint:
 	@echo "Running linter..."
 	golangci-lint run --build-tags=integration
 
-## generate: Run sqlc generate
-generate:
+## generate: Run sqlc and templ code generation
+generate: templ
 	@echo "Generating SQL code..."
 	sqlc generate
 
