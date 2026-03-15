@@ -90,7 +90,7 @@ jobs:
             $(go list ./... | grep -v /cmd/api | grep -v /internal/platform/db/sqlc | grep -v /testutil/mocks | grep -v /api)
 
       - name: Upload unit coverage artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: unit-coverage
           path: unit.out
@@ -178,6 +178,9 @@ jobs:
       - name: Install Tailwind CSS CLI
         run: make install-tailwind
 
+      - name: Install dependencies
+        run: make deps
+        
       - name: Build binaries (API & Web)
         run: make build
 
