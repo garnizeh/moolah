@@ -14,9 +14,9 @@ import (
 	"github.com/garnizeh/moolah/pkg/ulid"
 )
 
-// CreateUser inserts a test user for the given tenantID.
+// SeedUser inserts a test user for the given tenantID.
 // Defaults: role=member, name="Test User", unique email.
-func CreateUser(t *testing.T, ctx context.Context, q sqlc.Querier, tenantID string) domain.User {
+func SeedUser(t *testing.T, ctx context.Context, q sqlc.Querier, tenantID string) domain.User {
 	t.Helper()
 
 	id := ulid.New()

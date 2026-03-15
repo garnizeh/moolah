@@ -336,6 +336,8 @@ func TestAdminService_UserOperations(t *testing.T) {
 		userRepo := new(mocks.AdminUserRepository)
 		auditRepo := new(mocks.AuditRepository)
 
+		expectedUser := &domain.User{ID: "u1", TenantID: "t1"}
+		userRepo.On("GetByID", mock.Anything, "u1").Return(expectedUser, nil)
 		auditRepo.On("Create", mock.Anything, mock.Anything).Return(&domain.AuditLog{}, nil)
 		userRepo.On("ForceDelete", mock.Anything, "u1").Return(nil)
 
@@ -351,6 +353,8 @@ func TestAdminService_UserOperations(t *testing.T) {
 		userRepo := new(mocks.AdminUserRepository)
 		auditRepo := new(mocks.AuditRepository)
 
+		expectedUser := &domain.User{ID: "u1", TenantID: "t1"}
+		userRepo.On("GetByID", mock.Anything, "u1").Return(expectedUser, nil)
 		auditRepo.On("Create", mock.Anything, mock.Anything).Return(nil, errors.New("audit fail"))
 		userRepo.On("ForceDelete", mock.Anything, "u1").Return(nil)
 
@@ -365,6 +369,8 @@ func TestAdminService_UserOperations(t *testing.T) {
 		userRepo := new(mocks.AdminUserRepository)
 		auditRepo := new(mocks.AuditRepository)
 
+		expectedUser := &domain.User{ID: "u1", TenantID: "t1"}
+		userRepo.On("GetByID", mock.Anything, "u1").Return(expectedUser, nil)
 		auditRepo.On("Create", mock.Anything, mock.Anything).Return(&domain.AuditLog{}, nil)
 		userRepo.On("ForceDelete", mock.Anything, "u1").Return(errors.New("db error"))
 

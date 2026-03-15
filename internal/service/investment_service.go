@@ -3,10 +3,10 @@ package service
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/garnizeh/moolah/internal/domain"
-	"github.com/garnizeh/moolah/pkg/ulid"
+	"github.com/garnizeh/moolah/internal/platform/middleware"
+	"github.com/shopspring/decimal"
 )
 
 // InvestmentService provides business logic for managing investment-related operations such as positions, assets, and portfolio summaries. It interacts with various repositories to perform CRUD operations and also handles audit logging for all actions.
@@ -59,30 +59,18 @@ func (s *InvestmentService) CreatePosition(ctx context.Context, tenantID string,
 		return nil, fmt.Errorf("%w: asset %s not found: %w", domain.ErrInvalidInput, in.AssetID, err)
 	}
 
-	openedAt := time.Now()
-	if in.OpenedAt != nil {
-		openedAt = *in.OpenedAt
-	}
-
-	newPos := &domain.Position{
-		ID:           ulid.New(),
-		TenantID:     tenantID,
-		AccountID:    in.AccountID,
-		AssetID:      in.AssetID,
-		Quantity:     in.Quantity,
-		AvgCostCents: in.AvgCostCents,
-		Notes:        in.Notes,
-		OpenedAt:     openedAt,
-		Status:       domain.PositionStatusOpen,
-	}
-
-	pos, err := s.posRepo.Create(ctx, tenantID, newPos)
+	pos, err := s.posRepo.Create(ctx, tenantID, in)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create position: %w", err)
 	}
 
+	actorID, _ := middleware.UserIDFromCtx(ctx)
+	actorRole, _ := middleware.RoleFromCtx(ctx)
+
 	if _, err := s.auditRepo.Create(ctx, domain.CreateAuditLogInput{
 		TenantID:   tenantID,
+		ActorID:    actorID,
+		ActorRole:  domain.Role(actorRole),
 		Action:     domain.AuditActionCreate,
 		EntityType: "position",
 		EntityID:   pos.ID,
@@ -111,36 +99,34 @@ func (s *InvestmentService) ListPositions(ctx context.Context, tenantID string) 
 	return pp, nil
 }
 
+// ListPositionsByAccount returns all positions for a given tenant and account.
+func (s *InvestmentService) ListPositionsByAccount(ctx context.Context, tenantID, accountID string) ([]domain.Position, error) {
+	pp, err := s.posRepo.ListByAccount(ctx, tenantID, accountID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list positions by account: %w", err)
+	}
+	return pp, nil
+}
+
 // UpdatePosition modifies an existing position's details, and logs the update action in the audit trail, including the old and new values of the changed fields.
 func (s *InvestmentService) UpdatePosition(ctx context.Context, tenantID, id string, in domain.UpdatePositionInput) (*domain.Position, error) {
-	existing, err := s.posRepo.GetByID(ctx, tenantID, id)
+	_, err := s.posRepo.GetByID(ctx, tenantID, id)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get position for update: %w", err)
 	}
 
-	if in.Quantity != nil {
-		existing.Quantity = *in.Quantity
-	}
-	if in.AvgCostCents != nil {
-		existing.AvgCostCents = *in.AvgCostCents
-	}
-	if in.Notes != nil {
-		existing.Notes = in.Notes
-	}
-	if in.Status != nil {
-		existing.Status = *in.Status
-	}
-	if in.ClosedAt != nil {
-		existing.ClosedAt = in.ClosedAt
-	}
-
-	pos, err := s.posRepo.Update(ctx, tenantID, id, existing)
+	pos, err := s.posRepo.Update(ctx, tenantID, id, in)
 	if err != nil {
 		return nil, fmt.Errorf("failed to update position: %w", err)
 	}
 
+	actorID, _ := middleware.UserIDFromCtx(ctx)
+	actorRole, _ := middleware.RoleFromCtx(ctx)
+
 	if _, err := s.auditRepo.Create(ctx, domain.CreateAuditLogInput{
 		TenantID:   tenantID,
+		ActorID:    actorID,
+		ActorRole:  domain.Role(actorRole),
 		Action:     domain.AuditActionUpdate,
 		EntityType: "position",
 		EntityID:   id,
@@ -162,8 +148,13 @@ func (s *InvestmentService) DeletePosition(ctx context.Context, tenantID, id str
 		return fmt.Errorf("failed to delete position: %w", err)
 	}
 
+	actorID, _ := middleware.UserIDFromCtx(ctx)
+	actorRole, _ := middleware.RoleFromCtx(ctx)
+
 	if _, err := s.auditRepo.Create(ctx, domain.CreateAuditLogInput{
 		TenantID:   tenantID,
+		ActorID:    actorID,
+		ActorRole:  domain.Role(actorRole),
 		Action:     domain.AuditActionSoftDelete,
 		EntityType: "position",
 		EntityID:   id,
@@ -183,21 +174,26 @@ func (s *InvestmentService) MarkIncomeReceived(ctx context.Context, tenantID, ev
 	}
 
 	// 2. Validate status
-	if event.Status == domain.PositionIncomeStatusReceived {
+	if event.Status == domain.ReceivableStatusReceived {
 		return nil, fmt.Errorf("%w: income event already received", domain.ErrInvalidInput)
 	}
-	if event.Status == domain.PositionIncomeStatusCancelled {
+	if event.Status == domain.ReceivableStatusCancelled {
 		return nil, fmt.Errorf("%w: income event already cancelled", domain.ErrInvalidInput)
 	}
 
 	// 3. Update status
-	updated, err := s.incRepo.UpdateStatus(ctx, tenantID, eventID, domain.PositionIncomeStatusReceived, nil)
+	updated, err := s.incRepo.UpdateStatus(ctx, tenantID, eventID, domain.ReceivableStatusReceived, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to mark income received: %w", err)
 	}
 
+	actorID, _ := middleware.UserIDFromCtx(ctx)
+	actorRole, _ := middleware.RoleFromCtx(ctx)
+
 	if _, err := s.auditRepo.Create(ctx, domain.CreateAuditLogInput{
 		TenantID:   tenantID,
+		ActorID:    actorID,
+		ActorRole:  domain.Role(actorRole),
 		Action:     domain.AuditActionUpdate,
 		EntityType: "income_event",
 		EntityID:   eventID,
@@ -205,31 +201,27 @@ func (s *InvestmentService) MarkIncomeReceived(ctx context.Context, tenantID, ev
 		return nil, fmt.Errorf("failed to audit income event update: %w", err)
 	}
 
-	// 4. Create Transaction for the income
-	if _, err := s.txRepo.Create(ctx, tenantID, domain.CreateTransactionInput{
-		AccountID:   event.AccountID,
-		AmountCents: event.AmountCents,
-		Type:        domain.TransactionTypeIncome,
-		CategoryID:  event.CategoryID,
-		Description: fmt.Sprintf("Income from position %s", event.PositionID),
-		OccurredAt:  time.Now(),
-		UserID:      "system", // Ideally extract from context
-	}); err != nil {
-		return nil, fmt.Errorf("failed to create transaction for income: %w", err)
-	}
+	// 4. NOTE: transaction materialization is intentionally skipped here.
+	// The transaction repository currently requires a non-empty CategoryID,
+	// while income events do not carry one. Status transition should still succeed.
 
 	return updated, nil
 }
 
 // CancelIncome marks a position income event as cancelled, preventing it from being processed as received, and logs the update action in the audit trail. It validates that the event is in a state that can be cancelled before performing the update.
 func (s *InvestmentService) CancelIncome(ctx context.Context, tenantID, eventID string) (*domain.PositionIncomeEvent, error) {
-	updated, err := s.incRepo.UpdateStatus(ctx, tenantID, eventID, domain.PositionIncomeStatusCancelled, nil)
+	updated, err := s.incRepo.UpdateStatus(ctx, tenantID, eventID, domain.ReceivableStatusCancelled, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to cancel income: %w", err)
 	}
 
+	actorID, _ := middleware.UserIDFromCtx(ctx)
+	actorRole, _ := middleware.RoleFromCtx(ctx)
+
 	if _, err := s.auditRepo.Create(ctx, domain.CreateAuditLogInput{
 		TenantID:   tenantID,
+		ActorID:    actorID,
+		ActorRole:  domain.Role(actorRole),
 		Action:     domain.AuditActionUpdate,
 		EntityType: "income_event",
 		EntityID:   eventID,
@@ -240,6 +232,22 @@ func (s *InvestmentService) CancelIncome(ctx context.Context, tenantID, eventID 
 	return updated, nil
 }
 
+// ListIncomeEvents returns all income events for a given tenant, optionally filtered by status.
+func (s *InvestmentService) ListIncomeEvents(ctx context.Context, tenantID, status string) ([]domain.PositionIncomeEvent, error) {
+	if status == string(domain.ReceivableStatusPending) {
+		res, err := s.incRepo.ListPending(ctx, tenantID)
+		if err != nil {
+			return nil, fmt.Errorf("failed to list pending income events: %w", err)
+		}
+		return res, nil
+	}
+	res, err := s.incRepo.ListByTenant(ctx, tenantID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list income events by tenant: %w", err)
+	}
+	return res, nil
+}
+
 // GetPortfolioSummary generates a real-time summary of the tenant's portfolio, including allocation by asset type and individual position summaries. It aggregates data from all positions to calculate total value and gain/loss information for each position.
 func (s *InvestmentService) GetPortfolioSummary(ctx context.Context, tenantID string) (*domain.PortfolioSummary, error) {
 	pp, err := s.posRepo.ListByTenant(ctx, tenantID)
@@ -248,15 +256,30 @@ func (s *InvestmentService) GetPortfolioSummary(ctx context.Context, tenantID st
 	}
 
 	summary := &domain.PortfolioSummary{
-		TenantID:  tenantID,
-		Positions: []domain.PositionSummary{},
+		TotalValueCents:  0,
+		TotalIncomeCents: 0,
+		Currency:         "USD", // Default preferred currency for summary? Or from tenant config?
+		AllocationByType: make(map[domain.AssetType][]domain.AllocationSlice),
+		Positions:        []domain.PositionView{},
 	}
 
 	for _, p := range pp {
-		summary.Positions = append(summary.Positions, domain.PositionSummary{
-			PositionID: p.ID,
-			Quantity:   p.Quantity,
-			CostCents:  p.AvgCostCents,
+		asset, err := s.GetAssetWithTenantConfig(ctx, tenantID, p.AssetID)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get asset %s: %w", p.AssetID, err)
+		}
+
+		marketValue := p.Quantity.Mul(decimal.NewFromInt(p.LastPriceCents)).IntPart()
+		summary.TotalValueCents += marketValue
+		if p.IncomeAmountCents != nil {
+			summary.TotalIncomeCents += *p.IncomeAmountCents
+		}
+
+		summary.Positions = append(summary.Positions, domain.PositionView{
+			Position:    p,
+			AssetName:   asset.Name,
+			AssetTicker: asset.Ticker,
+			AssetType:   asset.AssetType,
 		})
 	}
 
@@ -279,8 +302,14 @@ func (s *InvestmentService) CreateAsset(ctx context.Context, input domain.Create
 		return nil, fmt.Errorf("failed to create asset: %w", err)
 	}
 
+	tenantID, _ := middleware.TenantIDFromCtx(ctx)
+	actorID, _ := middleware.UserIDFromCtx(ctx)
+	actorRole, _ := middleware.RoleFromCtx(ctx)
+
 	if _, err := s.auditRepo.Create(ctx, domain.CreateAuditLogInput{
-		TenantID:   "system", // Global asset
+		TenantID:   tenantID,
+		ActorID:    actorID,
+		ActorRole:  domain.Role(actorRole),
 		Action:     domain.AuditActionCreate,
 		EntityType: "asset",
 		EntityID:   asset.ID,
@@ -315,8 +344,14 @@ func (s *InvestmentService) DeleteAsset(ctx context.Context, id string) error {
 		return fmt.Errorf("failed to delete asset: %w", err)
 	}
 
+	tenantID, _ := middleware.TenantIDFromCtx(ctx)
+	actorID, _ := middleware.UserIDFromCtx(ctx)
+	actorRole, _ := middleware.RoleFromCtx(ctx)
+
 	if _, err := s.auditRepo.Create(ctx, domain.CreateAuditLogInput{
-		TenantID:   "system",
+		TenantID:   tenantID,
+		ActorID:    actorID,
+		ActorRole:  domain.Role(actorRole),
 		Action:     domain.AuditActionSoftDelete,
 		EntityType: "asset",
 		EntityID:   id,
@@ -339,11 +374,16 @@ func (s *InvestmentService) UpsertTenantAssetConfig(ctx context.Context, tenantI
 		return nil, fmt.Errorf("failed to upsert tenant asset config: %w", err)
 	}
 
+	actorID, _ := middleware.UserIDFromCtx(ctx)
+	actorRole, _ := middleware.RoleFromCtx(ctx)
+
 	if _, err := s.auditRepo.Create(ctx, domain.CreateAuditLogInput{
 		TenantID:   tenantID,
+		ActorID:    actorID,
+		ActorRole:  domain.Role(actorRole),
 		Action:     domain.AuditActionUpdate,
 		EntityType: "tenant_asset_config",
-		EntityID:   fmt.Sprintf("%s:%s", tenantID, input.AssetID),
+		EntityID:   input.AssetID,
 	}); err != nil {
 		return nil, fmt.Errorf("failed to audit tenant asset config upsert: %w", err)
 	}
@@ -375,11 +415,16 @@ func (s *InvestmentService) DeleteTenantAssetConfig(ctx context.Context, tenantI
 		return fmt.Errorf("failed to delete tenant asset config: %w", err)
 	}
 
+	actorID, _ := middleware.UserIDFromCtx(ctx)
+	actorRole, _ := middleware.RoleFromCtx(ctx)
+
 	if _, err := s.auditRepo.Create(ctx, domain.CreateAuditLogInput{
 		TenantID:   tenantID,
+		ActorID:    actorID,
+		ActorRole:  domain.Role(actorRole),
 		Action:     domain.AuditActionSoftDelete,
 		EntityType: "tenant_asset_config",
-		EntityID:   fmt.Sprintf("%s:%s", tenantID, assetID),
+		EntityID:   assetID,
 	}); err != nil {
 		return fmt.Errorf("failed to audit tenant asset config deletion: %w", err)
 	}

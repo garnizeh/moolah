@@ -18,6 +18,20 @@ sql:
             go_type: "string"
           - column: "*.id"
             go_type: "string"
+          - column: "*.quantity"
+            go_type: "github.com/shopspring/decimal.Decimal"
+          - column: "positions.income_interval_days"
+            go_type:
+              import: "github.com/jackc/pgx/v5/pgtype"
+              type: "Int4"
+          - column: "positions.income_amount_cents"
+            go_type:
+              import: "github.com/jackc/pgx/v5/pgtype"
+              type: "Int8"
+          - column: "positions.income_rate_bps"
+            go_type:
+              import: "github.com/jackc/pgx/v5/pgtype"
+              type: "Int4"
           - column: "*.user_id"
             go_type: "string"
           - column: "*.account_id"

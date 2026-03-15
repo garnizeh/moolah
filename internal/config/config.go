@@ -27,6 +27,10 @@ type Config struct {
 	SysadminEmail      string
 	SysadminTenantName string
 
+	// Jobs
+	SnapshotCronSchedule    string
+	IncomeSchedulerInterval time.Duration
+
 	// Time/Numeric
 	ReadTimeout     time.Duration
 	WriteTimeout    time.Duration
@@ -51,6 +55,7 @@ func (c *Config) Log(ctx context.Context) {
 		"LogFormat", c.LogFormat,
 		"SysadminEmail", c.SysadminEmail,
 		"SysadminTenantName", c.SysadminTenantName,
+		"SnapshotCronSchedule", c.SnapshotCronSchedule,
 		"ReadTimeout", c.ReadTimeout,
 		"WriteTimeout", c.WriteTimeout,
 		"ShutdownTimeout", c.ShutdownTimeout,
@@ -87,6 +92,9 @@ func Load() *Config {
 
 		SysadminEmail:      getRequiredEnv("SYSADMIN_EMAIL"),
 		SysadminTenantName: getEnv("SYSADMIN_TENANT_NAME", "System"),
+
+		SnapshotCronSchedule:    getEnv("SNAPSHOT_CRON_SCHEDULE", "0 5 1 * *"),
+		IncomeSchedulerInterval: getDurationEnv("INCOME_SCHEDULER_INTERVAL", "1h"),
 	}
 }
 

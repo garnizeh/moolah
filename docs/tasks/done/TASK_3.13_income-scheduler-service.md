@@ -1,9 +1,9 @@
 # Task 3.13 — Income Scheduler Service (Background Goroutine — ADR §9)
 
 > **Roadmap Ref:** Phase 3 — Investment Portfolio Tracking › Background Jobs
-> **Status:** 🔵 `backlog`
-> **Last Updated:** 2026-03-13
-> **Assignee:** —
+> **Status:** ✅ `done`
+> **Last Updated:** 2026-03-14
+> **Assignee:** GitHub Copilot
 > **Estimated Effort:** S
 
 ---
@@ -28,16 +28,16 @@ This job is distinct from the Portfolio Snapshot Job (Task 3.8): the snapshot jo
 
 ### In scope
 
-- [ ] `internal/service/income_scheduler_job.go` — `IncomeSchedulerJob` struct + `Run(ctx context.Context)`.
-- [ ] `internal/service/income_scheduler_job_test.go` — unit tests.
-- [ ] Polling interval configurable via `INCOME_SCHEDULER_INTERVAL` ENV VAR (default: `1h`).
-- [ ] For each due position (`next_income_at <= NOW()` and `income_type != 'none'`):
+- [x] `internal/service/income_scheduler_job.go` — `IncomeSchedulerJob` struct + `Run(ctx context.Context)`.
+- [x] `internal/service/income_scheduler_job_test.go` — unit tests.
+- [x] Polling interval configurable via `INCOME_SCHEDULER_INTERVAL` ENV VAR (default: `1h`).
+- [x] For each due position (`next_income_at <= NOW()` and `income_type != 'none'`):
   - Compute `amount_cents`: use `income_amount_cents` if fixed, or `ROUND(last_price_cents * quantity * income_rate_bps / 10000)` if rate-based, or sum of both if hybrid (ADR §9).
   - Create `position_income_events` row with `status = 'pending'`.
   - Advance `next_income_at += income_interval_days`.
-- [ ] Graceful shutdown via `ctx.Done()`.
-- [ ] Structured logging per position processed; errors non-fatal.
-- [ ] Wiring in `cmd/api/main.go`.
+- [x] Graceful shutdown via `ctx.Done()`.
+- [x] Structured logging per position processed; errors non-fatal.
+- [x] Wiring in `cmd/api/main.go`.
 
 ### Out of scope
 
@@ -101,20 +101,21 @@ func computeIncomeAmount(p domain.Position) int64 { ... }
 
 ## 5. Acceptance Criteria
 
-- [ ] `IncomeSchedulerJob.Run` polls `PositionRepository.ListDueIncome` on the configured interval.
-- [ ] Creates one `PositionIncomeEvent` with `status = 'pending'` per due position per poll.
-- [ ] Advances `next_income_at` by exactly `income_interval_days` days after creating the event.
-- [ ] Fixed, rate-based, and hybrid amount calculation all produce correct `int64` cents.
-- [ ] A creation failure for one position does not stop processing of other positions.
-- [ ] `Run` exits when `ctx` is cancelled.
-- [ ] Unit tests cover: fixed income, rate income, hybrid income, context cancellation, error isolation.
-- [ ] `make task-check` passes.
-- [ ] `docs/ROADMAP.md` row 3.13 updated to ✅ `done`.
+- [x] `IncomeSchedulerJob.Run` polls `PositionRepository.ListDueIncome` on the configured interval.
+- [x] Creates one `PositionIncomeEvent` with `status = 'pending'` per due position per poll.
+- [x] Advances `next_income_at` by exactly `income_interval_days` days after creating the event.
+- [x] Fixed, rate-based, and hybrid amount calculation all produce correct `int64` cents.
+- [x] A creation failure for one position does not stop processing of other positions.
+- [x] `Run` exits when `ctx` is cancelled.
+- [x] Unit tests cover: fixed income, rate income, hybrid income, context cancellation, error isolation.
+- [x] `make task-check` passes.
+- [x] `docs/ROADMAP.md` row 3.13 updated to ✅ `done`.
 
 ---
 
 ## 6. Change Log
 
-| Date       | Author | Change             |
-| ---------- | ------ | ------------------ |
-| 2026-03-13 | —      | Task created (new) |
+| Date       | Author | Change                                          |
+| ---------- | ------ | ----------------------------------------------- |
+| 2026-03-14 | Copilot| Job implementation, tests and cmd/api wiring    |
+| 2026-03-13 | —      | Task created (new)                              |

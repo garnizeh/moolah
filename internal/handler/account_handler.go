@@ -31,7 +31,7 @@ type CreateAccountRequest struct {
 	Name         string             `json:"name"          validate:"required,min=1,max=100"`
 	Type         domain.AccountType `json:"type"          validate:"required,oneof=checking savings credit_card investment"`
 	Currency     string             `json:"currency"      validate:"required,len=3"`
-	InitialCents int64              `json:"initial_cents" validate:"required"`
+	InitialCents int64              `json:"initial_cents" validate:"gte=0"`
 }
 
 // UpdateAccountRequest defines the payload for updating an account.

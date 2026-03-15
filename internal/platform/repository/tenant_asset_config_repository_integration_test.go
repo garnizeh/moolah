@@ -9,6 +9,8 @@ import (
 	"github.com/garnizeh/moolah/internal/domain"
 	"github.com/garnizeh/moolah/internal/platform/repository"
 	"github.com/garnizeh/moolah/internal/testutil/containers"
+	"github.com/garnizeh/moolah/internal/testutil/seeds"
+	"github.com/garnizeh/moolah/pkg/ulid"
 	"github.com/stretchr/testify/require"
 )
 
@@ -84,25 +86,41 @@ func TestTenantAssetConfigRepository_Integration(t *testing.T) {
 
 	t.Run("List By Tenant", func(t *testing.T) {
 		t.Parallel()
+		tenant := seeds.SeedTenant(t, ctx, db.Queries)
 
-		asset2, err := assetRepo.Create(ctx, domain.CreateAssetInput{
-			Ticker:    "NFLX",
-			Name:      "Netflix",
+		asset1, err := assetRepo.Create(ctx, domain.CreateAssetInput{
+			Ticker:    "SN-LBT-1-" + ulid.New()[:8],
+			Name:      "Asset 1",
 			AssetType: domain.AssetTypeStock,
 			Currency:  "USD",
 		})
 		require.NoError(t, err)
 
-		name2 := "Netflix (Tenant Override)"
-		_, err = repo.Upsert(ctx, tenant.ID, domain.UpsertTenantAssetConfigInput{
-			AssetID: asset2.ID,
-			Name:    &name2,
+		name1 := "Asset 1 Override"
+		_, errFirst := repo.Upsert(ctx, tenant.ID, domain.UpsertTenantAssetConfigInput{
+			AssetID: asset1.ID,
+			Name:    &name1,
+		})
+		require.NoError(t, errFirst)
+
+		asset2, err := assetRepo.Create(ctx, domain.CreateAssetInput{
+			Ticker:    "SN-LBT-2-" + ulid.New()[:8],
+			Name:      "Asset 2",
+			AssetType: domain.AssetTypeStock,
+			Currency:  "USD",
 		})
 		require.NoError(t, err)
 
+		name2 := "Asset 2 Override"
+		_, errSecond := repo.Upsert(ctx, tenant.ID, domain.UpsertTenantAssetConfigInput{
+			AssetID: asset2.ID,
+			Name:    &name2,
+		})
+		require.NoError(t, errSecond)
+
 		configs, err := repo.ListByTenant(ctx, tenant.ID)
 		require.NoError(t, err)
-		require.GreaterOrEqual(t, len(configs), 2)
+		require.Len(t, configs, 2)
 	})
 
 	t.Run("Delete (Soft)", func(t *testing.T) {

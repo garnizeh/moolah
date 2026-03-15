@@ -192,4 +192,15 @@ func TestAssetRepository_Unit(t *testing.T) {
 		require.Error(t, err)
 		require.Contains(t, err.Error(), "failed to delete asset")
 	})
+
+	t.Run("GetLastPrice", func(t *testing.T) {
+		t.Parallel()
+		mQuerier := new(mocks.Querier)
+		repo := repository.NewAssetRepository(mQuerier)
+		id := "asset_1"
+
+		price, err := repo.GetLastPrice(ctx, id)
+		require.NoError(t, err)
+		require.Equal(t, int64(0), price)
+	})
 }

@@ -1,8 +1,8 @@
 # Task 3.12 — Repository: Position Family + Integration Tests
 
 > **Roadmap Ref:** Phase 3 — Investment Portfolio Tracking › Data Access
-> **Status:** 🔵 `backlog`
-> **Last Updated:** 2026-03-13
+> **Status:** ✅ `done`
+> **Last Updated:** 2026-03-14
 > **Assignee:** —
 > **Estimated Effort:** M
 
@@ -28,15 +28,15 @@ Append-only tables (`position_snapshots`, `portfolio_snapshots`) have no `Update
 
 ### In scope
 
-- [ ] `internal/platform/repository/position_repository.go` — implements `domain.PositionRepository`.
-- [ ] `internal/platform/repository/position_repository_integration_test.go`.
-- [ ] `internal/platform/repository/position_snapshot_repository.go` — implements `domain.PositionSnapshotRepository`.
-- [ ] `internal/platform/repository/position_snapshot_repository_integration_test.go`.
-- [ ] `internal/platform/repository/position_income_event_repository.go` — implements `domain.PositionIncomeEventRepository`.
-- [ ] `internal/platform/repository/position_income_event_repository_integration_test.go`.
-- [ ] `internal/platform/repository/portfolio_snapshot_repository.go` — implements `domain.PortfolioSnapshotRepository`.
-- [ ] `internal/platform/repository/portfolio_snapshot_repository_integration_test.go`.
-- [ ] Add mock methods for new query types to `internal/testutil/mocks/querier_mock.go`.
+- [x] `internal/platform/repository/position_repository.go` — implements `domain.PositionRepository`.
+- [x] `internal/platform/repository/position_repository_integration_test.go`.
+- [x] `internal/platform/repository/position_snapshot_repository.go` — implements `domain.PositionSnapshotRepository`.
+- [x] `internal/platform/repository/position_snapshot_repository_integration_test.go`.
+- [x] `internal/platform/repository/position_income_event_repository.go` — implements `domain.PositionIncomeEventRepository`.
+- [x] `internal/platform/repository/position_income_event_repository_integration_test.go`.
+- [x] `internal/platform/repository/portfolio_snapshot_repository.go` — implements `domain.PortfolioSnapshotRepository`.
+- [x] `internal/platform/repository/portfolio_snapshot_repository_integration_test.go`.
+- [x] Add mock methods for new query types to `internal/testutil/mocks/querier_mock.go`.
 
 ### Out of scope
 
@@ -87,20 +87,22 @@ func (r *PositionIncomeEventRepository) UpdateStatus(
 
 ## 5. Acceptance Criteria
 
-- [ ] All four repositories implement their respective `domain.*Repository` interfaces.
-- [ ] `PositionRepository.ListDueIncome` returns only positions where `next_income_at <= before` and `income_type != 'none'`.
-- [ ] `PositionIncomeEventRepository.UpdateStatus` returns `domain.ErrConflict` if current status is not `pending`.
-- [ ] Append-only repos (`PositionSnapshot`, `PortfolioSnapshot`) have no `Update` or `Delete` methods.
-- [ ] Every integration test calls `t.Parallel()`.
-- [ ] All errors are wrapped with meaningful context.
-- [ ] Mock querier additions compile without errors.
-- [ ] `make task-check` passes.
-- [ ] `docs/ROADMAP.md` row 3.12 updated to ✅ `done`.
+- [x] All four repositories implement their respective `domain.*Repository` interfaces.
+- [x] `PositionRepository.ListDueIncome` returns only positions where `next_income_at <= before` and `income_type != 'none'`.
+- [x] `PositionIncomeEventRepository.UpdateStatus` returns `domain.ErrConflict` if current status is not `pending`.
+- [x] Append-only repos (`PositionSnapshot`, `PortfolioSnapshot`) have no `Update` or `Delete` methods.
+- [x] Every integration test calls `t.Parallel()`.
+- [x] All errors are wrapped with meaningful context.
+- [x] Mock querier additions compile without errors.
+- [x] `make task-check` passes.
+- [x] `docs/ROADMAP.md` row 3.12 updated to ✅ `done`.
 
 ---
 
 ## 6. Change Log
 
-| Date       | Author | Change             |
-| ---------- | ------ | ------------------ |
-| 2026-03-13 | —      | Task created (new) |
+| Date       | Author | Change                                          |
+| ---------- | ------ | ----------------------------------------------- |
+| 2026-03-14 | Copilot| Position family repositories logic and 100% UT  |
+| 2026-03-14 | Copilot| Integration tests and security/lint fixes (G115)|
+| 2026-03-13 | —      | Task created (new)                              |

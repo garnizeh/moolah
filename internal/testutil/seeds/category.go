@@ -14,9 +14,9 @@ import (
 	"github.com/garnizeh/moolah/pkg/ulid"
 )
 
-// CreateCategory inserts a root expense category within tenantID.
+// SeedCategory inserts a root expense category within tenantID.
 // Defaults: type=expense, no parent, name="Test Category".
-func CreateCategory(t *testing.T, ctx context.Context, q sqlc.Querier, tenantID string) domain.Category {
+func SeedCategory(t *testing.T, ctx context.Context, q sqlc.Querier, tenantID string) domain.Category {
 	t.Helper()
 
 	row, err := q.CreateCategory(ctx, sqlc.CreateCategoryParams{

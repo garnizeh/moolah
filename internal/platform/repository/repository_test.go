@@ -53,10 +53,6 @@ func TestTranslateError(t *testing.T) {
 		err := TranslateError(pgErr)
 		assert.Equal(t, pgErr, err)
 	})
-}
-
-func TestMappingHelpers(t *testing.T) {
-	t.Parallel()
 
 	t.Run("fromTime", func(t *testing.T) {
 		t.Parallel()
@@ -90,5 +86,113 @@ func TestMappingHelpers(t *testing.T) {
 
 		assert.Equal(t, &str, fromText(valid))
 		assert.Nil(t, fromText(invalid))
+	})
+
+	t.Run("valOrNil", func(t *testing.T) {
+		t.Parallel()
+		val := 123
+		resValid := valOrNil(&val)
+		resInvalid := valOrNil(nil)
+
+		assert.True(t, resValid.Valid)
+		assert.Equal(t, int32(val), resValid.Int32)
+		assert.False(t, resInvalid.Valid)
+	})
+
+	t.Run("valOrNil64", func(t *testing.T) {
+		t.Parallel()
+		val := int64(123456)
+		resValid := valOrNil64(&val)
+		resInvalid := valOrNil64(nil)
+
+		assert.True(t, resValid.Valid)
+		assert.Equal(t, val, resValid.Int64)
+		assert.False(t, resInvalid.Valid)
+	})
+
+	t.Run("fromPgTimestamptz", func(t *testing.T) {
+		t.Parallel()
+		now := time.Now()
+		valid := pgtype.Timestamptz{Time: now, Valid: true}
+		invalid := pgtype.Timestamptz{Valid: false}
+
+		assert.Equal(t, &now, fromPgTimestamptz(valid))
+		assert.Nil(t, fromPgTimestamptz(invalid))
+	})
+
+	t.Run("fromPgInt4", func(t *testing.T) {
+		t.Parallel()
+		val := 123
+		valid := pgtype.Int4{Int32: int32(val), Valid: true}
+		invalid := pgtype.Int4{Valid: false}
+
+		assert.Equal(t, &val, fromPgInt4(valid))
+		assert.Nil(t, fromPgInt4(invalid))
+	})
+
+	t.Run("fromPgInt8", func(t *testing.T) {
+		t.Parallel()
+		val := int64(123456)
+		valid := pgtype.Int8{Int64: val, Valid: true}
+		invalid := pgtype.Int8{Valid: false}
+
+		assert.Equal(t, &val, fromPgInt8(valid))
+		assert.Nil(t, fromPgInt8(invalid))
+	})
+
+	t.Run("toPgTimestamptz", func(t *testing.T) {
+		t.Parallel()
+		now := time.Now()
+		fallback := pgtype.Timestamptz{Time: now.Add(time.Hour), Valid: true}
+
+		resValid := toPgTimestamptz(&now, fallback)
+		resFallback := toPgTimestamptz(nil, fallback)
+
+		assert.True(t, resValid.Valid)
+		assert.Equal(t, now, resValid.Time)
+		assert.Equal(t, fallback, resFallback)
+	})
+
+	t.Run("safeTime", func(t *testing.T) {
+		t.Parallel()
+		now := time.Now()
+
+		assert.Equal(t, now, safeTime(&now))
+		assert.Equal(t, time.Time{}, safeTime(nil))
+	})
+
+	t.Run("valOrDefault", func(t *testing.T) {
+		t.Parallel()
+		val := "hello"
+		def := "default"
+
+		assert.Equal(t, val, valOrDefault(&val, def))
+		assert.Equal(t, def, valOrDefault(nil, def))
+	})
+
+	t.Run("toPgInt4", func(t *testing.T) {
+		t.Parallel()
+		val := 456
+		fallback := pgtype.Int4{Int32: 789, Valid: true}
+
+		resValid := toPgInt4(&val, fallback)
+		resFallback := toPgInt4(nil, fallback)
+
+		assert.True(t, resValid.Valid)
+		assert.Equal(t, int32(val), resValid.Int32)
+		assert.Equal(t, fallback, resFallback)
+	})
+
+	t.Run("toPgInt8", func(t *testing.T) {
+		t.Parallel()
+		val := int64(456789)
+		fallback := pgtype.Int8{Int64: 987654, Valid: true}
+
+		resValid := toPgInt8(&val, fallback)
+		resFallback := toPgInt8(nil, fallback)
+
+		assert.True(t, resValid.Valid)
+		assert.Equal(t, val, resValid.Int64)
+		assert.Equal(t, fallback, resFallback)
 	})
 }

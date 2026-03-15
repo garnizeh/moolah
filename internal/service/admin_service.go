@@ -6,6 +6,7 @@ import (
 	"log/slog"
 
 	"github.com/garnizeh/moolah/internal/domain"
+	"github.com/garnizeh/moolah/internal/platform/middleware"
 )
 
 // AdminService provides system-wide administrative functions such as managing tenants and users, and viewing audit logs. It is intended for use by internal admin tools and dashboards.
@@ -165,10 +166,26 @@ func (s *adminService) GetUserByID(ctx context.Context, id string) (*domain.User
 
 // ForceDeleteUser permanently deletes a user from the system and logs the deletion action in the audit trail.
 func (s *adminService) ForceDeleteUser(ctx context.Context, id string) error {
+	user, getErr := s.userRepo.GetByID(ctx, id)
+	if getErr != nil {
+		return fmt.Errorf("admin service: failed to get user for force delete: %w", getErr)
+	}
+
+	actorID, ok := middleware.UserIDFromCtx(ctx)
+	if !ok || actorID == "" {
+		actorID = domain.ActorSystem
+	}
+
+	actorRole, ok := middleware.RoleFromCtx(ctx)
+	if !ok || actorRole == "" {
+		actorRole = string(domain.RoleSysadmin)
+	}
+
 	// Write audit record.
 	_, auditErr := s.auditRepo.Create(ctx, domain.CreateAuditLogInput{
-		TenantID:   "SYSTEM", // Global context
-		ActorID:    "SYSTEM",
+		TenantID:   user.TenantID,
+		ActorID:    actorID,
+		ActorRole:  domain.Role(actorRole),
 		EntityType: "user",
 		EntityID:   id,
 		Action:     domain.AuditActionSoftDelete,

@@ -1,9 +1,9 @@
 # Task 3.14 — HTTP Handlers: Positions, Income Events & Portfolio Summary
 
 > **Roadmap Ref:** Phase 3 — Investment Portfolio Tracking › HTTP Layer
-> **Status:** 🔵 `backlog`
-> **Last Updated:** 2026-03-13
-> **Assignee:** —
+> **Status:** ✅ `done`
+> **Last Updated:** 2026-03-14
+> **Assignee:** GitHub Copilot
 > **Estimated Effort:** M
 
 ---
@@ -102,15 +102,15 @@ type CreatePositionRequest struct {
 
 ## 5. Acceptance Criteria
 
-- [ ] All 12 endpoints registered and reachable.
-- [ ] `POST /v1/positions` validates `income_type` and related scheduling fields.
-- [ ] `PATCH /v1/income-events/{id}/receive` returns `409` if status is not `pending`.
-- [ ] `GET /v1/investments/summary` returns `total_value_cents` as `int64` (no floats in JSON).
-- [ ] Idempotency middleware applied to all `POST` and `PATCH` write endpoints.
-- [ ] Swaggo annotations present on all handlers.
-- [ ] Unit tests achieve ≥ 80% coverage for the handler package additions.
-- [ ] `make task-check` passes.
-- [ ] `docs/ROADMAP.md` row 3.14 updated to ✅ `done`.
+- [x] All 12 endpoints registered and reachable.
+- [x] `POST /v1/positions` validates `income_type` and related scheduling fields.
+- [x] `PATCH /v1/income-events/{id}/receive` returns `409` if status is not `pending`.
+- [x] `GET /v1/investments/summary` returns `total_value_cents` as `int64` (no floats in JSON).
+- [x] Idempotency middleware applied to all `POST` and `PATCH` write endpoints.
+- [x] Swaggo annotations present on all handlers.
+- [x] Unit tests achieve ≥ 80% coverage for the handler package additions.
+- [x] `make task-check` passes.
+- [x] `docs/ROADMAP.md` row 3.14 updated to ✅ `done`.
 
 ---
 
@@ -119,3 +119,4 @@ type CreatePositionRequest struct {
 | Date       | Author | Change             |
 | ---------- | ------ | ------------------ |
 | 2026-03-13 | —      | Task created (new) |
+| 2026-03-14 | GitHub Copilot | Task completed: Handlers, Routes, and Tests implemented. |

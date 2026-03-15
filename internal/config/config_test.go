@@ -37,6 +37,7 @@ func TestLoad(t *testing.T) {
 		assert.Equal(t, 10*time.Second, cfg.ReadTimeout)
 		assert.Equal(t, 587, cfg.SMTPPort)
 		assert.Equal(t, "info", cfg.LogLevel)
+		assert.Equal(t, "0 5 1 * *", cfg.SnapshotCronSchedule)
 	})
 
 	t.Run("success with custom optional", func(t *testing.T) {
@@ -45,6 +46,7 @@ func TestLoad(t *testing.T) {
 		t.Setenv("LOG_LEVEL", "debug")
 		t.Setenv("SMTP_PORT", "2525")
 		t.Setenv("TOKEN_TTL", "1h")
+		t.Setenv("SNAPSHOT_CRON_SCHEDULE", "0 0 * * *")
 
 		cfg := Load()
 
@@ -52,6 +54,7 @@ func TestLoad(t *testing.T) {
 		assert.Equal(t, "debug", cfg.LogLevel)
 		assert.Equal(t, 2525, cfg.SMTPPort)
 		assert.Equal(t, time.Hour, cfg.TokenTTL)
+		assert.Equal(t, "0 0 * * *", cfg.SnapshotCronSchedule)
 	})
 
 	requiredVars := []string{

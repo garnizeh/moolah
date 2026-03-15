@@ -30,6 +30,7 @@ import (
 	"github.com/garnizeh/moolah/internal/testutil/containers"
 	"github.com/garnizeh/moolah/pkg/paseto"
 	"github.com/garnizeh/moolah/pkg/ulid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 // idempotencyHeader is the header name used by the idempotency middleware.
@@ -126,6 +127,8 @@ func TestSmoke_Phase1HappyPath(t *testing.T) {
 	transactionRepo := repository.NewTransactionRepository(pgDB.Queries)
 	masterPurchaseRepo := repository.NewMasterPurchaseRepository(pgDB.Queries)
 	assetRepo := repository.NewAssetRepository(pgDB.Queries)
+	posRepo := repository.NewPositionRepository(pgDB.Queries)
+	incRepo := repository.NewPositionIncomeEventRepository(pgDB.Queries)
 	tenantAssetConfigRepo := repository.NewTenantAssetConfigRepository(pgDB.Queries)
 	auditRepo := repository.NewAuditRepository(pgDB.Queries)
 	adminTenantRepo := repository.NewAdminTenantRepository(pgDB.Queries)
@@ -142,7 +145,7 @@ func TestSmoke_Phase1HappyPath(t *testing.T) {
 	categorySvc := service.NewCategoryService(categoryRepo, auditRepo)
 	transactionSvc := service.NewTransactionService(transactionRepo, accountRepo, categoryRepo, auditRepo)
 	masterPurchaseSvc := service.NewMasterPurchaseService(masterPurchaseRepo, accountRepo, categoryRepo)
-	investmentSvc := service.NewInvestmentService(nil, nil, assetRepo, tenantAssetConfigRepo, accountRepo, transactionRepo, auditRepo, nil)
+	investmentSvc := service.NewInvestmentService(posRepo, incRepo, assetRepo, tenantAssetConfigRepo, accountRepo, transactionRepo, auditRepo, nil)
 	invoiceCloser := service.NewInvoiceCloser(masterPurchaseRepo, transactionRepo, auditRepo, accountRepo, masterPurchaseSvc, pgDB.Pool)
 	adminSvc := service.NewAdminService(adminTenantRepo, adminUserRepo, adminAuditRepo, auditRepo)
 
@@ -601,6 +604,8 @@ func TestSmoke_Phase2HappyPath(t *testing.T) {
 	transactionRepo := repository.NewTransactionRepository(pgDB.Queries)
 	masterPurchaseRepo := repository.NewMasterPurchaseRepository(pgDB.Queries)
 	assetRepo := repository.NewAssetRepository(pgDB.Queries)
+	posRepo := repository.NewPositionRepository(pgDB.Queries)
+	incRepo := repository.NewPositionIncomeEventRepository(pgDB.Queries)
 	tenantAssetConfigRepo := repository.NewTenantAssetConfigRepository(pgDB.Queries)
 	auditRepo := repository.NewAuditRepository(pgDB.Queries)
 	adminTenantRepo := repository.NewAdminTenantRepository(pgDB.Queries)
@@ -617,7 +622,7 @@ func TestSmoke_Phase2HappyPath(t *testing.T) {
 	categorySvc := service.NewCategoryService(categoryRepo, auditRepo)
 	transactionSvc := service.NewTransactionService(transactionRepo, accountRepo, categoryRepo, auditRepo)
 	masterPurchaseSvc := service.NewMasterPurchaseService(masterPurchaseRepo, accountRepo, categoryRepo)
-	investmentSvc := service.NewInvestmentService(nil, nil, assetRepo, tenantAssetConfigRepo, accountRepo, transactionRepo, auditRepo, nil)
+	investmentSvc := service.NewInvestmentService(posRepo, incRepo, assetRepo, tenantAssetConfigRepo, accountRepo, transactionRepo, auditRepo, nil)
 	invoiceCloser := service.NewInvoiceCloser(masterPurchaseRepo, transactionRepo, auditRepo, accountRepo, masterPurchaseSvc, pgDB.Pool)
 	adminSvc := service.NewAdminService(adminTenantRepo, adminUserRepo, adminAuditRepo, auditRepo)
 
@@ -915,5 +920,322 @@ func TestSmoke_Phase2HappyPath(t *testing.T) {
 			}
 		}
 		assert.True(t, foundSystem, "audit log item with SYSTEM actor not found")
+	})
+}
+
+func TestSmoke_Phase3HappyPath(t *testing.T) {
+	t.Parallel()
+
+	ctx := context.Background()
+
+	// ── 1. Infrastructure containers ────────────────────────────────────────
+	pgDB := containers.NewPostgresDB(t)
+	rdb := containers.NewRedisClient(t)
+
+	// ── 2. Crypto & mailer ──────────────────────────────────────────────────
+	pasetoKey, err := paseto.V4SymmetricKeyFromHex(testPasetoHexKey)
+	require.NoError(t, err, "failed to parse test PASETO key")
+
+	capMailer := mailer.NewCapturingMailer()
+
+	// ── 3. Seed: tenant + admin user ────────────────────────────────────────
+	tenantID := ulid.New()
+	_, err = pgDB.Queries.CreateTenant(ctx, sqlc.CreateTenantParams{
+		ID:   tenantID,
+		Name: "Phase 3 Smoke Household",
+		Plan: sqlc.TenantPlanFree,
+	})
+	require.NoError(t, err, "failed to seed tenant")
+
+	adminEmail := fmt.Sprintf("admin-smoke-p3-%s@example.com", tenantID)
+	adminID := ulid.New()
+	_, err = pgDB.Queries.CreateUser(ctx, sqlc.CreateUserParams{
+		ID:       adminID,
+		TenantID: tenantID,
+		Email:    adminEmail,
+		Name:     "P3 Smoke Admin",
+		Role:     sqlc.UserRoleAdmin,
+	})
+	require.NoError(t, err, "failed to seed admin user")
+
+	// ── 4. Wire repos → services ────────────────────────────────────────────
+	authRepo := repository.NewAuthRepository(pgDB.Queries)
+	tenantRepo := repository.NewTenantRepository(pgDB.Queries)
+	userRepo := repository.NewUserRepository(pgDB.Queries)
+	accountRepo := repository.NewAccountRepository(pgDB.Queries)
+	categoryRepo := repository.NewCategoryRepository(pgDB.Queries)
+	transactionRepo := repository.NewTransactionRepository(pgDB.Queries)
+	masterPurchaseRepo := repository.NewMasterPurchaseRepository(pgDB.Queries)
+	assetRepo := repository.NewAssetRepository(pgDB.Queries)
+	posRepo := repository.NewPositionRepository(pgDB.Queries)
+	incRepo := repository.NewPositionIncomeEventRepository(pgDB.Queries)
+	tenantAssetConfigRepo := repository.NewTenantAssetConfigRepository(pgDB.Queries)
+	auditRepo := repository.NewAuditRepository(pgDB.Queries)
+	adminTenantRepo := repository.NewAdminTenantRepository(pgDB.Queries)
+	adminUserRepo := repository.NewAdminUserRepository(pgDB.Queries)
+	adminAuditRepo := repository.NewAdminAuditRepository(pgDB.Queries)
+
+	idempotencyStore := idempotency.NewRedisStore(rdb)
+	rateLimiterStore := middleware.NewRateLimiterStore()
+	t.Cleanup(rateLimiterStore.Close)
+
+	authSvc := service.NewAuthService(authRepo, userRepo, auditRepo, capMailer, pasetoKey)
+	tenantSvc := service.NewTenantService(tenantRepo, userRepo, auditRepo)
+	accountSvc := service.NewAccountService(accountRepo, userRepo, auditRepo)
+	categorySvc := service.NewCategoryService(categoryRepo, auditRepo)
+	transactionSvc := service.NewTransactionService(transactionRepo, accountRepo, categoryRepo, auditRepo)
+	masterPurchaseSvc := service.NewMasterPurchaseService(masterPurchaseRepo, accountRepo, categoryRepo)
+	investmentSvc := service.NewInvestmentService(posRepo, incRepo, assetRepo, tenantAssetConfigRepo, accountRepo, transactionRepo, auditRepo, nil)
+	invoiceCloser := service.NewInvoiceCloser(masterPurchaseRepo, transactionRepo, auditRepo, accountRepo, masterPurchaseSvc, pgDB.Pool)
+	adminSvc := service.NewAdminService(adminTenantRepo, adminUserRepo, adminAuditRepo, auditRepo)
+
+	tokenParser := paseto.NewTokenParser(pasetoKey)
+
+	// ── 5. Build server & test HTTP server ───────────────────────────────────
+	srv := server.New(
+		"0",
+		authSvc,
+		tenantSvc,
+		accountSvc,
+		categorySvc,
+		transactionSvc,
+		masterPurchaseSvc,
+		investmentSvc,
+		invoiceCloser,
+		adminSvc,
+		idempotencyStore,
+		rateLimiterStore,
+		tokenParser,
+	)
+
+	ts := httptest.NewServer(srv.Handler())
+	t.Cleanup(ts.Close)
+
+	client := ts.Client()
+	base := ts.URL
+
+	// ── Helpers ──────────────────────────────────────────────────────────────
+	do := func(tb testing.TB, method, path string, body any, token, idempotencyKey string) *http.Response {
+		tb.Helper()
+		var buf bytes.Buffer
+		if body != nil {
+			b, encErr := json.Marshal(body)
+			require.NoError(tb, encErr, "failed to marshal request body")
+			buf = *bytes.NewBuffer(b)
+		}
+		req, reqErr := http.NewRequestWithContext(ctx, method, base+path, &buf)
+		require.NoError(tb, reqErr, "failed to build request")
+		req.Header.Set("Content-Type", "application/json")
+		if token != "" {
+			req.Header.Set("Authorization", "Bearer "+token)
+		}
+		if idempotencyKey != "" {
+			req.Header.Set(idempotencyHeader, idempotencyKey)
+		}
+		resp, doErr := client.Do(req)
+		require.NoError(tb, doErr, "HTTP request failed")
+		return resp
+	}
+
+	decodeJSON := func(tb testing.TB, resp *http.Response, target any) {
+		tb.Helper()
+		require.NoError(tb, json.NewDecoder(resp.Body).Decode(target), "failed to decode response body")
+	}
+
+	// ── Journey Variables ────────────────────────────────────────────────────
+	var (
+		accessToken string
+		assetID     string
+		accountID   string
+		positionID  string
+		incomeID    string
+	)
+
+	// ══════════════════════════════════════════════════════════════════════════
+	// 01-02. AUTH
+	// ══════════════════════════════════════════════════════════════════════════
+	t.Run("01_auth_otp_request", func(t *testing.T) {
+		resp := do(t, http.MethodPost, "/v1/auth/otp/request", map[string]string{"email": adminEmail}, "", ulid.New())
+		require.NoError(t, resp.Body.Close())
+		assert.Equal(t, http.StatusAccepted, resp.StatusCode)
+	})
+
+	t.Run("02_auth_otp_verify", func(t *testing.T) {
+		code := capMailer.OTPFor(adminEmail)
+		require.NotEmpty(t, code)
+		var tokenResp handler.TokenResponse
+		resp := do(t, http.MethodPost, "/v1/auth/otp/verify", map[string]string{"email": adminEmail, "code": code}, "", ulid.New())
+		defer resp.Body.Close()
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+		decodeJSON(t, resp, &tokenResp)
+		accessToken = tokenResp.AccessToken
+		require.NotEmpty(t, accessToken)
+	})
+
+	// ══════════════════════════════════════════════════════════════════════════
+	// 03. CREATE ASSET (Admin)
+	// ══════════════════════════════════════════════════════════════════════════
+	t.Run("03_create_asset", func(t *testing.T) {
+		// Create sysadmin for asset creation
+		sysEmail := "sys-p3@moolah.com"
+		_, err = pgDB.Queries.CreateUser(ctx, sqlc.CreateUserParams{
+			ID:       ulid.New(),
+			TenantID: tenantID,
+			Email:    sysEmail,
+			Name:     "P3 System Admin",
+			Role:     sqlc.UserRoleSysadmin,
+		})
+		require.NoError(t, err)
+
+		reqResp := do(t, http.MethodPost, "/v1/auth/otp/request", map[string]string{"email": sysEmail}, "", ulid.New())
+		require.NoError(t, reqResp.Body.Close())
+		code := capMailer.OTPFor(sysEmail)
+		var tResp handler.TokenResponse
+		vResp := do(t, http.MethodPost, "/v1/auth/otp/verify", map[string]string{"email": sysEmail, "code": code}, "", ulid.New())
+		decodeJSON(t, vResp, &tResp)
+		vResp.Body.Close()
+
+		var asset domain.Asset
+		resp := do(t, http.MethodPost, "/v1/assets", map[string]any{
+			"ticker":     "BTC",
+			"name":       "Bitcoin",
+			"asset_type": "crypto",
+			"currency":   "USD",
+		}, tResp.AccessToken, ulid.New())
+		defer resp.Body.Close()
+
+		require.Equal(t, http.StatusCreated, resp.StatusCode)
+		decodeJSON(t, resp, &asset)
+		assetID = asset.ID
+		require.NotEmpty(t, assetID)
+	})
+
+	// ══════════════════════════════════════════════════════════════════════════
+	// 04. CREATE INVESTMENT ACCOUNT
+	// ══════════════════════════════════════════════════════════════════════════
+	t.Run("04_create_investment_account", func(t *testing.T) {
+		var acc domain.Account
+		resp := do(t, http.MethodPost, "/v1/accounts", map[string]any{
+			"name":          "My Crypto Wallet",
+			"type":          "investment",
+			"currency":      "USD",
+			"initial_cents": int64(0),
+		}, accessToken, ulid.New())
+		defer resp.Body.Close()
+
+		require.Equal(t, http.StatusCreated, resp.StatusCode)
+		decodeJSON(t, resp, &acc)
+		accountID = acc.ID
+		require.NotEmpty(t, accountID)
+	})
+
+	// ══════════════════════════════════════════════════════════════════════════
+	// 05. CREATE POSITION
+	// ══════════════════════════════════════════════════════════════════════════
+	t.Run("05_create_position", func(t *testing.T) {
+		var pos domain.Position
+		resp := do(t, http.MethodPost, "/v1/positions", map[string]any{
+			"asset_id":         assetID,
+			"account_id":       accountID,
+			"quantity":         "0.5",
+			"avg_cost_cents":   3000000,
+			"last_price_cents": 4000000,
+			"currency":         "USD",
+			"purchased_at":     time.Now().Format(time.RFC3339),
+			"income_type":      "none",
+		}, accessToken, ulid.New())
+		defer resp.Body.Close()
+
+		require.Equal(t, http.StatusCreated, resp.StatusCode)
+		decodeJSON(t, resp, &pos)
+		positionID = pos.ID
+		require.NotEmpty(t, positionID)
+	})
+
+	// ══════════════════════════════════════════════════════════════════════════
+	// 06. TENANT ASSET CONFIG (COALESCE override)
+	// ══════════════════════════════════════════════════════════════════════════
+	t.Run("06_tenant_asset_config_override", func(t *testing.T) {
+		resp := do(t, http.MethodPut, "/v1/me/asset-configs/"+assetID, map[string]any{
+			"name": "Magic Internet Money",
+		}, accessToken, ulid.New())
+		defer resp.Body.Close()
+		require.Equal(t, http.StatusOK, resp.StatusCode)
+
+		// Verify GetAsset returns overridden name
+		var asset domain.Asset
+		resp2 := do(t, http.MethodGet, "/v1/assets/"+assetID, nil, accessToken, "")
+		defer resp2.Body.Close()
+		require.Equal(t, http.StatusOK, resp2.StatusCode)
+		decodeJSON(t, resp2, &asset)
+		assert.Equal(t, "Magic Internet Money", asset.Name)
+	})
+
+	// ══════════════════════════════════════════════════════════════════════════
+	// 07. PORTFOLIO SUMMARY
+	// ══════════════════════════════════════════════════════════════════════════
+	t.Run("07_portfolio_summary", func(t *testing.T) {
+		var summary domain.PortfolioSummary
+		resp := do(t, http.MethodGet, "/v1/investments/summary", nil, accessToken, "")
+		defer resp.Body.Close()
+		require.Equal(t, http.StatusOK, resp.StatusCode)
+		decodeJSON(t, resp, &summary)
+
+		// 0.5 * 4000000 = 2000000
+		assert.Equal(t, int64(2000000), summary.TotalValueCents)
+		assert.NotEmpty(t, summary.Positions)
+		if len(summary.Positions) > 0 {
+			assert.Equal(t, "Magic Internet Money", summary.Positions[0].AssetName)
+		}
+	})
+
+	// ══════════════════════════════════════════════════════════════════════════
+	// 08. INCOME EVENT LIFECYCLE
+	// ══════════════════════════════════════════════════════════════════════════
+	t.Run("08_income_lifecycle", func(t *testing.T) {
+		// 1. Manually seed a pending income event (scheduler not running in smoke test)
+		incomeID = ulid.New()
+		_, err = pgDB.Queries.CreatePositionIncomeEvent(ctx, sqlc.CreatePositionIncomeEventParams{
+			ID:         incomeID,
+			TenantID:   tenantID,
+			PositionID: positionID,
+
+			AmountCents: 10000,
+			Currency:    "USD",
+			IncomeType:  sqlc.IncomeTypeDividend,
+			EventDate:   pgtype.Date{Time: time.Now(), Valid: true},
+			Status:      sqlc.ReceivableStatusPending, RealizedAt: pgtype.Timestamptz{Valid: false},
+		})
+		require.NoError(t, err)
+
+		// 2. Mark received
+		resp := do(t, http.MethodPatch, "/v1/income-events/"+incomeID+"/receive", nil, accessToken, ulid.New())
+		defer resp.Body.Close()
+		require.Equal(t, http.StatusOK, resp.StatusCode)
+
+		// 3. Verify status
+		var events []domain.PositionIncomeEvent
+		resp2 := do(t, http.MethodGet, "/v1/income-events", nil, accessToken, "")
+		defer resp2.Body.Close()
+		require.Equal(t, http.StatusOK, resp2.StatusCode)
+		decodeJSON(t, resp2, &events)
+
+		foundReceived := false
+		for _, event := range events {
+			if event.ID == incomeID && event.Status == domain.ReceivableStatusReceived {
+				foundReceived = true
+				break
+			}
+		}
+		assert.True(t, foundReceived)
+	})
+
+	// ══════════════════════════════════════════════════════════════════════════
+	// 09. PORTFOLIO SNAPSHOT
+	// ══════════════════════════════════════════════════════════════════════════
+	t.Run("09_portfolio_snapshot", func(t *testing.T) {
+		resp := do(t, http.MethodPost, "/v1/portfolio/snapshot", nil, accessToken, ulid.New())
+		defer resp.Body.Close()
+		require.Equal(t, http.StatusCreated, resp.StatusCode)
 	})
 }

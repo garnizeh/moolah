@@ -19,6 +19,7 @@ formatters:
     paths:
       - api
       - internal/platform/db/sqlc
+      - internal/testutil
 
 linters:
   default: standard
@@ -69,6 +70,7 @@ linters:
     paths:
       - api
       - internal/platform/db/sqlc
+      - internal/testutil
     rules:
       - path: _test\.go
         linters:

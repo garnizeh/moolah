@@ -32,6 +32,7 @@ type Server struct {
 	transactionHandler    *handler.TransactionHandler
 	masterPurchaseHandler *handler.MasterPurchaseHandler
 	assetHandler          *handler.AssetHandler
+	positionHandler       *handler.PositionHandler
 	adminHandler          *handler.AdminHandler
 
 	// Services passed to routes.go
@@ -79,6 +80,7 @@ func New(
 		transactionHandler:    handler.NewTransactionHandler(transactionSvc),
 		masterPurchaseHandler: handler.NewMasterPurchaseHandler(masterPurchaseSvc),
 		assetHandler:          handler.NewAssetHandler(investmentSvc),
+		positionHandler:       handler.NewPositionHandler(investmentSvc),
 		adminHandler:          handler.NewAdminHandler(adminSvc),
 		authSvc:               authSvc,
 		tenantSvc:             tenantSvc,

@@ -94,7 +94,7 @@
 ## Phase 3 — Investment Portfolio Tracking
 
 > **Goal:** Add investment accounts with position tracking, asset allocation views, income receivables, and periodic portfolio snapshots. Read-heavy; no monetary mutation beyond deposits/withdrawals recorded as transactions.
-> **Status:** 🟡 `in-progress` | **Last Updated:** 2026-03-13
+> **Status:** 🟡 `in-progress` | **Last Updated:** 2026-03-14
 
 | # | Task | Status | Last Updated | Notes |
 | --- | --- | --- | --- | --- |
@@ -105,14 +105,14 @@
 | 3.5  | [Repository: `AssetRepository` + `TenantAssetConfigRepository`](tasks/TASK_3.5_repository-investment.md) | ✅ `done` | 2026-03-13 | |
 | 3.6  | [Service: `InvestmentService` — position CRUD, allocation, receivable lifecycle](tasks/TASK_3.6_service-investment.md) | ✅ `done` | 2026-03-14 | |
 | 3.7  | [HTTP handlers: asset catalogue + tenant asset configs](tasks/TASK_3.7_handler-investment.md) | ✅ `done` | 2026-03-14 | |
-| 3.8  | [Portfolio snapshot job (`SNAPSHOT_CRON_SCHEDULE`)](tasks/TASK_3.8_snapshot-job.md) | 🔵 `backlog` | 2026-03-13 | Default `"0 5 1 * *"` |
-| 3.9  | [Domain: position family (`Position`, `PositionSnapshot`, `PositionIncomeEvent`, `PortfolioSnapshot`)](tasks/TASK_3.9_summary-endpoint.md) | 🔵 `backlog` | 2026-03-13 | `internal/domain/position.go` |
-| 3.10 | [CurrencyConverter interface + static rate implementation](tasks/TASK_3.10_currency-conversion-hook.md) | 🔵 `backlog` | 2026-03-13 | Integer-cents arithmetic; no external API in MVP |
-| 3.11 | [SQLC queries: position family (positions, snapshots, income events, portfolio snapshots)](tasks/TASK_3.11_sqlc-queries-position-family.md) | 🔵 `backlog` | 2026-03-13 | Includes `ListPositionsDueIncome` for income scheduler |
-| 3.12 | [Repository: position family (4 repos + integration tests)](tasks/TASK_3.12_repository-position-family.md) | 🔵 `backlog` | 2026-03-13 | |
-| 3.13 | [Income scheduler service (background goroutine — ADR §9)](tasks/TASK_3.13_income-scheduler-service.md) | 🔵 `backlog` | 2026-03-13 | `INCOME_SCHEDULER_INTERVAL` ENV VAR; default `1h` |
-| 3.14 | [HTTP handlers: positions, income events & portfolio summary](tasks/TASK_3.14_handler-position-income.md) | 🔵 `backlog` | 2026-03-13 | `GET /v1/investments/summary`, receivable lifecycle endpoints |
-| 3.15 | [Mock factory updates + Phase 3 smoke tests](tasks/TASK_3.15_smoke-tests-phase3.md) | 🔵 `backlog` | 2026-03-13 | 6 new mocks; 4 smoke test scenarios |
+| 3.8  | [Portfolio snapshot job (`SNAPSHOT_CRON_SCHEDULE`)](tasks/TASK_3.8_snapshot-job.md) | ✅ `done` | 2026-03-14 | Default `"0 5 1 * *"` |
+| 3.9  | [Domain: position family (`Position`, `PositionSnapshot`, `PositionIncomeEvent`, `PortfolioSnapshot`)](tasks/TASK_3.9_summary-endpoint.md) | ✅ `done` | 2024-03-24 | `internal/domain/position.go` |
+| 3.10 | [CurrencyConverter interface + static rate implementation](tasks/TASK_3.10_currency-conversion-hook.md) | ✅ `done` | 2026-03-14 | Integer-cents arithmetic; no external API in MVP |
+| 3.11 | [SQLC queries: position family (positions, snapshots, income events, portfolio snapshots)](tasks/TASK_3.11_sqlc-queries-position-family.md) | ✅ `done` | 2026-03-14 | Includes `ListPositionsDueIncome` for income scheduler |
+| 3.12 | [Repository: position family (4 repos + integration tests)](tasks/TASK_3.12_repository-position-family.md) | ✅ `done` | 2026-03-14 | |
+| 3.13 | [Income scheduler service (background goroutine — ADR §9)](tasks/TASK_3.13_income-scheduler-service.md) | ✅ `done` | 2026-03-14 | `INCOME_SCHEDULER_INTERVAL` ENV VAR; default `1h` |
+| 3.14 | [HTTP handlers: positions, income events & portfolio summary](tasks/TASK_3.14_handler-position-income.md) | ✅ `done` | 2026-03-14 | `GET /v1/investments/summary`, receivable lifecycle endpoints |
+| 3.15 | [Mock factory updates + Phase 3 smoke tests](tasks/TASK_3.15_smoke-tests-phase3.md) | ✅ `done` | 2026-03-15 | 6 new mocks; 4 smoke test scenarios |
 
 ---
 

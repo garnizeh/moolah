@@ -37,6 +37,15 @@ definitions:
     - AccountTypeSavings
     - AccountTypeCreditCard
     - AccountTypeInvestment
+  domain.AllocationSlice:
+    properties:
+      label:
+        type: string
+      percentage:
+        type: number
+      value_cents:
+        type: integer
+    type: object
   domain.Asset:
     properties:
       asset_type:
@@ -131,6 +140,22 @@ definitions:
     - name
     - ticker
     type: object
+  domain.IncomeType:
+    enum:
+    - none
+    - dividend
+    - coupon
+    - rent
+    - interest
+    - salary
+    type: string
+    x-enum-varnames:
+    - IncomeTypeNone
+    - IncomeTypeDividend
+    - IncomeTypeCoupon
+    - IncomeTypeRent
+    - IncomeTypeInterest
+    - IncomeTypeSalary
   domain.MasterPurchase:
     properties:
       account_id:
@@ -175,6 +200,139 @@ definitions:
     x-enum-varnames:
     - MasterPurchaseStatusOpen
     - MasterPurchaseStatusClosed
+  domain.PortfolioSnapshot:
+    properties:
+      created_at:
+        type: string
+      details_json:
+        items:
+          type: integer
+        type: array
+      id:
+        type: string
+      snapshot_date:
+        type: string
+    type: object
+  domain.PortfolioSummary:
+    properties:
+      allocation_by_type:
+        additionalProperties:
+          items:
+            $ref: '#/definitions/domain.AllocationSlice'
+          type: array
+        type: object
+      currency:
+        type: string
+      positions:
+        items:
+          $ref: '#/definitions/domain.PositionView'
+        type: array
+      total_income_cents:
+        type: integer
+      total_value_cents:
+        type: integer
+    type: object
+  domain.Position:
+    properties:
+      account_id:
+        type: string
+      asset_id:
+        type: string
+      avg_cost_cents:
+        type: integer
+      created_at:
+        type: string
+      currency:
+        type: string
+      id:
+        type: string
+      income_amount_cents:
+        type: integer
+      income_interval_days:
+        type: integer
+      income_rate_bps:
+        type: integer
+      income_type:
+        $ref: '#/definitions/domain.IncomeType'
+      last_price_cents:
+        type: integer
+      maturity_at:
+        type: string
+      next_income_at:
+        type: string
+      purchased_at:
+        type: string
+      quantity:
+        type: number
+      updated_at:
+        type: string
+    type: object
+  domain.PositionIncomeEvent:
+    properties:
+      account_id:
+        type: string
+      amount_cents:
+        type: integer
+      created_at:
+        type: string
+      currency:
+        type: string
+      due_at:
+        type: string
+      id:
+        type: string
+      income_type:
+        $ref: '#/definitions/domain.IncomeType'
+      notes:
+        type: string
+      position_id:
+        type: string
+      received_at:
+        type: string
+      status:
+        $ref: '#/definitions/domain.ReceivableStatus'
+    type: object
+  domain.PositionView:
+    properties:
+      account_id:
+        type: string
+      asset_id:
+        type: string
+      asset_name:
+        type: string
+      asset_ticker:
+        type: string
+      asset_type:
+        $ref: '#/definitions/domain.AssetType'
+      avg_cost_cents:
+        type: integer
+      created_at:
+        type: string
+      currency:
+        type: string
+      id:
+        type: string
+      income_amount_cents:
+        type: integer
+      income_interval_days:
+        type: integer
+      income_rate_bps:
+        type: integer
+      income_type:
+        $ref: '#/definitions/domain.IncomeType'
+      last_price_cents:
+        type: integer
+      maturity_at:
+        type: string
+      next_income_at:
+        type: string
+      purchased_at:
+        type: string
+      quantity:
+        type: number
+      updated_at:
+        type: string
+    type: object
   domain.ProjectedInstallment:
     properties:
       amount_cents:
@@ -185,6 +343,16 @@ definitions:
       installment_number:
         type: integer
     type: object
+  domain.ReceivableStatus:
+    enum:
+    - pending
+    - received
+    - cancelled
+    type: string
+    x-enum-varnames:
+    - ReceivableStatusPending
+    - ReceivableStatusReceived
+    - ReceivableStatusCancelled
   domain.Role:
     enum:
     - sysadmin
@@ -338,6 +506,7 @@ definitions:
       currency:
         type: string
       initial_cents:
+        minimum: 0
         type: integer
       name:
         maxLength: 100
@@ -353,7 +522,6 @@ definitions:
         - investment
     required:
     - currency
-    - initial_cents
     - name
     - type
     type: object
@@ -405,6 +573,54 @@ definitions:
     - first_installment_date
     - installment_count
     - total_amount_cents
+    type: object
+  handler.CreatePositionRequest:
+    properties:
+      account_id:
+        type: string
+      asset_id:
+        type: string
+      avg_cost_cents:
+        minimum: 0
+        type: integer
+      currency:
+        type: string
+      income_amount_cents:
+        minimum: 0
+        type: integer
+      income_interval_days:
+        type: integer
+      income_rate_bps:
+        minimum: 0
+        type: integer
+      income_type:
+        allOf:
+        - $ref: '#/definitions/domain.IncomeType'
+        enum:
+        - none
+        - dividend
+        - coupon
+        - rent
+        - interest
+        - salary
+      last_price_cents:
+        minimum: 0
+        type: integer
+      maturity_at:
+        type: string
+      next_income_at:
+        type: string
+      purchased_at:
+        type: string
+      quantity:
+        type: number
+    required:
+    - account_id
+    - asset_id
+    - currency
+    - income_type
+    - purchased_at
+    - quantity
     type: object
   handler.CreateTransactionRequest:
     properties:
@@ -502,6 +718,39 @@ definitions:
         maxLength: 255
         minLength: 1
         type: string
+    type: object
+  handler.UpdatePositionRequest:
+    properties:
+      avg_cost_cents:
+        minimum: 0
+        type: integer
+      income_amount_cents:
+        minimum: 0
+        type: integer
+      income_interval_days:
+        type: integer
+      income_rate_bps:
+        minimum: 0
+        type: integer
+      income_type:
+        allOf:
+        - $ref: '#/definitions/domain.IncomeType'
+        enum:
+        - none
+        - dividend
+        - coupon
+        - rent
+        - interest
+        - salary
+      last_price_cents:
+        minimum: 0
+        type: integer
+      maturity_at:
+        type: string
+      next_income_at:
+        type: string
+      quantity:
+        type: number
     type: object
   handler.UpdateTenantPlanRequest:
     properties:
@@ -836,6 +1085,43 @@ paths:
       security:
       - BearerAuth: []
       summary: Close invoice
+      tags:
+      - accounts
+  /v1/accounts/{id}/positions:
+    get:
+      consumes:
+      - application/json
+      description: Returns all positions associated with a specific account.
+      parameters:
+      - description: Account ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/domain.Position'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List positions by account
       tags:
       - accounts
   /v1/admin/audit-logs:
@@ -1833,6 +2119,195 @@ paths:
       summary: Update category
       tags:
       - categories
+  /v1/income-events:
+    get:
+      consumes:
+      - application/json
+      description: Returns all income events (receivables) for the current tenant.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/domain.PositionIncomeEvent'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List all income events
+      tags:
+      - positions
+  /v1/income-events/{id}/cancel:
+    patch:
+      consumes:
+      - application/json
+      description: Cancels (writes off) an income event.
+      parameters:
+      - description: Income Event ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.PositionIncomeEvent'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Income event not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: Conflict (already received/cancelled)
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Cancel income event
+      tags:
+      - positions
+  /v1/income-events/{id}/receive:
+    patch:
+      consumes:
+      - application/json
+      description: Marks a pending income event as received.
+      parameters:
+      - description: Income Event ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Optional idempotency key
+        in: header
+        name: Idempotency-Key
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.PositionIncomeEvent'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Income event not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: Conflict (already received/cancelled)
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Mark income as received
+      tags:
+      - positions
+  /v1/income-events/pending:
+    get:
+      consumes:
+      - application/json
+      description: Returns only pending income events for the current tenant.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/domain.PositionIncomeEvent'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List pending income events
+      tags:
+      - positions
+  /v1/investments/summary:
+    get:
+      consumes:
+      - application/json
+      description: Returns the net worth and allocation breakdown.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.PortfolioSummary'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get portfolio summary
+      tags:
+      - portfolio
   /v1/master-purchases:
     get:
       consumes:
@@ -2164,6 +2639,269 @@ paths:
       summary: Upsert asset configuration
       tags:
       - assets
+  /v1/portfolio/snapshot:
+    post:
+      consumes:
+      - application/json
+      description: Manually triggers a portfolio-wide snapshot for the current tenant.
+      parameters:
+      - description: Optional idempotency key
+        in: header
+        name: Idempotency-Key
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/domain.PortfolioSnapshot'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: Snapshot already exists for today
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Trigger manual snapshot
+      tags:
+      - portfolio
+  /v1/positions:
+    get:
+      consumes:
+      - application/json
+      description: Returns all positions belonging to the current tenant.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/domain.Position'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List positions
+      tags:
+      - positions
+    post:
+      consumes:
+      - application/json
+      description: Creates a new investment position for the current tenant.
+      parameters:
+      - description: Optional idempotency key (ULID format recommended)
+        in: header
+        name: Idempotency-Key
+        type: string
+      - description: Position details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.CreatePositionRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/domain.Position'
+        "400":
+          description: Invalid request body
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "422":
+          description: Validation error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create position
+      tags:
+      - positions
+  /v1/positions/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Soft-deletes an existing position (closes/resigns).
+      parameters:
+      - description: Position ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No content
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Position not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete position
+      tags:
+      - positions
+    get:
+      consumes:
+      - application/json
+      description: Returns a single position by its ID.
+      parameters:
+      - description: Position ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.Position'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Position not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get position
+      tags:
+      - positions
+    patch:
+      consumes:
+      - application/json
+      description: Updates an existing position's details.
+      parameters:
+      - description: Position ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Optional idempotency key
+        in: header
+        name: Idempotency-Key
+        type: string
+      - description: Update details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.UpdatePositionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.Position'
+        "400":
+          description: Invalid request body
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Position not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "422":
+          description: Validation error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update position
+      tags:
+      - positions
   /v1/tenants/me:
     get:
       consumes:
