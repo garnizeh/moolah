@@ -1,7 +1,7 @@
 # Task 4.6 — Authentication UI: OTP Request & Verify Pages
 
 > **Roadmap Ref:** Phase 4 — UI Foundation & Design System › Authentication
-> **Status:** 🔵 `backlog`
+> **Status:** ✅ `done`
 > **Last Updated:** 2026-03-15
 > **Assignee:** —
 > **Estimated Effort:** M
@@ -36,24 +36,24 @@ The authentication pages are the only pages that render without the full sidebar
 
 ### In scope
 
-- [ ] `internal/ui/pages/auth/otp_request.templ` — email input form page.
-- [ ] `internal/ui/pages/auth/otp_verify.templ` — 6-digit OTP input form page with countdown timer.
-- [ ] `internal/ui/layout/auth_layout.templ` — centred card layout for unauthenticated pages (no sidebar).
-- [ ] Web handler `internal/ui/pages/auth/auth_handler.go`:
+- [x] `internal/ui/pages/auth/otp_request.templ` — email input form page.
+- [x] `internal/ui/pages/auth/otp_verify.templ` — 6-digit OTP input form page with countdown timer.
+- [x] `internal/ui/layout/auth_layout.templ` — centred card layout for unauthenticated pages (no sidebar).
+- [x] Web handler `internal/ui/pages/auth/auth_handler.go`:
   - `GET /web/login` — render OTP request page.
   - `POST /web/auth/otp/request` — proxy to API; return HTMX swap (success message or error).
   - `POST /web/auth/otp/verify` — proxy to API; set cookie on success; return `HX-Redirect: /dashboard`.
   - `POST /web/auth/logout` — clear cookie; return `HX-Redirect: /login`.
-- [ ] Web auth middleware `internal/ui/middleware/auth.go`:
+- [x] Web auth middleware `internal/ui/middleware/auth.go`:
   - Reads `moolah_token` cookie; validates PASETO JWT.
   - Injects `*domain.User` and `*domain.Tenant` into `context.Context`.
   - Redirects unauthenticated requests to `/login` (returns `303 See Other`, not `401`).
-- [ ] CSRF protection for all non-idempotent web form submissions (synchronizer token pattern or `SameSite=Strict` cookie policy — document choice).
-- [ ] OTP verify page: Alpine.js countdown timer (10 minutes); "Resend code" link appears after 60s.
-- [ ] Input auto-focus and auto-advance for the 6-digit OTP inputs (one `<input maxlength="1">` per digit or single 6-char input — document choice).
-- [ ] Inline error display via HTMX `hx-swap="outerHTML"` on the form (replaces form with error-annotated version).
-- [ ] Rate-limit error (429) displayed with friendly message: "Too many attempts. Please wait 15 minutes."
-- [ ] Unit/integration tests for the auth handler.
+- [x] CSRF protection for all non-idempotent web form submissions (synchronizer token pattern or `SameSite=Strict` cookie policy — document choice).
+- [x] OTP verify page: Alpine.js countdown timer (10 minutes); "Resend code" link appears after 60s.
+- [x] Input auto-focus and auto-advance for the 6-digit OTP inputs (one `<input maxlength="1">` per digit or single 6-char input — document choice).
+- [x] Inline error display via HTMX `hx-swap="outerHTML"` on the form (replaces form with error-annotated version).
+- [x] Rate-limit error (429) displayed with friendly message: "Too many attempts. Please wait 15 minutes."
+- [x] Unit/integration tests for the auth handler.
 
 ### Out of scope
 

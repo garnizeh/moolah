@@ -12,7 +12,14 @@ import (
 	"time"
 
 	"github.com/garnizeh/moolah/internal/config"
+	"github.com/garnizeh/moolah/internal/platform/db"
+	"github.com/garnizeh/moolah/internal/platform/mailer"
+	"github.com/garnizeh/moolah/internal/platform/repository"
+	"github.com/garnizeh/moolah/internal/service"
+	uimiddleware "github.com/garnizeh/moolah/internal/ui/middleware"
+	"github.com/garnizeh/moolah/internal/ui/pages/auth"
 	"github.com/garnizeh/moolah/pkg/logger"
+	"github.com/garnizeh/moolah/pkg/paseto"
 	"github.com/garnizeh/moolah/web"
 )
 
@@ -57,7 +64,38 @@ func run(ctx context.Context, cfg *config.Config, _ *slog.Logger, showConfig boo
 		return nil
 	}
 
-	mux := buildMux(cfg)
+	// Connect DB and create sqlc querier
+	pool, querier, err := db.Querier(ctx, cfg.DatabaseURL)
+	if err != nil {
+		return fmt.Errorf("database initialization failed: %w", err)
+	}
+	defer pool.Close()
+
+	// Initialize Mailer
+	smtpMailer, err := mailer.NewSMTPMailer(cfg.SMTPHost, cfg.SMTPPort, cfg.SMTPUser, cfg.SMTPPassword, cfg.EmailFrom)
+	if err != nil {
+		return fmt.Errorf("mailer initialization failed: %w", err)
+	}
+
+	// Parse PASETO key
+	pasetoKey, err := paseto.V4SymmetricKeyFromHex(cfg.PasetoSecretKey)
+	if err != nil {
+		return fmt.Errorf("failed to parse paseto secret key: %w", err)
+	}
+
+	// Wire Repositories
+	authRepo := repository.NewAuthRepository(querier)
+	userRepo := repository.NewUserRepository(querier)
+	auditRepo := repository.NewAuditRepository(querier)
+
+	// Wire Services
+	authSvc := service.NewAuthService(authRepo, userRepo, auditRepo, smtpMailer, pasetoKey)
+	tokenParser := paseto.NewTokenParser(pasetoKey)
+
+	// Wire Handlers
+	authHandler := auth.NewAuthHandler(authSvc, tokenParser, cfg.IsProduction())
+
+	mux := buildMux(cfg, authHandler, tokenParser)
 
 	srv := &http.Server{
 		Addr:         ":" + cfg.WebPort,
@@ -103,7 +141,7 @@ func run(ctx context.Context, cfg *config.Config, _ *slog.Logger, showConfig boo
 // buildMux constructs and returns the HTTP mux for the web UI server.
 // Routes are registered in this function; subsequent tasks (4.3–4.9) will
 // add page handlers here.
-func buildMux(_ *config.Config) *http.ServeMux {
+func buildMux(_ *config.Config, authHandler *auth.AuthHandler, tokenParser func(string) (*paseto.Claims, error)) *http.ServeMux {
 	mux := http.NewServeMux()
 
 	// Static assets — served directly from the embedded FS.
@@ -111,6 +149,33 @@ func buildMux(_ *config.Config) *http.ServeMux {
 
 	// Health check — used by load balancers and Docker health checks.
 	mux.HandleFunc("GET /healthz", handleHealthz)
+
+	// --- Public Routes ---
+	redirectIfAuth := uimiddleware.RedirectIfAuthenticated(tokenParser, "/dashboard")
+
+	mux.Handle("GET /web/login", redirectIfAuth(http.HandlerFunc(authHandler.Login)))
+	mux.Handle("POST /web/auth/otp/request", http.HandlerFunc(authHandler.RequestOTP))
+	mux.Handle("POST /web/auth/otp/verify", http.HandlerFunc(authHandler.VerifyOTP))
+
+	// --- Protected Routes ---
+	sessionAuth := uimiddleware.SessionAuth(tokenParser, "/web/login")
+
+	mux.Handle("GET /dashboard", sessionAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		// For dashboard, we'll implement a proper page later.
+		fmt.Fprintf(w, "<h1>Dashboard</h1><p>Welcome!</p><form hx-post='/web/auth/logout'><button>Logout</button></form>")
+	})))
+
+	mux.Handle("POST /web/auth/logout", sessionAuth(http.HandlerFunc(authHandler.Logout)))
+
+	// Root redirect
+	mux.Handle("GET /", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/" {
+			http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
+			return
+		}
+		http.NotFound(w, r)
+	}))
 
 	return mux
 }
