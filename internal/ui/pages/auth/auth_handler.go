@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"errors"
 	"log/slog"
 	"net/http"
 	"strings"
@@ -36,7 +37,17 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 // RequestOTP handles the form submission to request a new OTP.
 func (h *AuthHandler) RequestOTP(w http.ResponseWriter, r *http.Request) {
 	r.Body = http.MaxBytesReader(w, r.Body, 1<<20) // 1MB limit for form submissions
-	email := r.FormValue("email")
+	if err := r.ParseForm(); err != nil {
+		var maxBytesErr *http.MaxBytesError
+		if errors.As(err, &maxBytesErr) {
+			http.Error(w, "request body too large", http.StatusRequestEntityTooLarge)
+			return
+		}
+		http.Error(w, "invalid form payload", http.StatusBadRequest)
+		return
+	}
+
+	email := strings.TrimSpace(r.Form.Get("email"))
 	if email == "" {
 		props := OTPRequestProps{Error: "Email is required"}
 		if err := OTPRequestForm(props).Render(r.Context(), w); err != nil {
@@ -59,8 +70,18 @@ func (h *AuthHandler) RequestOTP(w http.ResponseWriter, r *http.Request) {
 // VerifyOTP handles the form submission to verify the OTP and sign in.
 func (h *AuthHandler) VerifyOTP(w http.ResponseWriter, r *http.Request) {
 	r.Body = http.MaxBytesReader(w, r.Body, 1<<20) // 1MB limit for form submissions
-	email := r.FormValue("email")
-	code := r.FormValue("code")
+	if err := r.ParseForm(); err != nil {
+		var maxBytesErr *http.MaxBytesError
+		if errors.As(err, &maxBytesErr) {
+			http.Error(w, "request body too large", http.StatusRequestEntityTooLarge)
+			return
+		}
+		http.Error(w, "invalid form payload", http.StatusBadRequest)
+		return
+	}
+
+	email := strings.TrimSpace(r.Form.Get("email"))
+	code := strings.TrimSpace(r.Form.Get("code"))
 
 	if email == "" || code == "" {
 		props := OTPVerifyProps{Email: email, Error: "Email and code are required"}
