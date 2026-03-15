@@ -1,0 +1,62 @@
+package components
+
+type BadgeVariant string
+
+const (
+	BadgeSuccess BadgeVariant = "success"
+	BadgeDanger  BadgeVariant = "danger"
+	BadgeWarning BadgeVariant = "warning"
+	BadgeInfo    BadgeVariant = "info"
+	BadgeNeutral BadgeVariant = "neutral"
+)
+
+type BadgeSize string
+
+const (
+	BadgeSm BadgeSize = "sm"
+	BadgeMd BadgeSize = "md"
+)
+
+type BadgeProps struct {
+	Label   string
+	Variant BadgeVariant
+	Size    BadgeSize
+	Class   string
+}
+
+func getBadgeStyles(variant BadgeVariant, size BadgeSize) string {
+	var styles string
+	
+	// Base styles
+	styles = "inline-flex items-center rounded-full font-medium"
+
+	// Size styles
+	switch size {
+	case BadgeSm:
+		styles += " px-2 py-0.5 text-xs"
+	default:
+		styles += " px-2.5 py-0.5 text-sm"
+	}
+
+	// Variant styles
+	switch variant {
+	case BadgeSuccess:
+		styles += " bg-success-50 text-success-700 ring-1 ring-inset ring-success-600/20 dark:bg-success-900/10 dark:text-success-500 dark:ring-success-500/20"
+	case BadgeDanger:
+		styles += " bg-danger-50 text-danger-700 ring-1 ring-inset ring-danger-600/20 dark:bg-danger-900/10 dark:text-danger-500 dark:ring-danger-500/20"
+	case BadgeWarning:
+		styles += " bg-warning-50 text-warning-700 ring-1 ring-inset ring-warning-600/20 dark:bg-warning-900/10 dark:text-warning-500 dark:ring-warning-500/20"
+	case BadgeInfo:
+		styles += " bg-info-50 text-info-700 ring-1 ring-inset ring-info-600/20 dark:bg-info-900/10 dark:text-info-500 dark:ring-info-500/20"
+	default:
+		styles += " bg-neutral-50 text-neutral-600 ring-1 ring-inset ring-neutral-500/10 dark:bg-neutral-400/10 dark:text-neutral-400 dark:ring-neutral-400/20"
+	}
+
+	return styles
+}
+
+templ Badge(props BadgeProps) {
+	<span class={ getBadgeStyles(props.Variant, props.Size), props.Class }>
+		{ props.Label }
+	</span>
+}

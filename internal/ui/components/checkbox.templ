@@ -1,0 +1,47 @@
+package components
+
+type CheckboxProps struct {
+	ID          string
+	Name        string
+	Label       string
+	Description string
+	Checked     bool
+	Required    bool
+	Disabled    bool
+	Error       string
+	Class       string
+	Attrs       templ.Attributes
+}
+
+templ Checkbox(props CheckboxProps) {
+	<div class={ "relative flex items-start", props.Class }>
+		<div class="flex h-6 items-center">
+			<input
+				id={ props.ID }
+				name={ props.Name }
+				type="checkbox"
+				class="h-4 w-4 rounded border-neutral-300 text-brand-600 focus:ring-brand-600 dark:border-neutral-700 dark:bg-neutral-800 dark:focus:ring-brand-500"
+				checked?={ props.Checked }
+				required?={ props.Required }
+				disabled?={ props.Disabled }
+				aria-invalid?={ props.Error != "" }
+				{ props.Attrs... }
+			/>
+		</div>
+		<div class="ml-3 text-sm leading-6">
+			<label for={ props.ID } class="font-medium text-neutral-900 dark:text-neutral-100">
+				{ props.Label }
+			</label>
+			if props.Description != "" {
+				<p id={ props.ID + "-description" } class="text-neutral-500 dark:text-neutral-400">
+					{ props.Description }
+				</p>
+			}
+			if props.Error != "" {
+				<p id={ props.ID + "-error" } class="mt-1 text-xs text-danger-600 dark:text-danger-400">
+					{ props.Error }
+				</p>
+			}
+		</div>
+	</div>
+}

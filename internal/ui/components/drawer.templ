@@ -1,0 +1,106 @@
+package components
+
+type DrawerSize string
+
+const (
+	DrawerSizeSm DrawerSize = "sm"
+	DrawerSizeMd DrawerSize = "md"
+	DrawerSizeLg DrawerSize = "lg"
+	DrawerSizeXl DrawerSize = "xl"
+)
+
+type DrawerProps struct {
+	ID        string
+	Title     string
+	Size      DrawerSize
+	Content   templ.Component
+	Footer    templ.Component
+}
+
+func getDrawerSize(size DrawerSize) string {
+	switch size {
+	case DrawerSizeSm:
+		return "max-w-sm"
+	case DrawerSizeLg:
+		return "max-w-lg"
+	case DrawerSizeXl:
+		return "max-w-xl"
+	default:
+		return "max-w-md"
+	}
+}
+
+templ Drawer(props DrawerProps) {
+	<div 
+		id={ props.ID }
+		x-show={ "$store.drawer.current === '" + props.ID + "'" }
+		class="relative z-50" 
+		aria-labelledby={ props.ID + "-title" } 
+		role="dialog" 
+		aria-modal="true"
+		x-data
+		x-cloak
+	>
+		<!-- Backdrop -->
+		<div 
+			x-show={ "$store.drawer.current === '" + props.ID + "'" }
+			x-transition:enter="ease-in-out duration-500"
+			x-transition:enter-start="opacity-0"
+			x-transition:enter-end="opacity-100"
+			x-transition:leave="ease-in-out duration-500"
+			x-transition:leave-start="opacity-100"
+			x-transition:leave-end="opacity-0"
+			class="fixed inset-0 bg-neutral-500/75 dark:bg-neutral-900/80 transition-opacity backdrop-blur-sm"
+			@click="$store.drawer.close()"
+		></div>
+
+		<div class="fixed inset-0 overflow-hidden">
+			<div class="absolute inset-0 overflow-hidden">
+				<div class="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10">
+					<div 
+						x-show={ "$store.drawer.current === '" + props.ID + "'" }
+						x-transition:enter="transform transition ease-in-out duration-500 sm:duration-700"
+						x-transition:enter-start="translate-x-full"
+						x-transition:enter-end="translate-x-0"
+						x-transition:leave="transform transition ease-in-out duration-500 sm:duration-700"
+						x-transition:leave-start="translate-x-0"
+						x-transition:leave-end="translate-x-full"
+						@keydown.escape.window="$store.drawer.close()"
+						class={ "pointer-events-auto w-screen", getDrawerSize(props.Size) }
+					>
+						<div class="flex h-full flex-col overflow-y-scroll bg-white dark:bg-neutral-900 py-6 shadow-xl">
+							<div class="px-4 sm:px-6">
+								<div class="flex items-start justify-between">
+									<h2 class="text-base font-semibold leading-6 text-neutral-900 dark:text-neutral-100" id={ props.ID + "-title" }>
+										{ props.Title }
+									</h2>
+									<div class="ml-3 flex h-7 items-center">
+										<button 
+											type="button" 
+											class="relative rounded-md bg-white dark:bg-neutral-900 text-neutral-400 hover:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-brand-500"
+											@click="$store.drawer.close()"
+										>
+											<span class="absolute -inset-2.5"></span>
+											<span class="sr-only">Close panel</span>
+											<svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+												<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+											</svg>
+										</button>
+									</div>
+								</div>
+							</div>
+							<div class="relative mt-6 flex-1 px-4 sm:px-6">
+								@props.Content
+							</div>
+							if props.Footer != nil {
+								<div class="border-t border-neutral-200 dark:border-neutral-800 px-4 py-4 sm:px-6">
+									@props.Footer
+								</div>
+							}
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+}

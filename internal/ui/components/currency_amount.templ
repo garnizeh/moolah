@@ -1,0 +1,71 @@
+package components
+
+import (
+	"golang.org/x/text/language"
+	"golang.org/x/text/message"
+)
+
+type CurrencyAmountProps struct {
+	Cents        int64
+	CurrencyCode string // "BRL", "USD"
+	ShowSign     bool
+	Class        string
+}
+
+func formatCents(cents int64, currencyCode string, showSign bool) (display string, colorClass string) {
+	tag := language.English
+	if currencyCode == "BRL" {
+		tag = language.BrazilianPortuguese
+	}
+
+	p := message.NewPrinter(tag)
+	
+	absCents := cents
+	if cents < 0 {
+		absCents = -cents
+	}
+
+	units := float64(absCents) / 100.0
+
+	var symbol string
+	switch currencyCode {
+	case "BRL":
+		symbol = "R$"
+	case "USD":
+		symbol = "$"
+	default:
+		symbol = currencyCode
+	}
+
+	formatted := p.Sprintf("%s %.2f", symbol, units)
+
+	if showSign {
+		if cents > 0 {
+			formatted = "+ " + formatted
+		} else if cents < 0 {
+			formatted = "- " + formatted
+		}
+	} else if cents < 0 {
+		formatted = "- " + formatted
+	}
+
+	display = formatted
+
+	switch {
+	case cents > 0:
+		colorClass = "text-success-600 dark:text-success-400"
+	case cents < 0:
+		colorClass = "text-danger-600 dark:text-danger-400"
+	default:
+		colorClass = "text-neutral-500 dark:text-neutral-400"
+	}
+
+	return
+}
+
+templ CurrencyAmount(props CurrencyAmountProps) {
+	{{ display, color := formatCents(props.Cents, props.CurrencyCode, props.ShowSign) }}
+	<span class={ color, props.Class }>
+		{ display }
+	</span>
+}

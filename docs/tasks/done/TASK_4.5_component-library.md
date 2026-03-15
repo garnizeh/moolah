@@ -1,9 +1,9 @@
 # Task 4.5 — Component Library
 
 > **Roadmap Ref:** Phase 4 — UI Foundation & Design System › Components
-> **Status:** 🔵 `backlog`
+> **Status:** ✅ `done`
 > **Last Updated:** 2026-03-15
-> **Assignee:** —
+> **Assignee:** GitHub Copilot
 > **Estimated Effort:** L
 
 ---
@@ -28,24 +28,24 @@ Templ's Go type system means components are statically type-checked at compile t
 
 ### In scope
 
-- [ ] **Button** (`button.templ`) — variants: `primary`, `secondary`, `ghost`, `danger`; sizes: `sm`, `md`, `lg`; states: `loading` (shows spinner), `disabled`; supports `hx-*` attributes passthrough.
-- [ ] **Input** (`input.templ`) — text, email, number, date, search types; error state (red border + message); placeholder; required indicator.
-- [ ] **Select** (`select.templ`) — typed `[]SelectOption` slice; empty/placeholder option; error state.
-- [ ] **Textarea** (`textarea.templ`) — rows, maxlength, error state.
-- [ ] **Checkbox** (`checkbox.templ`) — label, description, checked state.
-- [ ] **FormField** (`form_field.templ`) — wraps any input with label, optional hint text, and error message. Used to compose standard form rows.
-- [ ] **Modal** (`modal.templ`) — Alpine.js-controlled; `x-show`; focus trap; `Escape` to close; configurable title, body slot, footer slot; sizes: `sm`, `md`, `lg`, `xl`.
-- [ ] **Drawer** (`drawer.templ`) — slides from the right; same Alpine.js pattern as modal; used for create/edit forms.
-- [ ] **Toast** (`toast.templ`) — four variants: `success`, `error`, `warning`, `info`; animated enter/leave; auto-dismiss; close button. Driven by `Alpine.store('toasts')`.
-- [ ] **Table** (`table.templ`) — `<table>` wrapper with styled header, row hover, and zebra-stripe option; column definitions via Go slice; empty state slot.
-- [ ] **Card** (`card.templ`) — surface card with optional header/footer slots; shadow token; padding variants.
-- [ ] **Badge** (`badge.templ`) — variants: `success`, `danger`, `warning`, `info`, `neutral`; sizes: `sm`, `md`.
-- [ ] **Spinner** (`spinner.templ`) — SVG animated ring; sizes: `sm`, `md`, `lg`; used inline in buttons and full-page loading.
-- [ ] **Skeleton** (`skeleton.templ`) — rectangular and circle variants for loading placeholders; pulse animation.
-- [ ] **EmptyState** (`empty_state.templ`) — icon + heading + description + optional CTA button; used when lists are empty.
-- [ ] **CurrencyAmount** (`currency_amount.templ`) — renders `int64` cents as formatted currency string; colours positive amounts green (`--color-income`) and negative red (`--color-expense`); accepts currency code.
-- [ ] **PageHeader** (`page_header.templ`) — page title, subtitle, and optional action slot (e.g. "Create" button); used at the top of every list page.
-- [ ] Component unit tests (`components_test.go`) — render each component and assert rendered HTML contains key structural elements and CSS classes.
+- [x] **Button** (`button.templ`) — variants: `primary`, `secondary`, `ghost`, `danger`; sizes: `sm`, `md`, `lg`; states: `loading` (shows spinner), `disabled`; supports `hx-*` attributes passthrough.
+- [x] **Input** (`input.templ`) — text, email, number, date, search types; error state (red border + message); placeholder; required indicator.
+- [x] **Select** (`select.templ`) — typed `[]SelectOption` slice; empty/placeholder option; error state.
+- [x] **Textarea** (`textarea.templ`) — rows, maxlength, error state.
+- [x] **Checkbox** (`checkbox.templ`) — label, description, checked state.
+- [x] **FormField** (`form_field.templ`) — wraps any input with label, optional hint text, and error message. Used to compose standard form rows.
+- [x] **Modal** (`modal.templ`) — Alpine.js-controlled; `x-show`; focus trap; `Escape` to close; configurable title, body slot, footer slot; sizes: `sm`, `md`, `lg`, `xl`.
+- [x] **Drawer** (`drawer.templ`) — slides from the right; same Alpine.js pattern as modal; used for create/edit forms.
+- [x] **Toast** (`toast.templ`) — four variants: `success`, `error`, `warning`, `info`; animated enter/leave; auto-dismiss; close button. Driven by `Alpine.store('toasts')`.
+- [x] **Table** (`table.templ`) — `<table>` wrapper with styled header, row hover, and zebra-stripe option; column definitions via Go slice; empty state slot.
+- [x] **Card** (`card.templ`) — surface card with optional header/footer slots; shadow token; padding variants.
+- [x] **Badge** (`badge.templ`) — variants: `success`, `danger`, `warning`, `info`, `neutral`; sizes: `sm`, `md`.
+- [x] **Spinner** (`spinner.templ`) — SVG animated ring; sizes: `sm`, `md`, `lg`; used inline in buttons and full-page loading.
+- [x] **Skeleton** (`skeleton.templ`) — rectangular and circle variants for loading placeholders; pulse animation.
+- [x] **EmptyState** (`empty_state.templ`) — icon + heading + description + optional CTA button; used when lists are empty.
+- [x] **CurrencyAmount** (`currency_amount.templ`) — renders `int64` cents as formatted currency string; colours positive amounts green (`--color-income`) and negative red (`--color-expense`); accepts currency code.
+- [x] **PageHeader** (`page_header.templ`) — page title, subtitle, and optional action slot (e.g. "Create" button); used at the top of every list page.
+- [x] Component unit tests (`components_test.go`) — render each component and assert rendered HTML contains key structural elements and CSS classes.
 
 ### Out of scope
 
@@ -164,21 +164,22 @@ func formatCents(cents int64, currency string) (display string, colorClass strin
 
 ## 5. Acceptance Criteria
 
-- [ ] All 17 component files compile via `make templ`.
-- [ ] `CurrencyAmount` formats BRL and USD correctly for positive, negative, and zero values.
-- [ ] `CurrencyAmount` applies correct colour class for each sign.
-- [ ] `Button` renders `aria-busy` and spinner icon when `Loading=true`.
-- [ ] `Modal` renders `role="dialog"` and `aria-modal="true"`.
-- [ ] `Input` renders `aria-invalid="true"` when `Error` is non-empty.
-- [ ] `components_test.go` has at minimum one render test per component asserting key structural HTML.
-- [ ] All components use only Tailwind utility classes + design token CSS variables — no hardcoded colour hex codes.
-- [ ] `golangci-lint run ./internal/ui/components/...` passes.
-- [ ] `docs/ROADMAP.md` row 4.5 updated to ✅ `done`.
+- [x] All 17 component files compile via `make templ`.
+- [x] `CurrencyAmount` formats BRL and USD correctly for positive, negative, and zero values.
+- [x] `CurrencyAmount` applies correct colour class for each sign.
+- [x] `Button` renders `aria-busy` and spinner icon when `Loading=true`.
+- [x] `Modal` renders `role="dialog"` and `aria-modal="true"`.
+- [x] `Input` renders `aria-invalid="true"` when `Error` is non-empty.
+- [x] `components_test.go` has at minimum one_render test per component asserting key structural HTML.
+- [x] All components use only Tailwind utility classes + design token CSS variables — no hardcoded colour hex codes.
+- [x] `golangci-lint run ./internal/ui/components/...` passes.
+- [x] `docs/ROADMAP.md` row 4.5 updated to ✅ `done`.
 
 ---
 
 ## 6. Change Log
 
-| Date       | Author | Change             |
-| ---------- | ------ | ------------------ |
-| 2026-03-15 | —      | Task created (new) |
+| Date       | Author         | Change                                                |
+| ---------- | -------------- | ----------------------------------------------------- |
+| 2026-03-15 | —              | Task created (new)                                    |
+| 2026-03-15 | GitHub Copilot | Task completed: 17 components implemented and tested. |

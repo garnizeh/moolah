@@ -99,12 +99,6 @@ jobs:
           make deps
           make test-ui
 
-      - name: Upload UI coverage artifact
-        uses: actions/upload-artifact@v7
-        with:
-          name: ui-coverage
-          path: ui.out
-
   # ─── Stage 4: Integration Tests ──────────────────────────────────────────
   integration-tests:
     name: Integration Tests
@@ -123,11 +117,6 @@ jobs:
         with:
           name: unit-coverage
 
-      - name: Download UI coverage
-        uses: actions/download-artifact@v4
-        with:
-          name: ui-coverage
-
       - name: Run integration tests
         run: make test-integration
 
@@ -137,7 +126,7 @@ jobs:
       - name: Upload merged reports to Codecov
         uses: codecov/codecov-action@v5
         with:
-          files: ./unit.out,./ui.out,./integration.out
+          files: ./unit.out,./integration.out
           token: ${{ secrets.CODECOV_TOKEN }}
           slug: garnizeh/moolah
 

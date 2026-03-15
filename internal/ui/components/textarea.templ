@@ -1,0 +1,51 @@
+package components
+
+import "fmt"
+
+type TextareaProps struct {
+	ID          string
+	Name        string
+	Value       string
+	Placeholder string
+	Required    bool
+	Disabled    bool
+	Rows        int
+	Maxlength   int
+	Error       string
+	Class       string
+	Attrs       templ.Attributes
+}
+
+func getTextareaStyles(hasError bool) string {
+	styles := "block w-full rounded-md border-0 py-1.5 text-neutral-900 shadow-sm ring-1 ring-inset ring-neutral-300 placeholder:text-neutral-400 focus:ring-2 focus:ring-inset focus:ring-brand-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-neutral-100 dark:ring-neutral-700 dark:focus:ring-brand-500"
+
+	if hasError {
+		styles += " ring-danger-300 text-danger-900 focus:ring-danger-500"
+	}
+
+	return styles
+}
+
+templ Textarea(props TextareaProps) {
+	<div class="mt-2">
+		<textarea
+			id={ props.ID }
+			name={ props.Name }
+			class={ getTextareaStyles(props.Error != ""), props.Class }
+			placeholder={ props.Placeholder }
+			required?={ props.Required }
+			disabled?={ props.Disabled }
+			if props.Rows > 0 {
+				rows={ fmt.Sprintf("%d", props.Rows) }
+			}
+			if props.Maxlength > 0 {
+				maxlength={ fmt.Sprintf("%d", props.Maxlength) }
+			}
+			aria-invalid={ fmt.Sprintf("%t", props.Error != "") }
+			if props.Error != "" {
+				aria-describedby={ props.ID + "-error" }
+			}
+			{ props.Attrs... }
+		>{ props.Value }</textarea>
+	</div>
+}

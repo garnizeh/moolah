@@ -1,0 +1,66 @@
+package components
+
+import "fmt"
+
+type InputType string
+
+const (
+	InputTypeText     InputType = "text"
+	InputTypeEmail    InputType = "email"
+	InputTypeNumber   InputType = "number"
+	InputTypePassword InputType = "password"
+	InputTypeDate     InputType = "date"
+	InputTypeSearch   InputType = "search"
+	InputTypeTel      InputType = "tel"
+	InputTypeUrl      InputType = "url"
+)
+
+type InputProps struct {
+	ID          string
+	Name        string
+	Type        InputType
+	Value       string
+	Placeholder string
+	Required    bool
+	Disabled    bool
+	Error       string
+	Class       string
+	Attrs       templ.Attributes
+}
+
+func getInputStyles(hasError bool) string {
+	styles := "block w-full rounded-md border-0 py-1.5 text-neutral-900 shadow-sm ring-1 ring-inset ring-neutral-300 placeholder:text-neutral-400 focus:ring-2 focus:ring-inset focus:ring-brand-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-neutral-100 dark:ring-neutral-700 dark:focus:ring-brand-500"
+
+	if hasError {
+		styles += " ring-danger-300 text-danger-900 placeholder:text-danger-300 focus:ring-danger-500 pr-10"
+	}
+
+	return styles
+}
+
+templ Input(props InputProps) {
+	<div class="relative mt-2 rounded-md shadow-sm">
+		<input
+			type={ string(props.Type) }
+			name={ props.Name }
+			id={ props.ID }
+			value={ props.Value }
+			class={ getInputStyles(props.Error != ""), props.Class }
+			placeholder={ props.Placeholder }
+			required?={ props.Required }
+			disabled?={ props.Disabled }
+			aria-invalid={ fmt.Sprintf("%t", props.Error != "") }
+			if props.Error != "" {
+				aria-describedby={ props.ID + "-error" }
+			}
+			{ props.Attrs... }
+		/>
+		if props.Error != "" {
+			<div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+				<svg class="h-5 w-5 text-danger-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+					<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
+				</svg>
+			</div>
+		}
+	</div>
+}

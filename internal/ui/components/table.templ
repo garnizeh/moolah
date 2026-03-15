@@ -1,0 +1,47 @@
+package components
+
+type TableProps struct {
+	ID         string
+	Zebra      bool
+	Compact    bool
+	Sticky     bool
+	EmptySlot  templ.Component
+	HeaderSlot templ.Component
+	BodySlot   templ.Component
+	FooterSlot templ.Component
+	Class      string
+}
+
+templ Table(props TableProps) {
+	<div class={ "overflow-x-auto", props.Class }>
+		<table id={ props.ID } class="min-w-full divide-y divide-neutral-200 dark:divide-neutral-800">
+			<thead class={ 
+				"bg-neutral-50 dark:bg-neutral-900",
+				templ.KV("sticky top-0 z-10", props.Sticky),
+			}>
+				if props.HeaderSlot != nil {
+					@props.HeaderSlot
+				}
+			</thead>
+			<tbody class={ 
+				"divide-y divide-neutral-200 bg-white dark:divide-neutral-800 dark:bg-neutral-900",
+				templ.KV("[&_tr:nth-child(even)]:bg-neutral-50 dark:[&_tr:nth-child(even)]:bg-neutral-800/50", props.Zebra),
+			}>
+				if props.BodySlot != nil {
+					@props.BodySlot
+				} else if props.EmptySlot != nil {
+					<tr>
+						<td colspan="100" class="px-6 py-12 text-center">
+							@props.EmptySlot
+						</td>
+					</tr>
+				}
+			</tbody>
+			if props.FooterSlot != nil {
+				<tfoot class="bg-neutral-50 dark:bg-neutral-900 border-t border-neutral-200 dark:border-neutral-800">
+					@props.FooterSlot
+				</tfoot>
+			}
+		</table>
+	</div>
+}
