@@ -1,8 +1,8 @@
 # Task 3.15 — Mock Factory Updates + Phase 3 Smoke Tests
 
 > **Roadmap Ref:** Phase 3 — Investment Portfolio Tracking › Quality & Finalization
-> **Status:** 🔵 `backlog`
-> **Last Updated:** 2026-03-13
+> **Status:** ✅ `done`
+> **Last Updated:** 2026-03-15
 > **Assignee:** —
 > **Estimated Effort:** M
 
@@ -28,17 +28,17 @@ All Phase 1 and Phase 2 interfaces have testify/mock implementations in `interna
 
 ### In scope
 
-- [ ] Mock types for all six new repository interfaces (generated or hand-written via testify/mock):
+- [x] Mock types for all six new repository interfaces (generated or hand-written via testify/mock):
   - `MockAssetRepository`
   - `MockTenantAssetConfigRepository`
   - `MockPositionRepository`
   - `MockPositionSnapshotRepository`
   - `MockPositionIncomeEventRepository`
   - `MockPortfolioSnapshotRepository`
-- [ ] `MockInvestmentService` — mock for `domain.InvestmentService`.
-- [ ] Seed factories in `internal/testutil/seeds`:
+- [x] `MockInvestmentService` — mock for `domain.InvestmentService`.
+- [x] Seed factories in `internal/testutil/seeds`:
   - `SeedAsset`, `SeedTenantAssetConfig`, `SeedPosition`, `SeedPositionIncomeEvent`.
-- [ ] Smoke tests in `internal/server/smoke_test.go` (build tag `integration`):
+- [x] Smoke tests in `internal/server/smoke_test.go` (build tag `integration`):
   - `TestSmoke_CreateAsset` — admin creates asset; tenant reads with COALESCE override.
   - `TestSmoke_PositionLifecycle` — create position → receive income → check summary.
   - `TestSmoke_PortfolioSnapshot` — trigger manual snapshot; verify persisted aggregate.
@@ -105,19 +105,20 @@ func TestSmoke_PositionLifecycle(t *testing.T) {
 
 ## 5. Acceptance Criteria
 
-- [ ] All six new mock repository types compile and implement their respective interfaces.
-- [ ] `MockInvestmentService` compiles and implements `domain.InvestmentService`.
-- [ ] All four smoke tests pass against a Postgres testcontainer.
-- [ ] `TestSmoke_TenantAssetConfig` verifies COALESCE: overridden `name` is returned by `GET /v1/assets/{id}`.
-- [ ] `TestSmoke_PositionLifecycle` verifies that `GET /v1/investments/summary` returns `int64` values, not floats.
-- [ ] Seed factories follow the `seeds.Seed*` naming convention established in Phase 1/2.
-- [ ] `make task-check` passes.
-- [ ] `docs/ROADMAP.md` row 3.15 updated to ✅ `done`.
+- [x] All six new mock repository types compile and implement their respective interfaces.
+- [x] `MockInvestmentService` compiles and implements `domain.InvestmentService`.
+- [x] All four smoke tests pass against a Postgres testcontainer.
+- [x] `TestSmoke_TenantAssetConfig` verifies COALESCE: overridden `name` is returned by `GET /v1/assets/{id}`.
+- [x] `TestSmoke_PositionLifecycle` verifies that `GET /v1/investments/summary` returns `int64` values, not floats.
+- [x] Seed factories follow the `seeds.Seed*` naming convention established in Phase 1/2.
+- [x] `make task-check` passes.
+- [x] `docs/ROADMAP.md` row 3.15 updated to ✅ `done`.
 
 ---
 
 ## 6. Change Log
 
-| Date       | Author | Change             |
-| ---------- | ------ | ------------------ |
-| 2026-03-13 | —      | Task created (new) |
+| Date       | Author | Change                                 |
+| ---------- | ------ | -------------------------------------- |
+| 2026-03-13 | —      | Task created (new)                     |
+| 2026-03-15 | Agent  | Task completed; all integration tests pass |

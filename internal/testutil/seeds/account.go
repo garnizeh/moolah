@@ -13,9 +13,9 @@ import (
 	"github.com/garnizeh/moolah/pkg/ulid"
 )
 
-// CreateAccount inserts a test checking account owned by userID within tenantID.
+// SeedAccount inserts a test checking account owned by userID within tenantID.
 // Defaults: type=checking, currency=BRL, balance_cents=0.
-func CreateAccount(t *testing.T, ctx context.Context, q sqlc.Querier, tenantID, userID string) domain.Account {
+func SeedAccount(t *testing.T, ctx context.Context, q sqlc.Querier, tenantID, userID string) domain.Account {
 	t.Helper()
 
 	row, err := q.CreateAccount(ctx, sqlc.CreateAccountParams{

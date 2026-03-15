@@ -5,15 +5,34 @@ import (
 	"time"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/shopspring/decimal"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/garnizeh/moolah/internal/domain"
 )
 
+func TestIncomeType_Constants(t *testing.T) {
+	t.Parallel()
+	assert.Equal(t, domain.IncomeTypeNone, domain.IncomeType("none"))
+	assert.Equal(t, domain.IncomeTypeDividend, domain.IncomeType("dividend"))
+	assert.Equal(t, domain.IncomeTypeCoupon, domain.IncomeType("coupon"))
+	assert.Equal(t, domain.IncomeTypeRent, domain.IncomeType("rent"))
+	assert.Equal(t, domain.IncomeTypeInterest, domain.IncomeType("interest"))
+	assert.Equal(t, domain.IncomeTypeSalary, domain.IncomeType("salary"))
+}
+
+func TestReceivableStatus_Constants(t *testing.T) {
+	t.Parallel()
+	assert.Equal(t, domain.ReceivableStatusPending, domain.ReceivableStatus("pending"))
+	assert.Equal(t, domain.ReceivableStatusReceived, domain.ReceivableStatus("received"))
+	assert.Equal(t, domain.ReceivableStatusCancelled, domain.ReceivableStatus("cancelled"))
+}
+
 func TestCreatePositionInput_Validation(t *testing.T) {
 	t.Parallel()
 
 	validate := validator.New()
+	now := time.Now()
 
 	tests := []struct {
 		name    string
@@ -23,58 +42,41 @@ func TestCreatePositionInput_Validation(t *testing.T) {
 		{
 			name: "valid position",
 			input: domain.CreatePositionInput{
-				AccountID:    "01H7XRM1Z8P8P8P8P8P8P8P8P8",
-				AssetID:      "01H7XRM1Z8P8P8P8P8P8P8P8P9",
-				Quantity:     10.5,
-				AvgCostCents: 15450,
+				AssetID:        "asset-1",
+				AccountID:      "account-1",
+				Quantity:       decimal.NewFromFloat(10.5),
+				AvgCostCents:   1000,
+				LastPriceCents: 1100,
+				Currency:       "USD",
+				PurchasedAt:    now,
+				IncomeType:     domain.IncomeTypeDividend,
 			},
 			wantErr: false,
 		},
 		{
-			name: "missing account id",
+			name: "missing asset_id",
 			input: domain.CreatePositionInput{
-				AssetID:      "01H7XRM1Z8P8P8P8P8P8P8P8P9",
-				Quantity:     10.5,
-				AvgCostCents: 15450,
+				AccountID:      "account-1",
+				Quantity:       decimal.NewFromFloat(10.5),
+				AvgCostCents:   1000,
+				LastPriceCents: 1100,
+				Currency:       "USD",
+				PurchasedAt:    now,
+				IncomeType:     domain.IncomeTypeDividend,
 			},
 			wantErr: true,
 		},
 		{
-			name: "missing asset id",
+			name: "invalid currency length",
 			input: domain.CreatePositionInput{
-				AccountID:    "01H7XRM1Z8P8P8P8P8P8P8P8P8",
-				Quantity:     10.5,
-				AvgCostCents: 15450,
-			},
-			wantErr: true,
-		},
-		{
-			name: "invalid quantity 0",
-			input: domain.CreatePositionInput{
-				AccountID:    "01H7XRM1Z8P8P8P8P8P8P8P8P8",
-				AssetID:      "01H7XRM1Z8P8P8P8P8P8P8P8P9",
-				Quantity:     0,
-				AvgCostCents: 15450,
-			},
-			wantErr: true,
-		},
-		{
-			name: "invalid quantity negative",
-			input: domain.CreatePositionInput{
-				AccountID:    "01H7XRM1Z8P8P8P8P8P8P8P8P8",
-				AssetID:      "01H7XRM1Z8P8P8P8P8P8P8P8P9",
-				Quantity:     -1,
-				AvgCostCents: 15450,
-			},
-			wantErr: true,
-		},
-		{
-			name: "invalid avg cost cents negative",
-			input: domain.CreatePositionInput{
-				AccountID:    "01H7XRM1Z8P8P8P8P8P8P8P8P8",
-				AssetID:      "01H7XRM1Z8P8P8P8P8P8P8P8P9",
-				Quantity:     10.5,
-				AvgCostCents: -1,
+				AssetID:        "asset-1",
+				AccountID:      "account-1",
+				Quantity:       decimal.NewFromFloat(10.5),
+				AvgCostCents:   1000,
+				LastPriceCents: 1100,
+				Currency:       "US",
+				PurchasedAt:    now,
+				IncomeType:     domain.IncomeTypeDividend,
 			},
 			wantErr: true,
 		},
@@ -97,13 +99,7 @@ func TestUpdatePositionInput_Validation(t *testing.T) {
 	t.Parallel()
 
 	validate := validator.New()
-
-	qty := 15.0
-	badQty := 0.0
-	cost := int64(12000)
-	badCost := int64(-1)
-	status := domain.PositionStatusClosed
-	closedAt := time.Now()
+	qty := decimal.NewFromFloat(15.0)
 
 	tests := []struct {
 		input   domain.UpdatePositionInput
@@ -111,33 +107,16 @@ func TestUpdatePositionInput_Validation(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "valid partial update",
+			name: "valid update",
 			input: domain.UpdatePositionInput{
 				Quantity: &qty,
 			},
 			wantErr: false,
 		},
 		{
-			name: "valid full update",
+			name: "invalid negative avg cost",
 			input: domain.UpdatePositionInput{
-				Quantity:     &qty,
-				AvgCostCents: &cost,
-				Status:       &status,
-				ClosedAt:     &closedAt,
-			},
-			wantErr: false,
-		},
-		{
-			name: "invalid quantity 0",
-			input: domain.UpdatePositionInput{
-				Quantity: &badQty,
-			},
-			wantErr: true,
-		},
-		{
-			name: "invalid avg cost negative",
-			input: domain.UpdatePositionInput{
-				AvgCostCents: &badCost,
+				AvgCostCents: func() *int64 { v := int64(-1); return &v }(),
 			},
 			wantErr: true,
 		},

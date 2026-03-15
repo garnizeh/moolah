@@ -72,7 +72,21 @@ func (s *Server) routes() http.Handler {
 	mux.Handle("PUT /v1/me/asset-configs/{asset_id}", requireAuth(idempotency(http.HandlerFunc(s.handleUpsertMyAssetConfig))))
 	mux.Handle("DELETE /v1/me/asset-configs/{asset_id}", requireAuth(http.HandlerFunc(s.handleDeleteMyAssetConfig)))
 
-	// 8. Admin Routes (Task 1.5.9)
+	// 8. Position & Portfolio Routes (Task 3.14)
+	mux.Handle("GET /v1/positions", requireAuth(http.HandlerFunc(s.handleListPositions)))
+	mux.Handle("POST /v1/positions", requireAuth(idempotency(http.HandlerFunc(s.handleCreatePosition))))
+	mux.Handle("GET /v1/positions/{id}", requireAuth(http.HandlerFunc(s.handleGetPositionByID)))
+	mux.Handle("PATCH /v1/positions/{id}", requireAuth(idempotency(http.HandlerFunc(s.handleUpdatePosition))))
+	mux.Handle("DELETE /v1/positions/{id}", requireAuth(http.HandlerFunc(s.handleDeletePosition)))
+	mux.Handle("GET /v1/accounts/{id}/positions", requireAuth(http.HandlerFunc(s.handleListPositionsByAccount)))
+	mux.Handle("GET /v1/income-events", requireAuth(http.HandlerFunc(s.handleListIncomeEvents)))
+	mux.Handle("GET /v1/income-events/pending", requireAuth(http.HandlerFunc(s.handleListPendingIncomeEvents)))
+	mux.Handle("PATCH /v1/income-events/{id}/receive", requireAuth(idempotency(http.HandlerFunc(s.handleMarkIncomeReceived))))
+	mux.Handle("PATCH /v1/income-events/{id}/cancel", requireAuth(idempotency(http.HandlerFunc(s.handleCancelIncome))))
+	mux.Handle("POST /v1/portfolio/snapshot", requireAuth(idempotency(http.HandlerFunc(s.handleTriggerSnapshot))))
+	mux.Handle("GET /v1/investments/summary", requireAuth(http.HandlerFunc(s.handleGetSummary)))
+
+	// 9. Admin Routes (Task 1.5.9)
 	mux.Handle("GET /v1/admin/tenants", requireAuth(sysadminOnly(http.HandlerFunc(s.handleAdminListTenants))))
 	mux.Handle("GET /v1/admin/tenants/{id}", requireAuth(sysadminOnly(http.HandlerFunc(s.handleAdminGetTenant))))
 	mux.Handle("PATCH /v1/admin/tenants/{id}/plan", requireAuth(sysadminOnly(http.HandlerFunc(s.handleAdminUpdatePlan))))
@@ -188,6 +202,54 @@ func (s *Server) handleUpsertMyAssetConfig(w http.ResponseWriter, r *http.Reques
 
 func (s *Server) handleDeleteMyAssetConfig(w http.ResponseWriter, r *http.Request) {
 	s.assetHandler.DeleteMyConfig(w, r)
+}
+
+func (s *Server) handleListPositions(w http.ResponseWriter, r *http.Request) {
+	s.positionHandler.List(w, r)
+}
+
+func (s *Server) handleCreatePosition(w http.ResponseWriter, r *http.Request) {
+	s.positionHandler.Create(w, r)
+}
+
+func (s *Server) handleGetPositionByID(w http.ResponseWriter, r *http.Request) {
+	s.positionHandler.GetByID(w, r)
+}
+
+func (s *Server) handleUpdatePosition(w http.ResponseWriter, r *http.Request) {
+	s.positionHandler.Update(w, r)
+}
+
+func (s *Server) handleDeletePosition(w http.ResponseWriter, r *http.Request) {
+	s.positionHandler.Delete(w, r)
+}
+
+func (s *Server) handleListPositionsByAccount(w http.ResponseWriter, r *http.Request) {
+	s.positionHandler.ListByAccount(w, r)
+}
+
+func (s *Server) handleListIncomeEvents(w http.ResponseWriter, r *http.Request) {
+	s.positionHandler.ListIncomeEvents(w, r)
+}
+
+func (s *Server) handleListPendingIncomeEvents(w http.ResponseWriter, r *http.Request) {
+	s.positionHandler.ListPendingIncomeEvents(w, r)
+}
+
+func (s *Server) handleMarkIncomeReceived(w http.ResponseWriter, r *http.Request) {
+	s.positionHandler.MarkIncomeReceived(w, r)
+}
+
+func (s *Server) handleCancelIncome(w http.ResponseWriter, r *http.Request) {
+	s.positionHandler.CancelIncome(w, r)
+}
+
+func (s *Server) handleTriggerSnapshot(w http.ResponseWriter, r *http.Request) {
+	s.positionHandler.TriggerSnapshot(w, r)
+}
+
+func (s *Server) handleGetSummary(w http.ResponseWriter, r *http.Request) {
+	s.positionHandler.GetSummary(w, r)
 }
 
 func (s *Server) handleAdminListTenants(w http.ResponseWriter, r *http.Request) {

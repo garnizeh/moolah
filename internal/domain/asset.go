@@ -71,53 +71,115 @@ type UpsertTenantAssetConfigInput struct {
 
 // AssetRepository defines persistence operations for the global asset catalogue.
 type AssetRepository interface {
+	// Create adds a new asset to the global catalogue.
 	Create(ctx context.Context, input CreateAssetInput) (*Asset, error)
+
+	// GetByID retrieves an asset by its unique ID.
 	GetByID(ctx context.Context, id string) (*Asset, error)
+
+	// GetByTicker retrieves an asset by its ticker symbol.
 	GetByTicker(ctx context.Context, ticker string) (*Asset, error)
+
+	// List returns assets matching the optional filters, with pagination support.
 	List(ctx context.Context, params ListAssetsParams) ([]Asset, error)
+
+	// Delete removes an asset from the global catalogue.
 	Delete(ctx context.Context, id string) error
+
+	// GetLastPrice retrieves the most recent price for an asset, used in portfolio summaries.
 	GetLastPrice(ctx context.Context, id string) (int64, error) // Added for portfolio summary
 }
 
 // TenantAssetConfigRepository defines persistence for per-tenant asset overrides.
 type TenantAssetConfigRepository interface {
+	// Upsert creates or updates a tenant's asset configuration for a specific asset.
 	Upsert(ctx context.Context, tenantID string, input UpsertTenantAssetConfigInput) (*TenantAssetConfig, error)
+
+	// GetByAssetID retrieves a tenant's asset configuration for a specific asset.
 	GetByAssetID(ctx context.Context, tenantID, assetID string) (*TenantAssetConfig, error)
+
+	// ListByTenant returns all asset configurations for a given tenant.
 	ListByTenant(ctx context.Context, tenantID string) ([]TenantAssetConfig, error)
+
+	// Delete removes a tenant's asset configuration for a specific asset.
 	Delete(ctx context.Context, tenantID, assetID string) error
 }
 
 // InvestmentService orchestrates portfolio tracking.
 type InvestmentService interface {
+	// CreatePosition manages the lifecycle of an investment position, including asset reference and quantity.
 	CreatePosition(ctx context.Context, tenantID string, in CreatePositionInput) (*Position, error)
+
+	// GetPosition retrieves a specific position by ID, ensuring tenant isolation.
 	GetPosition(ctx context.Context, tenantID, id string) (*Position, error)
+
+	// ListPositions returns all positions for a tenant, with optional filters for active/inactive.
 	ListPositions(ctx context.Context, tenantID string) ([]Position, error)
+
+	// ListPositionsByAccount returns all positions associated with a specific account.
+	ListPositionsByAccount(ctx context.Context, tenantID, accountID string) ([]Position, error)
+
+	// UpdatePosition allows modifying certain fields of a position, such as quantity or last price,
+	// while enforcing business rules.
 	UpdatePosition(ctx context.Context, tenantID, id string, in UpdatePositionInput) (*Position, error)
+
+	// DeletePosition performs a soft delete on a position, marking it as inactive but retaining
+	// historical data for portfolio summaries and audit logs.
 	DeletePosition(ctx context.Context, tenantID, id string) error
 
-	// Receivable lifecycle
+	// MarkIncomeReceived and CancelIncome manage the lifecycle of income events related to positions,
+	// such as dividends or interest payments.
 	MarkIncomeReceived(ctx context.Context, tenantID, eventID string) (*PositionIncomeEvent, error)
+
+	// CancelIncome reverses a previously marked income event, which may be necessary in cases
+	// of erroneous marking or changes in the underlying position.
 	CancelIncome(ctx context.Context, tenantID, eventID string) (*PositionIncomeEvent, error)
 
-	// Portfolio summary
+	// ListIncomeEvents returns all income events for a tenant, with optional status filtering.
+	ListIncomeEvents(ctx context.Context, tenantID, status string) ([]PositionIncomeEvent, error)
+
+	// GetPortfolioSummary aggregates the current value of all positions for a tenant,
+	// applying the latest asset prices and tenant-specific configurations to provide
+	// a comprehensive view of the portfolio's worth and composition.
 	GetPortfolioSummary(ctx context.Context, tenantID string) (*PortfolioSummary, error)
+
+	// TakeSnapshot captures the state of a tenant's portfolio at a specific point in time,
 	TakeSnapshot(ctx context.Context, tenantID string) (*PortfolioSnapshot, error)
 
-	// Asset Catalogue
+	// CreateAsses is for managing the global asset catalogue, which is referenced by positions and
+	// used in portfolio summaries.
 	CreateAsset(ctx context.Context, input CreateAssetInput) (*Asset, error)
+
+	// GetAssetByID retrieves a global asset by its ID.
 	GetAssetByID(ctx context.Context, id string) (*Asset, error)
+
+	// ListAssets returns global assets with optional filtering, used for reference in
+	// position creation and portfolio summaries.
 	ListAssets(ctx context.Context, params ListAssetsParams) ([]Asset, error)
+
+	// DeleteAsset removes an asset from the global catalogue, which may have implications
+	// for existing positions and summaries, so it should be used with caution.
 	DeleteAsset(ctx context.Context, id string) error
 
-	// Tenant Asset Configuration
+	// UpsertTenantAssetConfig allows tenants to override certain fields of global assets, enabling
+	// customization of asset names, currencies, or details for their specific portfolio tracking needs.
 	UpsertTenantAssetConfig(ctx context.Context, tenantID string, input UpsertTenantAssetConfigInput) (*TenantAssetConfig, error)
-	GetTenantAssetConfig(ctx context.Context, tenantID, assetID string) (*TenantAssetConfig, error)
-	ListTenantAssetConfigs(ctx context.Context, tenantID string) ([]TenantAssetConfig, error)
-	DeleteTenantAssetConfig(ctx context.Context, tenantID, assetID string) error
-	GetAssetWithTenantConfig(ctx context.Context, tenantID, id string) (*Asset, error)
-}
 
-// CurrencyConverter normalises values across multiple tickers.
-type CurrencyConverter interface {
-	Convert(ctx context.Context, amount int64, from, to string) (int64, error)
+	// GetTenantAssetConfig retrieves a tenant's specific configuration for a given asset, which is used to
+	// apply overrides in portfolio summaries and position details.
+	GetTenantAssetConfig(ctx context.Context, tenantID, assetID string) (*TenantAssetConfig, error)
+
+	// ListTenantAssetConfigs returns all asset configurations for a tenant, which can be used to display
+	// the tenant's customized asset settings in the UI or apply them in portfolio calculations.
+	ListTenantAssetConfigs(ctx context.Context, tenantID string) ([]TenantAssetConfig, error)
+
+	// DeleteTenantAssetConfig removes a tenant's specific configuration for an asset,
+	// causing the tenant to fall back to the global asset values.
+	DeleteTenantAssetConfig(ctx context.Context, tenantID, assetID string) error
+
+	// GetAssetWithTenantConfig retrieves the global asset details along with any tenant-specific overrides,
+	// providing a complete view of the asset as it applies to the tenant's portfolio.
+	// This is particularly useful for portfolio summaries and position details where both
+	// global and tenant-specific information is needed.
+	GetAssetWithTenantConfig(ctx context.Context, tenantID, id string) (*Asset, error)
 }

@@ -70,8 +70,8 @@ func SeedMasterPurchase(
 	}
 }
 
-// SetMasterPurchasePaidInstallments forcefully updates the paid_installments count for a record.
-func SetMasterPurchasePaidInstallments(
+// UpdateMasterPurchasePaidInstallments forcefully updates the paid_installments count for a record.
+func UpdateMasterPurchasePaidInstallments(
 	t *testing.T,
 	ctx context.Context,
 	q sqlc.Querier,

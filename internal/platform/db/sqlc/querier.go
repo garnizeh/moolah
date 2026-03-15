@@ -6,6 +6,8 @@ package sqlc
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Querier interface {
@@ -25,6 +27,10 @@ type Querier interface {
 	CreateCategory(ctx context.Context, arg CreateCategoryParams) (Category, error)
 	CreateMasterPurchase(ctx context.Context, arg CreateMasterPurchaseParams) (MasterPurchase, error)
 	CreateOTPRequest(ctx context.Context, arg CreateOTPRequestParams) (OtpRequest, error)
+	CreatePortfolioSnapshot(ctx context.Context, arg CreatePortfolioSnapshotParams) (PortfolioSnapshot, error)
+	CreatePosition(ctx context.Context, arg CreatePositionParams) (Position, error)
+	CreatePositionIncomeEvent(ctx context.Context, arg CreatePositionIncomeEventParams) (PositionIncomeEvent, error)
+	CreatePositionSnapshot(ctx context.Context, arg CreatePositionSnapshotParams) (PositionSnapshot, error)
 	CreateTenant(ctx context.Context, arg CreateTenantParams) (Tenant, error)
 	CreateTransaction(ctx context.Context, arg CreateTransactionParams) (Transaction, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
@@ -40,6 +46,10 @@ type Querier interface {
 	GetAssetWithTenantConfig(ctx context.Context, arg GetAssetWithTenantConfigParams) (GetAssetWithTenantConfigRow, error)
 	GetCategoryByID(ctx context.Context, arg GetCategoryByIDParams) (Category, error)
 	GetMasterPurchaseByID(ctx context.Context, arg GetMasterPurchaseByIDParams) (MasterPurchase, error)
+	GetPortfolioSnapshotByDate(ctx context.Context, arg GetPortfolioSnapshotByDateParams) (PortfolioSnapshot, error)
+	GetPositionByID(ctx context.Context, arg GetPositionByIDParams) (Position, error)
+	GetPositionIncomeEventByID(ctx context.Context, arg GetPositionIncomeEventByIDParams) (PositionIncomeEvent, error)
+	GetPositionSnapshotByID(ctx context.Context, arg GetPositionSnapshotByIDParams) (PositionSnapshot, error)
 	GetTenantAssetConfigByAssetID(ctx context.Context, arg GetTenantAssetConfigByAssetIDParams) (TenantAssetConfig, error)
 	GetTenantByID(ctx context.Context, id string) (Tenant, error)
 	GetTransactionByID(ctx context.Context, arg GetTransactionByIDParams) (Transaction, error)
@@ -55,7 +65,16 @@ type Querier interface {
 	ListChildCategories(ctx context.Context, arg ListChildCategoriesParams) ([]Category, error)
 	ListMasterPurchasesByAccount(ctx context.Context, arg ListMasterPurchasesByAccountParams) ([]MasterPurchase, error)
 	ListMasterPurchasesByTenant(ctx context.Context, tenantID string) ([]MasterPurchase, error)
+	ListPendingIncomeEvents(ctx context.Context, tenantID string) ([]PositionIncomeEvent, error)
 	ListPendingMasterPurchasesByClosingDay(ctx context.Context, arg ListPendingMasterPurchasesByClosingDayParams) ([]MasterPurchase, error)
+	ListPortfolioSnapshots(ctx context.Context, tenantID string) ([]PortfolioSnapshot, error)
+	ListPositionIncomeEventsByTenant(ctx context.Context, tenantID string) ([]PositionIncomeEvent, error)
+	ListPositionSnapshotsByPosition(ctx context.Context, arg ListPositionSnapshotsByPositionParams) ([]PositionSnapshot, error)
+	ListPositionSnapshotsByTenantSince(ctx context.Context, arg ListPositionSnapshotsByTenantSinceParams) ([]PositionSnapshot, error)
+	ListPositionsByAccount(ctx context.Context, arg ListPositionsByAccountParams) ([]Position, error)
+	ListPositionsByTenant(ctx context.Context, tenantID string) ([]Position, error)
+	// Scheduler processes all tenants globally.
+	ListPositionsDueIncome(ctx context.Context, nextIncomeAt pgtype.Timestamptz) ([]Position, error)
 	ListTenantAssetConfigs(ctx context.Context, tenantID string) ([]TenantAssetConfig, error)
 	ListTenants(ctx context.Context) ([]Tenant, error)
 	ListTransactionsByTenant(ctx context.Context, arg ListTransactionsByTenantParams) ([]Transaction, error)
@@ -63,6 +82,7 @@ type Querier interface {
 	MarkOTPUsed(ctx context.Context, id string) error
 	SoftDeleteAccount(ctx context.Context, arg SoftDeleteAccountParams) error
 	SoftDeleteCategory(ctx context.Context, arg SoftDeleteCategoryParams) error
+	SoftDeletePosition(ctx context.Context, arg SoftDeletePositionParams) error
 	SoftDeleteTenant(ctx context.Context, id string) error
 	SoftDeleteTenantAssetConfig(ctx context.Context, arg SoftDeleteTenantAssetConfigParams) error
 	SoftDeleteTransaction(ctx context.Context, arg SoftDeleteTransactionParams) error
@@ -70,7 +90,10 @@ type Querier interface {
 	UpdateAccount(ctx context.Context, arg UpdateAccountParams) (Account, error)
 	UpdateAccountBalance(ctx context.Context, arg UpdateAccountBalanceParams) error
 	UpdateCategory(ctx context.Context, arg UpdateCategoryParams) (Category, error)
+	UpdateIncomeEventStatus(ctx context.Context, arg UpdateIncomeEventStatusParams) (PositionIncomeEvent, error)
 	UpdateMasterPurchase(ctx context.Context, arg UpdateMasterPurchaseParams) (MasterPurchase, error)
+	UpdatePosition(ctx context.Context, arg UpdatePositionParams) (Position, error)
+	UpdatePositionNextIncome(ctx context.Context, arg UpdatePositionNextIncomeParams) error
 	UpdateTenant(ctx context.Context, arg UpdateTenantParams) (Tenant, error)
 	UpdateTransaction(ctx context.Context, arg UpdateTransactionParams) (Transaction, error)
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)

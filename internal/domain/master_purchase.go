@@ -68,18 +68,25 @@ type ProjectedInstallment struct {
 type MasterPurchaseRepository interface {
 	// Create persists a new master purchase for the specified tenant.
 	Create(ctx context.Context, tenantID string, input CreateMasterPurchaseInput) (*MasterPurchase, error)
+
 	// GetByID retrieves a specific master purchase by its ID and tenant ID.
 	GetByID(ctx context.Context, tenantID, id string) (*MasterPurchase, error)
+
 	// ListByTenant returns all active master purchases for the given tenant.
 	ListByTenant(ctx context.Context, tenantID string) ([]MasterPurchase, error)
+
 	// ListByAccount returns all master purchases associated with a specific account.
 	ListByAccount(ctx context.Context, tenantID, accountID string) ([]MasterPurchase, error)
+
 	// ListPendingClose returns open master purchases whose next installment falls on or before cutoffDate.
 	ListPendingClose(ctx context.Context, tenantID string, cutoffDate time.Time) ([]MasterPurchase, error)
+
 	// Update modifies an existing master purchase's description or category.
 	Update(ctx context.Context, tenantID, id string, input UpdateMasterPurchaseInput) (*MasterPurchase, error)
+
 	// IncrementPaidInstallments atomically advances PaidInstallments and, if all paid, sets status=closed.
 	IncrementPaidInstallments(ctx context.Context, tenantID, id string) error
+
 	// Delete performs a soft delete on the specified master purchase.
 	Delete(ctx context.Context, tenantID, id string) error
 }
@@ -88,16 +95,22 @@ type MasterPurchaseRepository interface {
 type MasterPurchaseService interface {
 	// Create persists a new master purchase after validating the account type.
 	Create(ctx context.Context, tenantID string, input CreateMasterPurchaseInput) (*MasterPurchase, error)
+
 	// GetByID retrieves a specific master purchase by its ID and tenant ID.
 	GetByID(ctx context.Context, tenantID, id string) (*MasterPurchase, error)
+
 	// ListByTenant returns all active master purchases for the given tenant.
 	ListByTenant(ctx context.Context, tenantID string) ([]MasterPurchase, error)
+
 	// ListByAccount returns all master purchases associated with a specific account.
 	ListByAccount(ctx context.Context, tenantID, accountID string) ([]MasterPurchase, error)
+
 	// ProjectInstallments computes the full installment schedule without persisting anything.
 	ProjectInstallments(mp *MasterPurchase) []ProjectedInstallment
+
 	// Update modifies an existing master purchase's metadata.
 	Update(ctx context.Context, tenantID, id string, input UpdateMasterPurchaseInput) (*MasterPurchase, error)
+
 	// Delete performs a soft delete on the specified master purchase.
 	Delete(ctx context.Context, tenantID, id string) error
 }

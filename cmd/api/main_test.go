@@ -4,7 +4,9 @@ package main
 
 import (
 	"context"
+	"log/slog"
 	"net"
+	"os"
 	"syscall"
 	"testing"
 	"time"
@@ -41,10 +43,12 @@ func Test_run(t *testing.T) {
 	cfg := config.Load()
 	cfg.HTTPPort = getFreePort(t)
 
+	log := slog.New(slog.NewTextHandler(os.Stdout, nil))
+
 	// Run application in a goroutine
 	errCh := make(chan error, 1)
 	go func() {
-		errCh <- run(ctx, cfg, true)
+		errCh <- run(ctx, cfg, log, true)
 	}()
 
 	// Give the server a moment to start
@@ -121,7 +125,8 @@ func Test_run_Errors(t *testing.T) {
 			cfg := *baseCfg
 			tt.setup(&cfg)
 
-			err := run(context.Background(), &cfg, true)
+			log := slog.New(slog.NewTextHandler(os.Stdout, nil))
+			err := run(context.Background(), &cfg, log, true)
 			require.Error(t, err)
 			require.Contains(t, err.Error(), tt.wantErr)
 		})

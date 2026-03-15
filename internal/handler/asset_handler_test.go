@@ -403,9 +403,3 @@ func TestAssetHandler_ServiceErrors(t *testing.T) {
 		assert.Equal(t, http.StatusInternalServerError, rr.Code)
 	})
 }
-
-//go:fix inline
-//nolint:unused
-func ptr[T any](v T) *T {
-	return new(v)
-}

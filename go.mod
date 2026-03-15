@@ -9,6 +9,8 @@ require (
 	github.com/oklog/ulid/v2 v2.1.1
 	github.com/pressly/goose/v3 v3.27.0
 	github.com/redis/go-redis/v9 v9.18.0
+	github.com/robfig/cron/v3 v3.0.1
+	github.com/shopspring/decimal v1.4.0
 	github.com/stretchr/testify v1.11.1
 	github.com/swaggo/http-swagger/v2 v2.0.2
 	github.com/swaggo/swag v1.16.6

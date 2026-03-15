@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/garnizeh/moolah/internal/platform/db/sqlc"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -12,6 +13,8 @@ type Querier struct {
 	mock.Mock
 }
 
+var _ sqlc.Querier = (*Querier)(nil)
+
 func (m *Querier) AdminForceDeleteUser(ctx context.Context, id string) error {
 	args := m.Called(ctx, id)
 	return args.Error(0) //nolint:wrapcheck
@@ -19,24 +22,12 @@ func (m *Querier) AdminForceDeleteUser(ctx context.Context, id string) error {
 
 func (m *Querier) AdminGetTenantByID(ctx context.Context, id string) (sqlc.Tenant, error) {
 	args := m.Called(ctx, id)
-	var r0 sqlc.Tenant
-	if arg := args.Get(0); arg != nil {
-		if val, ok := arg.(sqlc.Tenant); ok {
-			r0 = val
-		}
-	}
-	return r0, args.Error(1) //nolint:wrapcheck
+	return args.Get(0).(sqlc.Tenant), args.Error(1) //nolint:wrapcheck
 }
 
 func (m *Querier) AdminGetUserByID(ctx context.Context, id string) (sqlc.User, error) {
 	args := m.Called(ctx, id)
-	var r0 sqlc.User
-	if arg := args.Get(0); arg != nil {
-		if val, ok := arg.(sqlc.User); ok {
-			r0 = val
-		}
-	}
-	return r0, args.Error(1) //nolint:wrapcheck
+	return args.Get(0).(sqlc.User), args.Error(1) //nolint:wrapcheck
 }
 
 func (m *Querier) AdminHardDeleteTenant(ctx context.Context, id string) error {
@@ -48,9 +39,7 @@ func (m *Querier) AdminListAllAuditLogs(ctx context.Context, arg sqlc.AdminListA
 	args := m.Called(ctx, arg)
 	var r0 []sqlc.AuditLog
 	if arg := args.Get(0); arg != nil {
-		if val, ok := arg.([]sqlc.AuditLog); ok {
-			r0 = val
-		}
+		r0 = arg.([]sqlc.AuditLog)
 	}
 	return r0, args.Error(1) //nolint:wrapcheck
 }
@@ -59,9 +48,7 @@ func (m *Querier) AdminListAllTenants(ctx context.Context, withDeleted bool) ([]
 	args := m.Called(ctx, withDeleted)
 	var r0 []sqlc.Tenant
 	if arg := args.Get(0); arg != nil {
-		if val, ok := arg.([]sqlc.Tenant); ok {
-			r0 = val
-		}
+		r0 = arg.([]sqlc.Tenant)
 	}
 	return r0, args.Error(1) //nolint:wrapcheck
 }
@@ -70,9 +57,7 @@ func (m *Querier) AdminListAllUsers(ctx context.Context) ([]sqlc.User, error) {
 	args := m.Called(ctx)
 	var r0 []sqlc.User
 	if arg := args.Get(0); arg != nil {
-		if val, ok := arg.([]sqlc.User); ok {
-			r0 = val
-		}
+		r0 = arg.([]sqlc.User)
 	}
 	return r0, args.Error(1) //nolint:wrapcheck
 }
@@ -89,112 +74,52 @@ func (m *Querier) AdminSuspendTenant(ctx context.Context, id string) error {
 
 func (m *Querier) AdminUpdateTenantPlan(ctx context.Context, arg sqlc.AdminUpdateTenantPlanParams) (sqlc.Tenant, error) {
 	args := m.Called(ctx, arg)
-	var r0 sqlc.Tenant
-	if arg := args.Get(0); arg != nil {
-		if val, ok := arg.(sqlc.Tenant); ok {
-			r0 = val
-		}
-	}
-	return r0, args.Error(1) //nolint:wrapcheck
+	return args.Get(0).(sqlc.Tenant), args.Error(1) //nolint:wrapcheck
 }
 
 func (m *Querier) CreateAccount(ctx context.Context, arg sqlc.CreateAccountParams) (sqlc.Account, error) {
 	args := m.Called(ctx, arg)
-	var r0 sqlc.Account
-	if arg := args.Get(0); arg != nil {
-		if val, ok := arg.(sqlc.Account); ok {
-			r0 = val
-		}
-	}
-	return r0, args.Error(1) //nolint:wrapcheck
+	return args.Get(0).(sqlc.Account), args.Error(1) //nolint:wrapcheck
 }
 
 func (m *Querier) CreateAsset(ctx context.Context, arg sqlc.CreateAssetParams) (sqlc.Asset, error) {
 	args := m.Called(ctx, arg)
-	var r0 sqlc.Asset
-	if arg := args.Get(0); arg != nil {
-		if val, ok := arg.(sqlc.Asset); ok {
-			r0 = val
-		}
-	}
-	return r0, args.Error(1) //nolint:wrapcheck
+	return args.Get(0).(sqlc.Asset), args.Error(1) //nolint:wrapcheck
 }
 
 func (m *Querier) CreateAuditLog(ctx context.Context, arg sqlc.CreateAuditLogParams) (sqlc.AuditLog, error) {
 	args := m.Called(ctx, arg)
-	var r0 sqlc.AuditLog
-	if arg := args.Get(0); arg != nil {
-		if val, ok := arg.(sqlc.AuditLog); ok {
-			r0 = val
-		}
-	}
-	return r0, args.Error(1) //nolint:wrapcheck
+	return args.Get(0).(sqlc.AuditLog), args.Error(1) //nolint:wrapcheck
 }
 
 func (m *Querier) CreateCategory(ctx context.Context, arg sqlc.CreateCategoryParams) (sqlc.Category, error) {
 	args := m.Called(ctx, arg)
-	var r0 sqlc.Category
-	if arg := args.Get(0); arg != nil {
-		if val, ok := arg.(sqlc.Category); ok {
-			r0 = val
-		}
-	}
-	return r0, args.Error(1) //nolint:wrapcheck
+	return args.Get(0).(sqlc.Category), args.Error(1) //nolint:wrapcheck
 }
 
 func (m *Querier) CreateMasterPurchase(ctx context.Context, arg sqlc.CreateMasterPurchaseParams) (sqlc.MasterPurchase, error) {
 	args := m.Called(ctx, arg)
-	var r0 sqlc.MasterPurchase
-	if arg := args.Get(0); arg != nil {
-		if val, ok := arg.(sqlc.MasterPurchase); ok {
-			r0 = val
-		}
-	}
-	return r0, args.Error(1) //nolint:wrapcheck
+	return args.Get(0).(sqlc.MasterPurchase), args.Error(1) //nolint:wrapcheck
 }
 
 func (m *Querier) CreateOTPRequest(ctx context.Context, arg sqlc.CreateOTPRequestParams) (sqlc.OtpRequest, error) {
 	args := m.Called(ctx, arg)
-	var r0 sqlc.OtpRequest
-	if arg := args.Get(0); arg != nil {
-		if val, ok := arg.(sqlc.OtpRequest); ok {
-			r0 = val
-		}
-	}
-	return r0, args.Error(1) //nolint:wrapcheck
+	return args.Get(0).(sqlc.OtpRequest), args.Error(1) //nolint:wrapcheck
 }
 
 func (m *Querier) CreateTenant(ctx context.Context, arg sqlc.CreateTenantParams) (sqlc.Tenant, error) {
 	args := m.Called(ctx, arg)
-	var r0 sqlc.Tenant
-	if arg := args.Get(0); arg != nil {
-		if val, ok := arg.(sqlc.Tenant); ok {
-			r0 = val
-		}
-	}
-	return r0, args.Error(1) //nolint:wrapcheck
+	return args.Get(0).(sqlc.Tenant), args.Error(1) //nolint:wrapcheck
 }
 
 func (m *Querier) CreateTransaction(ctx context.Context, arg sqlc.CreateTransactionParams) (sqlc.Transaction, error) {
 	args := m.Called(ctx, arg)
-	var r0 sqlc.Transaction
-	if arg := args.Get(0); arg != nil {
-		if val, ok := arg.(sqlc.Transaction); ok {
-			r0 = val
-		}
-	}
-	return r0, args.Error(1) //nolint:wrapcheck
+	return args.Get(0).(sqlc.Transaction), args.Error(1) //nolint:wrapcheck
 }
 
 func (m *Querier) CreateUser(ctx context.Context, arg sqlc.CreateUserParams) (sqlc.User, error) {
 	args := m.Called(ctx, arg)
-	var r0 sqlc.User
-	if arg := args.Get(0); arg != nil {
-		if val, ok := arg.(sqlc.User); ok {
-			r0 = val
-		}
-	}
-	return r0, args.Error(1) //nolint:wrapcheck
+	return args.Get(0).(sqlc.User), args.Error(1) //nolint:wrapcheck
 }
 
 func (m *Querier) DeleteAsset(ctx context.Context, id string) error {
@@ -214,148 +139,74 @@ func (m *Querier) DeleteMasterPurchase(ctx context.Context, arg sqlc.DeleteMaste
 
 func (m *Querier) GetAccountByID(ctx context.Context, arg sqlc.GetAccountByIDParams) (sqlc.Account, error) {
 	args := m.Called(ctx, arg)
-	var r0 sqlc.Account
-	if arg := args.Get(0); arg != nil {
-		if val, ok := arg.(sqlc.Account); ok {
-			r0 = val
-		}
-	}
-	return r0, args.Error(1) //nolint:wrapcheck
+	return args.Get(0).(sqlc.Account), args.Error(1) //nolint:wrapcheck
 }
 
 func (m *Querier) GetActiveOTPByEmail(ctx context.Context, email string) (sqlc.OtpRequest, error) {
 	args := m.Called(ctx, email)
-	var r0 sqlc.OtpRequest
-	if arg := args.Get(0); arg != nil {
-		if val, ok := arg.(sqlc.OtpRequest); ok {
-			r0 = val
-		}
-	}
-	return r0, args.Error(1) //nolint:wrapcheck
+	return args.Get(0).(sqlc.OtpRequest), args.Error(1) //nolint:wrapcheck
 }
 
 func (m *Querier) GetAssetByID(ctx context.Context, id string) (sqlc.Asset, error) {
 	args := m.Called(ctx, id)
-	var r0 sqlc.Asset
-	if arg := args.Get(0); arg != nil {
-		if val, ok := arg.(sqlc.Asset); ok {
-			r0 = val
-		}
-	}
-	return r0, args.Error(1) //nolint:wrapcheck
+	return args.Get(0).(sqlc.Asset), args.Error(1) //nolint:wrapcheck
 }
 
 func (m *Querier) GetAssetByTicker(ctx context.Context, ticker string) (sqlc.Asset, error) {
 	args := m.Called(ctx, ticker)
-	var r0 sqlc.Asset
-	if arg := args.Get(0); arg != nil {
-		if val, ok := arg.(sqlc.Asset); ok {
-			r0 = val
-		}
-	}
-	return r0, args.Error(1) //nolint:wrapcheck
+	return args.Get(0).(sqlc.Asset), args.Error(1) //nolint:wrapcheck
 }
 
 func (m *Querier) GetAssetWithTenantConfig(ctx context.Context, arg sqlc.GetAssetWithTenantConfigParams) (sqlc.GetAssetWithTenantConfigRow, error) {
 	args := m.Called(ctx, arg)
-	var r0 sqlc.GetAssetWithTenantConfigRow
-	if arg := args.Get(0); arg != nil {
-		if val, ok := arg.(sqlc.GetAssetWithTenantConfigRow); ok {
-			r0 = val
-		}
-	}
-	return r0, args.Error(1) //nolint:wrapcheck
+	return args.Get(0).(sqlc.GetAssetWithTenantConfigRow), args.Error(1) //nolint:wrapcheck
 }
 
 func (m *Querier) GetCategoryByID(ctx context.Context, arg sqlc.GetCategoryByIDParams) (sqlc.Category, error) {
 	args := m.Called(ctx, arg)
-	var r0 sqlc.Category
-	if arg := args.Get(0); arg != nil {
-		if val, ok := arg.(sqlc.Category); ok {
-			r0 = val
-		}
-	}
-	return r0, args.Error(1) //nolint:wrapcheck
+	return args.Get(0).(sqlc.Category), args.Error(1) //nolint:wrapcheck
 }
 
 func (m *Querier) GetMasterPurchaseByID(ctx context.Context, arg sqlc.GetMasterPurchaseByIDParams) (sqlc.MasterPurchase, error) {
 	args := m.Called(ctx, arg)
-	var r0 sqlc.MasterPurchase
-	if arg := args.Get(0); arg != nil {
-		if val, ok := arg.(sqlc.MasterPurchase); ok {
-			r0 = val
-		}
-	}
-	return r0, args.Error(1) //nolint:wrapcheck
+	return args.Get(0).(sqlc.MasterPurchase), args.Error(1) //nolint:wrapcheck
 }
 
 func (m *Querier) GetTenantAssetConfigByAssetID(ctx context.Context, arg sqlc.GetTenantAssetConfigByAssetIDParams) (sqlc.TenantAssetConfig, error) {
 	args := m.Called(ctx, arg)
-	return args.Get(0).(sqlc.TenantAssetConfig), args.Error(1) //nolint:wrapcheck,errcheck
+	return args.Get(0).(sqlc.TenantAssetConfig), args.Error(1) //nolint:wrapcheck
 }
 
 func (m *Querier) GetTenantByID(ctx context.Context, id string) (sqlc.Tenant, error) {
 	args := m.Called(ctx, id)
-	var r0 sqlc.Tenant
-	if arg := args.Get(0); arg != nil {
-		if val, ok := arg.(sqlc.Tenant); ok {
-			r0 = val
-		}
-	}
-	return r0, args.Error(1) //nolint:wrapcheck
+	return args.Get(0).(sqlc.Tenant), args.Error(1) //nolint:wrapcheck
 }
 
 func (m *Querier) GetTransactionByID(ctx context.Context, arg sqlc.GetTransactionByIDParams) (sqlc.Transaction, error) {
 	args := m.Called(ctx, arg)
-	var r0 sqlc.Transaction
-	if arg := args.Get(0); arg != nil {
-		if val, ok := arg.(sqlc.Transaction); ok {
-			r0 = val
-		}
-	}
-	return r0, args.Error(1) //nolint:wrapcheck
+	return args.Get(0).(sqlc.Transaction), args.Error(1) //nolint:wrapcheck
 }
 
 func (m *Querier) GetUserByEmail(ctx context.Context, email string) (sqlc.User, error) {
 	args := m.Called(ctx, email)
-	var r0 sqlc.User
-	if arg := args.Get(0); arg != nil {
-		if val, ok := arg.(sqlc.User); ok {
-			r0 = val
-		}
-	}
-	return r0, args.Error(1) //nolint:wrapcheck
+	return args.Get(0).(sqlc.User), args.Error(1) //nolint:wrapcheck
 }
 
 func (m *Querier) GetUserByID(ctx context.Context, arg sqlc.GetUserByIDParams) (sqlc.User, error) {
 	args := m.Called(ctx, arg)
-	var r0 sqlc.User
-	if arg := args.Get(0); arg != nil {
-		if val, ok := arg.(sqlc.User); ok {
-			r0 = val
-		}
-	}
-	return r0, args.Error(1) //nolint:wrapcheck
+	return args.Get(0).(sqlc.User), args.Error(1) //nolint:wrapcheck
 }
 
 func (m *Querier) IncrementPaidInstallments(ctx context.Context, arg sqlc.IncrementPaidInstallmentsParams) (sqlc.MasterPurchase, error) {
 	args := m.Called(ctx, arg)
-	var r0 sqlc.MasterPurchase
-	if arg := args.Get(0); arg != nil {
-		if val, ok := arg.(sqlc.MasterPurchase); ok {
-			r0 = val
-		}
-	}
-	return r0, args.Error(1) //nolint:wrapcheck
+	return args.Get(0).(sqlc.MasterPurchase), args.Error(1) //nolint:wrapcheck
 }
 
 func (m *Querier) ListAccountsByTenant(ctx context.Context, tenantID string) ([]sqlc.Account, error) {
 	args := m.Called(ctx, tenantID)
 	var r0 []sqlc.Account
 	if arg := args.Get(0); arg != nil {
-		if val, ok := arg.([]sqlc.Account); ok {
-			r0 = val
-		}
+		r0 = arg.([]sqlc.Account)
 	}
 	return r0, args.Error(1) //nolint:wrapcheck
 }
@@ -364,9 +215,7 @@ func (m *Querier) ListAccountsByUser(ctx context.Context, arg sqlc.ListAccountsB
 	args := m.Called(ctx, arg)
 	var r0 []sqlc.Account
 	if arg := args.Get(0); arg != nil {
-		if val, ok := arg.([]sqlc.Account); ok {
-			r0 = val
-		}
+		r0 = arg.([]sqlc.Account)
 	}
 	return r0, args.Error(1) //nolint:wrapcheck
 }
@@ -375,9 +224,7 @@ func (m *Querier) ListAssets(ctx context.Context) ([]sqlc.Asset, error) {
 	args := m.Called(ctx)
 	var r0 []sqlc.Asset
 	if arg := args.Get(0); arg != nil {
-		if val, ok := arg.([]sqlc.Asset); ok {
-			r0 = val
-		}
+		r0 = arg.([]sqlc.Asset)
 	}
 	return r0, args.Error(1) //nolint:wrapcheck
 }
@@ -386,9 +233,7 @@ func (m *Querier) ListAuditLogsByEntity(ctx context.Context, arg sqlc.ListAuditL
 	args := m.Called(ctx, arg)
 	var r0 []sqlc.AuditLog
 	if arg := args.Get(0); arg != nil {
-		if val, ok := arg.([]sqlc.AuditLog); ok {
-			r0 = val
-		}
+		r0 = arg.([]sqlc.AuditLog)
 	}
 	return r0, args.Error(1) //nolint:wrapcheck
 }
@@ -397,9 +242,7 @@ func (m *Querier) ListAuditLogsByTenant(ctx context.Context, arg sqlc.ListAuditL
 	args := m.Called(ctx, arg)
 	var r0 []sqlc.AuditLog
 	if arg := args.Get(0); arg != nil {
-		if val, ok := arg.([]sqlc.AuditLog); ok {
-			r0 = val
-		}
+		r0 = arg.([]sqlc.AuditLog)
 	}
 	return r0, args.Error(1) //nolint:wrapcheck
 }
@@ -408,9 +251,7 @@ func (m *Querier) ListCategoriesByTenant(ctx context.Context, tenantID string) (
 	args := m.Called(ctx, tenantID)
 	var r0 []sqlc.Category
 	if arg := args.Get(0); arg != nil {
-		if val, ok := arg.([]sqlc.Category); ok {
-			r0 = val
-		}
+		r0 = arg.([]sqlc.Category)
 	}
 	return r0, args.Error(1) //nolint:wrapcheck
 }
@@ -419,9 +260,7 @@ func (m *Querier) ListChildCategories(ctx context.Context, arg sqlc.ListChildCat
 	args := m.Called(ctx, arg)
 	var r0 []sqlc.Category
 	if arg := args.Get(0); arg != nil {
-		if val, ok := arg.([]sqlc.Category); ok {
-			r0 = val
-		}
+		r0 = arg.([]sqlc.Category)
 	}
 	return r0, args.Error(1) //nolint:wrapcheck
 }
@@ -430,9 +269,7 @@ func (m *Querier) ListMasterPurchasesByAccount(ctx context.Context, arg sqlc.Lis
 	args := m.Called(ctx, arg)
 	var r0 []sqlc.MasterPurchase
 	if arg := args.Get(0); arg != nil {
-		if val, ok := arg.([]sqlc.MasterPurchase); ok {
-			r0 = val
-		}
+		r0 = arg.([]sqlc.MasterPurchase)
 	}
 	return r0, args.Error(1) //nolint:wrapcheck
 }
@@ -441,9 +278,7 @@ func (m *Querier) ListMasterPurchasesByTenant(ctx context.Context, tenantID stri
 	args := m.Called(ctx, tenantID)
 	var r0 []sqlc.MasterPurchase
 	if arg := args.Get(0); arg != nil {
-		if val, ok := arg.([]sqlc.MasterPurchase); ok {
-			r0 = val
-		}
+		r0 = arg.([]sqlc.MasterPurchase)
 	}
 	return r0, args.Error(1) //nolint:wrapcheck
 }
@@ -452,9 +287,7 @@ func (m *Querier) ListPendingMasterPurchasesByClosingDay(ctx context.Context, ar
 	args := m.Called(ctx, arg)
 	var r0 []sqlc.MasterPurchase
 	if arg := args.Get(0); arg != nil {
-		if val, ok := arg.([]sqlc.MasterPurchase); ok {
-			r0 = val
-		}
+		r0 = arg.([]sqlc.MasterPurchase)
 	}
 	return r0, args.Error(1) //nolint:wrapcheck
 }
@@ -463,9 +296,7 @@ func (m *Querier) ListTenantAssetConfigs(ctx context.Context, tenantID string) (
 	args := m.Called(ctx, tenantID)
 	var r0 []sqlc.TenantAssetConfig
 	if arg := args.Get(0); arg != nil {
-		if val, ok := arg.([]sqlc.TenantAssetConfig); ok {
-			r0 = val
-		}
+		r0 = arg.([]sqlc.TenantAssetConfig)
 	}
 	return r0, args.Error(1) //nolint:wrapcheck
 }
@@ -474,9 +305,7 @@ func (m *Querier) ListTenants(ctx context.Context) ([]sqlc.Tenant, error) {
 	args := m.Called(ctx)
 	var r0 []sqlc.Tenant
 	if arg := args.Get(0); arg != nil {
-		if val, ok := arg.([]sqlc.Tenant); ok {
-			r0 = val
-		}
+		r0 = arg.([]sqlc.Tenant)
 	}
 	return r0, args.Error(1) //nolint:wrapcheck
 }
@@ -485,9 +314,7 @@ func (m *Querier) ListTransactionsByTenant(ctx context.Context, arg sqlc.ListTra
 	args := m.Called(ctx, arg)
 	var r0 []sqlc.Transaction
 	if arg := args.Get(0); arg != nil {
-		if val, ok := arg.([]sqlc.Transaction); ok {
-			r0 = val
-		}
+		r0 = arg.([]sqlc.Transaction)
 	}
 	return r0, args.Error(1) //nolint:wrapcheck
 }
@@ -496,9 +323,7 @@ func (m *Querier) ListUsersByTenant(ctx context.Context, tenantID string) ([]sql
 	args := m.Called(ctx, tenantID)
 	var r0 []sqlc.User
 	if arg := args.Get(0); arg != nil {
-		if val, ok := arg.([]sqlc.User); ok {
-			r0 = val
-		}
+		r0 = arg.([]sqlc.User)
 	}
 	return r0, args.Error(1) //nolint:wrapcheck
 }
@@ -540,13 +365,7 @@ func (m *Querier) SoftDeleteUser(ctx context.Context, arg sqlc.SoftDeleteUserPar
 
 func (m *Querier) UpdateAccount(ctx context.Context, arg sqlc.UpdateAccountParams) (sqlc.Account, error) {
 	args := m.Called(ctx, arg)
-	var r0 sqlc.Account
-	if arg := args.Get(0); arg != nil {
-		if val, ok := arg.(sqlc.Account); ok {
-			r0 = val
-		}
-	}
-	return r0, args.Error(1) //nolint:wrapcheck
+	return args.Get(0).(sqlc.Account), args.Error(1) //nolint:wrapcheck
 }
 
 func (m *Querier) UpdateAccountBalance(ctx context.Context, arg sqlc.UpdateAccountBalanceParams) error {
@@ -556,57 +375,27 @@ func (m *Querier) UpdateAccountBalance(ctx context.Context, arg sqlc.UpdateAccou
 
 func (m *Querier) UpdateCategory(ctx context.Context, arg sqlc.UpdateCategoryParams) (sqlc.Category, error) {
 	args := m.Called(ctx, arg)
-	var r0 sqlc.Category
-	if arg := args.Get(0); arg != nil {
-		if val, ok := arg.(sqlc.Category); ok {
-			r0 = val
-		}
-	}
-	return r0, args.Error(1) //nolint:wrapcheck
+	return args.Get(0).(sqlc.Category), args.Error(1) //nolint:wrapcheck
 }
 
 func (m *Querier) UpdateMasterPurchase(ctx context.Context, arg sqlc.UpdateMasterPurchaseParams) (sqlc.MasterPurchase, error) {
 	args := m.Called(ctx, arg)
-	var r0 sqlc.MasterPurchase
-	if arg := args.Get(0); arg != nil {
-		if val, ok := arg.(sqlc.MasterPurchase); ok {
-			r0 = val
-		}
-	}
-	return r0, args.Error(1) //nolint:wrapcheck
+	return args.Get(0).(sqlc.MasterPurchase), args.Error(1) //nolint:wrapcheck
 }
 
 func (m *Querier) UpdateTenant(ctx context.Context, arg sqlc.UpdateTenantParams) (sqlc.Tenant, error) {
 	args := m.Called(ctx, arg)
-	var r0 sqlc.Tenant
-	if arg := args.Get(0); arg != nil {
-		if val, ok := arg.(sqlc.Tenant); ok {
-			r0 = val
-		}
-	}
-	return r0, args.Error(1) //nolint:wrapcheck
+	return args.Get(0).(sqlc.Tenant), args.Error(1) //nolint:wrapcheck
 }
 
 func (m *Querier) UpdateTransaction(ctx context.Context, arg sqlc.UpdateTransactionParams) (sqlc.Transaction, error) {
 	args := m.Called(ctx, arg)
-	var r0 sqlc.Transaction
-	if arg := args.Get(0); arg != nil {
-		if val, ok := arg.(sqlc.Transaction); ok {
-			r0 = val
-		}
-	}
-	return r0, args.Error(1) //nolint:wrapcheck
+	return args.Get(0).(sqlc.Transaction), args.Error(1) //nolint:wrapcheck
 }
 
 func (m *Querier) UpdateUser(ctx context.Context, arg sqlc.UpdateUserParams) (sqlc.User, error) {
 	args := m.Called(ctx, arg)
-	var r0 sqlc.User
-	if arg := args.Get(0); arg != nil {
-		if val, ok := arg.(sqlc.User); ok {
-			r0 = val
-		}
-	}
-	return r0, args.Error(1) //nolint:wrapcheck
+	return args.Get(0).(sqlc.User), args.Error(1) //nolint:wrapcheck
 }
 
 func (m *Querier) UpdateUserLastLogin(ctx context.Context, id string) error {
@@ -616,11 +405,137 @@ func (m *Querier) UpdateUserLastLogin(ctx context.Context, id string) error {
 
 func (m *Querier) UpsertTenantAssetConfig(ctx context.Context, arg sqlc.UpsertTenantAssetConfigParams) (sqlc.TenantAssetConfig, error) {
 	args := m.Called(ctx, arg)
-	var r0 sqlc.TenantAssetConfig
+	return args.Get(0).(sqlc.TenantAssetConfig), args.Error(1) //nolint:wrapcheck
+}
+
+func (m *Querier) CreatePortfolioSnapshot(ctx context.Context, arg sqlc.CreatePortfolioSnapshotParams) (sqlc.PortfolioSnapshot, error) {
+	args := m.Called(ctx, arg)
+	return args.Get(0).(sqlc.PortfolioSnapshot), args.Error(1) //nolint:wrapcheck
+}
+
+func (m *Querier) CreatePosition(ctx context.Context, arg sqlc.CreatePositionParams) (sqlc.Position, error) {
+	args := m.Called(ctx, arg)
+	return args.Get(0).(sqlc.Position), args.Error(1) //nolint:wrapcheck
+}
+
+func (m *Querier) CreatePositionIncomeEvent(ctx context.Context, arg sqlc.CreatePositionIncomeEventParams) (sqlc.PositionIncomeEvent, error) {
+	args := m.Called(ctx, arg)
+	return args.Get(0).(sqlc.PositionIncomeEvent), args.Error(1) //nolint:wrapcheck
+}
+
+func (m *Querier) CreatePositionSnapshot(ctx context.Context, arg sqlc.CreatePositionSnapshotParams) (sqlc.PositionSnapshot, error) {
+	args := m.Called(ctx, arg)
+	return args.Get(0).(sqlc.PositionSnapshot), args.Error(1) //nolint:wrapcheck
+}
+
+func (m *Querier) GetPortfolioSnapshotByDate(ctx context.Context, arg sqlc.GetPortfolioSnapshotByDateParams) (sqlc.PortfolioSnapshot, error) {
+	args := m.Called(ctx, arg)
+	return args.Get(0).(sqlc.PortfolioSnapshot), args.Error(1) //nolint:wrapcheck
+}
+
+func (m *Querier) GetPositionByID(ctx context.Context, arg sqlc.GetPositionByIDParams) (sqlc.Position, error) {
+	args := m.Called(ctx, arg)
+	return args.Get(0).(sqlc.Position), args.Error(1) //nolint:wrapcheck
+}
+
+func (m *Querier) GetPositionIncomeEventByID(ctx context.Context, arg sqlc.GetPositionIncomeEventByIDParams) (sqlc.PositionIncomeEvent, error) {
+	args := m.Called(ctx, arg)
+	return args.Get(0).(sqlc.PositionIncomeEvent), args.Error(1) //nolint:wrapcheck
+}
+
+func (m *Querier) GetPositionSnapshotByID(ctx context.Context, arg sqlc.GetPositionSnapshotByIDParams) (sqlc.PositionSnapshot, error) {
+	args := m.Called(ctx, arg)
+	return args.Get(0).(sqlc.PositionSnapshot), args.Error(1) //nolint:wrapcheck
+}
+
+func (m *Querier) ListPendingIncomeEvents(ctx context.Context, tenantID string) ([]sqlc.PositionIncomeEvent, error) {
+	args := m.Called(ctx, tenantID)
+	var r0 []sqlc.PositionIncomeEvent
 	if arg := args.Get(0); arg != nil {
-		if val, ok := arg.(sqlc.TenantAssetConfig); ok {
-			r0 = val
-		}
+		r0 = arg.([]sqlc.PositionIncomeEvent)
 	}
 	return r0, args.Error(1) //nolint:wrapcheck
+}
+
+func (m *Querier) ListPortfolioSnapshots(ctx context.Context, tenantID string) ([]sqlc.PortfolioSnapshot, error) {
+	args := m.Called(ctx, tenantID)
+	var r0 []sqlc.PortfolioSnapshot
+	if arg := args.Get(0); arg != nil {
+		r0 = arg.([]sqlc.PortfolioSnapshot)
+	}
+	return r0, args.Error(1) //nolint:wrapcheck
+}
+
+func (m *Querier) ListPositionIncomeEventsByTenant(ctx context.Context, tenantID string) ([]sqlc.PositionIncomeEvent, error) {
+	args := m.Called(ctx, tenantID)
+	var r0 []sqlc.PositionIncomeEvent
+	if arg := args.Get(0); arg != nil {
+		r0 = arg.([]sqlc.PositionIncomeEvent)
+	}
+	return r0, args.Error(1) //nolint:wrapcheck
+}
+
+func (m *Querier) ListPositionSnapshotsByPosition(ctx context.Context, arg sqlc.ListPositionSnapshotsByPositionParams) ([]sqlc.PositionSnapshot, error) {
+	args := m.Called(ctx, arg)
+	var r0 []sqlc.PositionSnapshot
+	if arg := args.Get(0); arg != nil {
+		r0 = arg.([]sqlc.PositionSnapshot)
+	}
+	return r0, args.Error(1) //nolint:wrapcheck
+}
+
+func (m *Querier) ListPositionSnapshotsByTenantSince(ctx context.Context, arg sqlc.ListPositionSnapshotsByTenantSinceParams) ([]sqlc.PositionSnapshot, error) {
+	args := m.Called(ctx, arg)
+	var r0 []sqlc.PositionSnapshot
+	if arg := args.Get(0); arg != nil {
+		r0 = arg.([]sqlc.PositionSnapshot)
+	}
+	return r0, args.Error(1) //nolint:wrapcheck
+}
+
+func (m *Querier) ListPositionsByAccount(ctx context.Context, arg sqlc.ListPositionsByAccountParams) ([]sqlc.Position, error) {
+	args := m.Called(ctx, arg)
+	var r0 []sqlc.Position
+	if arg := args.Get(0); arg != nil {
+		r0 = arg.([]sqlc.Position)
+	}
+	return r0, args.Error(1) //nolint:wrapcheck
+}
+
+func (m *Querier) ListPositionsByTenant(ctx context.Context, tenantID string) ([]sqlc.Position, error) {
+	args := m.Called(ctx, tenantID)
+	var r0 []sqlc.Position
+	if arg := args.Get(0); arg != nil {
+		r0 = arg.([]sqlc.Position)
+	}
+	return r0, args.Error(1) //nolint:wrapcheck
+}
+
+func (m *Querier) ListPositionsDueIncome(ctx context.Context, nextIncomeAt pgtype.Timestamptz) ([]sqlc.Position, error) {
+	args := m.Called(ctx, nextIncomeAt)
+	var r0 []sqlc.Position
+	if arg := args.Get(0); arg != nil {
+		r0 = arg.([]sqlc.Position)
+	}
+	return r0, args.Error(1) //nolint:wrapcheck
+}
+
+func (m *Querier) SoftDeletePosition(ctx context.Context, arg sqlc.SoftDeletePositionParams) error {
+	args := m.Called(ctx, arg)
+	return args.Error(0) //nolint:wrapcheck
+}
+
+func (m *Querier) UpdateIncomeEventStatus(ctx context.Context, arg sqlc.UpdateIncomeEventStatusParams) (sqlc.PositionIncomeEvent, error) {
+	args := m.Called(ctx, arg)
+	return args.Get(0).(sqlc.PositionIncomeEvent), args.Error(1) //nolint:wrapcheck
+}
+
+func (m *Querier) UpdatePosition(ctx context.Context, arg sqlc.UpdatePositionParams) (sqlc.Position, error) {
+	args := m.Called(ctx, arg)
+	return args.Get(0).(sqlc.Position), args.Error(1) //nolint:wrapcheck
+}
+
+func (m *Querier) UpdatePositionNextIncome(ctx context.Context, arg sqlc.UpdatePositionNextIncomeParams) error {
+	args := m.Called(ctx, arg)
+	return args.Error(0) //nolint:wrapcheck
 }

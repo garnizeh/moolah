@@ -37,7 +37,6 @@ func TestCreateAssetInput_Validation(t *testing.T) {
 	t.Parallel()
 
 	validate := validator.New()
-	strPtr := func(s string) *string { return &s }
 
 	type testCase struct {
 		input   domain.CreateAssetInput
@@ -110,7 +109,7 @@ func TestCreateAssetInput_Validation(t *testing.T) {
 				Name:      "Apple Inc.",
 				AssetType: domain.AssetTypeStock,
 				Currency:  "USD",
-				ISIN:      strPtr("US0378331005"),
+				ISIN:      new("US0378331005"),
 			},
 			wantErr: false,
 		},
@@ -121,7 +120,7 @@ func TestCreateAssetInput_Validation(t *testing.T) {
 				Name:      "Apple Inc.",
 				AssetType: domain.AssetTypeStock,
 				Currency:  "USD",
-				ISIN:      strPtr("INVALIDISINTOOLONG"),
+				ISIN:      new("INVALIDISINTOOLONG"),
 			},
 			wantErr: true,
 		},
@@ -144,7 +143,6 @@ func TestUpsertTenantAssetConfigInput_Validation(t *testing.T) {
 	t.Parallel()
 
 	validate := validator.New()
-	strPtr := func(s string) *string { return &s }
 
 	type testCase struct {
 		input   domain.UpsertTenantAssetConfigInput
@@ -157,14 +155,14 @@ func TestUpsertTenantAssetConfigInput_Validation(t *testing.T) {
 			name: "Valid Input",
 			input: domain.UpsertTenantAssetConfigInput{
 				AssetID:  "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-				Currency: strPtr("BRL"),
+				Currency: new("BRL"),
 			},
 			wantErr: false,
 		},
 		{
 			name: "Missing AssetID",
 			input: domain.UpsertTenantAssetConfigInput{
-				Currency: strPtr("BRL"),
+				Currency: new("BRL"),
 			},
 			wantErr: true,
 		},
@@ -172,7 +170,7 @@ func TestUpsertTenantAssetConfigInput_Validation(t *testing.T) {
 			name: "Invalid Overridden Currency Length",
 			input: domain.UpsertTenantAssetConfigInput{
 				AssetID:  "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-				Currency: strPtr("BRLL"),
+				Currency: new("BRLL"),
 			},
 			wantErr: true,
 		},
@@ -180,7 +178,7 @@ func TestUpsertTenantAssetConfigInput_Validation(t *testing.T) {
 			name: "Valid Optional Name",
 			input: domain.UpsertTenantAssetConfigInput{
 				AssetID: "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-				Name:    strPtr("Personalized Name"),
+				Name:    new("Personalized Name"),
 			},
 			wantErr: false,
 		},

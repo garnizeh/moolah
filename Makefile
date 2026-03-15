@@ -45,7 +45,7 @@ swagger-check: swagger
 ## lint-check: Run golangci-lint
 lint-check:
 	@echo "🔍 Running linter..."
-	golangci-lint run --build-tags=integration ./...
+	golangci-lint run --build-tags=integration
 
 ## sqlc-check: Verify if sqlc generate is up to date
 sqlc-check:
@@ -112,7 +112,7 @@ smoke-test:
 ## lint: Run golangci-lint
 lint:
 	@echo "Running linter..."
-	golangci-lint run --build-tags=integration ./...
+	golangci-lint run --build-tags=integration
 
 ## generate: Run sqlc generate
 generate:

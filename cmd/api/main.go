@@ -53,17 +53,17 @@ func main() {
 	cfg := config.Load()
 
 	// Init Logger
-	log := logger.New(nil, cfg.LogLevel, cfg.LogFormat)
-	slog.SetDefault(log)
+	l := logger.New(nil, cfg.LogLevel, cfg.LogFormat)
+	slog.SetDefault(l)
 
-	err := run(ctx, cfg, *showConfig)
+	err := run(ctx, cfg, l, *showConfig)
 	if err != nil {
 		slog.ErrorContext(ctx, "application error", "err", err)
 		os.Exit(1)
 	}
 }
 
-func run(ctx context.Context, cfg *config.Config, showConfig bool) error {
+func run(ctx context.Context, cfg *config.Config, log *slog.Logger, showConfig bool) error {
 	slog.InfoContext(ctx, "starting application",
 		"version", tagVersion,
 		"buildTime", buildTime,
@@ -116,7 +116,8 @@ func run(ctx context.Context, cfg *config.Config, showConfig bool) error {
 	masterPurchaseRepo := repository.NewMasterPurchaseRepository(querier)
 	assetRepo := repository.NewAssetRepository(querier)
 	tenantAssetConfigRepo := repository.NewTenantAssetConfigRepository(querier)
-	// Task 3.12: Add Position and Income repositories
+	positionRepo := repository.NewPositionRepository(querier)
+	incomeRepo := repository.NewPositionIncomeEventRepository(querier)
 	auditRepo := repository.NewAuditRepository(querier)
 
 	adminTenantRepo := repository.NewAdminTenantRepository(querier)
@@ -135,6 +136,10 @@ func run(ctx context.Context, cfg *config.Config, showConfig bool) error {
 	investmentSvc := service.NewInvestmentService(nil, nil, assetRepo, tenantAssetConfigRepo, accountRepo, transactionRepo, auditRepo, nil)
 	invoiceCloser := service.NewInvoiceCloser(masterPurchaseRepo, transactionRepo, auditRepo, accountRepo, masterPurchaseSvc, pool)
 	adminSvc := service.NewAdminService(adminTenantRepo, adminUserRepo, adminAuditRepo, auditRepo)
+
+	// Wire Background Jobs
+	snapshotJob := service.NewPortfolioSnapshotJob(investmentSvc, tenantRepo, cfg.SnapshotCronSchedule)
+	incomeSchedulerJob := service.NewIncomeSchedulerJob(positionRepo, incomeRepo, log, cfg.IncomeSchedulerInterval)
 
 	rateLimiterStore := middleware.NewRateLimiterStore()
 	tokenParser := paseto.NewTokenParser(pasetoKey)
@@ -158,19 +163,39 @@ func run(ctx context.Context, cfg *config.Config, showConfig bool) error {
 
 	// Graceful Shutdown
 	idleConnsClosed := make(chan struct{})
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
 	go func() {
 		sigint := make(chan os.Signal, 1)
 		signal.Notify(sigint, os.Interrupt, syscall.SIGTERM)
 		<-sigint
 
-		ctxwt, cancel := context.WithTimeout(ctx, cfg.ShutdownTimeout)
-		defer cancel()
+		cancel()
+
+		ctxwt, cancelTimeout := context.WithTimeout(ctx, cfg.ShutdownTimeout)
+		defer cancelTimeout()
 
 		slog.InfoContext(ctxwt, "shutting down server")
 		if err := srv.Shutdown(ctxwt); err != nil {
 			slog.ErrorContext(ctxwt, "server shutdown failed", "err", err)
 		}
 		close(idleConnsClosed)
+	}()
+
+	// Start Background Jobs
+	go func() {
+		if err := snapshotJob.Run(ctx); err != nil {
+			slog.ErrorContext(ctx, "portfolio snapshot job failed", "error", err)
+		}
+	}()
+
+	// Run income scheduler in a separate goroutine since it has a short interval and
+	// we don't want to block server startup
+	go func() {
+		if err := incomeSchedulerJob.Run(ctx); err != nil && err != context.Canceled {
+			slog.ErrorContext(ctx, "income scheduler job failed", "error", err)
+		}
 	}()
 
 	// Start Server

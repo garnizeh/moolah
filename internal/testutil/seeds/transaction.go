@@ -15,9 +15,9 @@ import (
 	"github.com/garnizeh/moolah/pkg/ulid"
 )
 
-// CreateTransaction inserts a minimal expense transaction.
+// SeedTransaction inserts a minimal expense transaction.
 // Defaults: type=expense, amount_cents=100, occurred_at=time.Now().
-func CreateTransaction(
+func SeedTransaction(
 	t *testing.T,
 	ctx context.Context,
 	q sqlc.Querier,

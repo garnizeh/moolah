@@ -10,6 +10,7 @@ import (
 	"net/netip"
 
 	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/shopspring/decimal"
 )
 
 type AccountType string
@@ -548,7 +549,7 @@ type Position struct {
 	TenantID           string             `json:"tenant_id"`
 	AssetID            string             `json:"asset_id"`
 	AccountID          string             `json:"account_id"`
-	Quantity           pgtype.Numeric     `json:"quantity"`
+	Quantity           decimal.Decimal    `json:"quantity"`
 	AvgCostCents       int64              `json:"avg_cost_cents"`
 	LastPriceCents     int64              `json:"last_price_cents"`
 	Currency           string             `json:"currency"`
@@ -583,7 +584,7 @@ type PositionSnapshot struct {
 	TenantID       string             `json:"tenant_id"`
 	PositionID     string             `json:"position_id"`
 	SnapshotDate   pgtype.Date        `json:"snapshot_date"`
-	Quantity       pgtype.Numeric     `json:"quantity"`
+	Quantity       decimal.Decimal    `json:"quantity"`
 	AvgCostCents   int64              `json:"avg_cost_cents"`
 	LastPriceCents int64              `json:"last_price_cents"`
 	Currency       string             `json:"currency"`

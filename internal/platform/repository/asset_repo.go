@@ -113,3 +113,28 @@ func (r *AssetRepo) GetLastPrice(ctx context.Context, id string) (int64, error) 
 	// For MVP, return a static value or 0 if not found
 	return 0, nil
 }
+
+// GetAssetWithTenantConfig retrieves a global asset and applies any tenant-specific overrides from the database.
+func (r *AssetRepo) GetAssetWithTenantConfig(ctx context.Context, tenantID, id string) (*domain.Asset, error) {
+	row, err := r.q.GetAssetWithTenantConfig(ctx, sqlc.GetAssetWithTenantConfigParams{
+		TenantID: tenantID,
+		AssetID:  id,
+	})
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, fmt.Errorf("%w: %s", domain.ErrAssetNotFound, id)
+		}
+		return nil, fmt.Errorf("failed to get asset with tenant config: %w", err)
+	}
+
+	return &domain.Asset{
+		ID:        row.ID,
+		Ticker:    row.Ticker,
+		ISIN:      fromText(row.Isin),
+		Name:      row.Name,
+		AssetType: domain.AssetType(row.AssetType),
+		Currency:  row.Currency,
+		Details:   fromText(row.Details),
+		CreatedAt: row.CreatedAt.Time,
+	}, nil
+}

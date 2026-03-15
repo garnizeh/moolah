@@ -106,7 +106,7 @@ func TestInvoiceCloser_Integration(t *testing.T) {
 		})
 		require.NoError(t, err)
 
-		scenarioCategory := seeds.CreateCategory(t, ctx, db.Queries, scenarioTenant.ID)
+		scenarioCategory := seeds.SeedCategory(t, ctx, db.Queries, scenarioTenant.ID)
 
 		scenarioAccount, err := accRepo.Create(ctx, scenarioTenant.ID, domain.CreateAccountInput{
 			UserID:       scenarioUser.ID,
@@ -121,7 +121,7 @@ func TestInvoiceCloser_Integration(t *testing.T) {
 		require.NoError(t, err)
 
 		mp := seeds.SeedMasterPurchase(t, ctx, db.Queries, scenarioTenant.ID, scenarioAccount.ID, persistedCategory.ID, scenarioUser.ID, 1000, 3, today.AddDate(0, -2, 0))
-		seeds.SetMasterPurchasePaidInstallments(t, ctx, db.Queries, scenarioTenant.ID, mp.ID, 2, domain.MasterPurchaseStatusOpen)
+		seeds.UpdateMasterPurchasePaidInstallments(t, ctx, db.Queries, scenarioTenant.ID, mp.ID, 2, domain.MasterPurchaseStatusOpen)
 
 		res, err := closer.CloseInvoice(ctx, scenarioTenant.ID, scenarioAccount.ID, today)
 		require.NoError(t, err)
@@ -159,7 +159,7 @@ func TestInvoiceCloser_Integration(t *testing.T) {
 		})
 		require.NoError(t, err)
 
-		scenarioCategory := seeds.CreateCategory(t, ctx, db.Queries, scenarioTenant.ID)
+		scenarioCategory := seeds.SeedCategory(t, ctx, db.Queries, scenarioTenant.ID)
 
 		scenarioAccount, err := accRepo.Create(ctx, scenarioTenant.ID, domain.CreateAccountInput{
 			UserID:       scenarioUser.ID,
@@ -174,7 +174,7 @@ func TestInvoiceCloser_Integration(t *testing.T) {
 		require.NoError(t, err)
 
 		mp := seeds.SeedMasterPurchase(t, ctx, db.Queries, scenarioTenant.ID, scenarioAccount.ID, persistedCategory.ID, scenarioUser.ID, 1000, 2, today)
-		seeds.SetMasterPurchasePaidInstallments(t, ctx, db.Queries, scenarioTenant.ID, mp.ID, 2, domain.MasterPurchaseStatusClosed)
+		seeds.UpdateMasterPurchasePaidInstallments(t, ctx, db.Queries, scenarioTenant.ID, mp.ID, 2, domain.MasterPurchaseStatusClosed)
 
 		res, err := closer.CloseInvoice(ctx, scenarioTenant.ID, scenarioAccount.ID, today)
 		require.NoError(t, err)
@@ -256,7 +256,7 @@ func TestInvoiceCloser_Integration(t *testing.T) {
 			Role:     domain.RoleMember,
 		})
 		require.NoError(t, err)
-		scenarioCategory := seeds.CreateCategory(t, ctx, db.Queries, scenarioTenant.ID)
+		scenarioCategory := seeds.SeedCategory(t, ctx, db.Queries, scenarioTenant.ID)
 		scenarioAccount, err := accRepo.Create(ctx, scenarioTenant.ID, domain.CreateAccountInput{
 			UserID:       scenarioUser.ID,
 			Name:         "Prime Card",

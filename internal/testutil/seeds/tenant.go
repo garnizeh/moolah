@@ -13,9 +13,9 @@ import (
 	"github.com/garnizeh/moolah/pkg/ulid"
 )
 
-// CreateTenant inserts a test tenant and returns the mapped domain.Tenant.
+// SeedTenant inserts a test tenant and returns the mapped domain.Tenant.
 // Defaults: plan=free, name="Test Household".
-func CreateTenant(t *testing.T, ctx context.Context, q sqlc.Querier) domain.Tenant {
+func SeedTenant(t *testing.T, ctx context.Context, q sqlc.Querier) domain.Tenant {
 	t.Helper()
 
 	row, err := q.CreateTenant(ctx, sqlc.CreateTenantParams{
