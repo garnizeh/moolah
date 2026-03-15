@@ -141,7 +141,7 @@ jobs:
   smoke-tests:
     name: Phase 1 Smoke Tests
     runs-on: ubuntu-latest
-    needs: integration-tests
+    needs: [lint, security, unit-tests]
     steps:
       - uses: actions/checkout@v6
 
