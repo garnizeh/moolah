@@ -136,7 +136,7 @@ jobs:
 
   # ─── Stage 5: Smoke Tests ────────────────────────────────────────────────
   smoke-tests:
-    name: Phase 1 Smoke Tests
+    name: Smoke Tests
     runs-on: ubuntu-latest
     needs: [lint, security, unit-tests, ui-tests]
     steps:
