@@ -15,16 +15,22 @@ COMMIT_HASH := $(shell git rev-parse HEAD)
 GO_VERSION := $(shell go version | cut -c 14-)
 VERSION_TAG := $(shell git describe --tags --match "v*" --abbrev=0 2>/dev/null || echo "v0.0.0-dev")
 
-all: deps lint generate test build swagger
+all: deps format lint generate test build swagger
 
 ## task-check: Run all checks required before completing a task (Linter, SQLC, Security, Unit Tests with Coverage)
-task-check: deps lint-check sqlc-check security-check test-coverage swagger-check
+task-check: deps format lint-check sqlc-check security-check test-coverage swagger-check
 
-# deps: Install Go dependencies, run code formatters and fixers
+# deps: Install Go dependencies
 deps: install-tailwind
 	@echo "Installing dependencies..."
 	@go mod tidy
 	@go mod vendor
+
+## format: Run code formatters and fixers
+format:
+	@echo "Formatting code..."
+	@go install mvdan.cc/gofumpt@latest
+	@go install golang.org/x/tools/go/analysis/passes/fieldalignment/cmd/fieldalignment@latest
 	@gofumpt -w .
 	@go fmt .
 	@go fix ./...

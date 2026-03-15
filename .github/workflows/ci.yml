@@ -178,9 +178,9 @@ jobs:
       - name: Install Tailwind CSS CLI
         run: make install-tailwind
 
-      - name: Install dependencies
+      - name: Download dependencies
         run: make deps
-        
+
       - name: Build binaries (API & Web)
         run: make build
 
