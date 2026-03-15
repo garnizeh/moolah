@@ -92,7 +92,7 @@ jobs:
           go test -v -race -count=1 -timeout=300s \
             -coverprofile=unit.out \
             -covermode=atomic \
-            $(go list ./... | grep -v /cmd/api | grep -v /cmd/web | grep -v /internal/platform/db/sqlc | grep -v /testutil/mocks | grep -v /api)
+            $(go list ./... | grep -v /cmd/api | grep -v /internal/platform/db/sqlc | grep -v /testutil/mocks | grep -v /api)
 
       - name: Upload unit coverage artifact
         uses: actions/upload-artifact@v4
