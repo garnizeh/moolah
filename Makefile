@@ -111,8 +111,10 @@ test-coverage: test-all test-integration
 	@echo "📊 Aggregating coverage reports..."
 	@go install github.com/wadey/gocovmerge@latest
 	@gocovmerge unit.out ui.out integration.out > combined.out
+	@grep -v "_templ.go" combined.out > combined_filtered.out
+	@mv combined_filtered.out combined.out
 	@COVERAGE=$$(go tool cover -func=combined.out | grep total | awk '{print $$3}' | tr -d '%'); \
-	echo "Total combined coverage: $${COVERAGE}%"; \
+	echo "Total combined coverage (excluding templ): $${COVERAGE}%"; \
 	awk "BEGIN { if ($${COVERAGE} < 80) exit 1 }"; \
 	if [ $$? -ne 0 ]; then \
 		echo "❌ ERROR: Combined Coverage $${COVERAGE}% is below the 80% threshold"; \

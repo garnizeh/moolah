@@ -120,6 +120,7 @@ To avoid recurring linting and testing errors found in `make task-check`, always
 - **Subtests & Parallelism:** When using `t.Run`, you MUST call `t.Parallel()` inside the subtest if the parent test calls `t.Parallel()`. All integration tests in `internal/platform/repository` must follow this pattern to satisfy `paralleltest` and `tparallel` linters.
 - **Testify Assertions:** Use `require.GreaterOrEqual(t, actual, expected)` instead of `require.True(t, actual >= expected)` to satisfy `testifylint`.
 - **Mock Return Types:** When returning `nil` for a slice in `gomock`/`testify`, always use an explicit cast like `([]sqlc.AuditLog)(nil)` to avoid type assertion panics.
+- **UI & Templ Logic Isolation:** To ensure high test coverage and maintainability, **NEVER** place complex business or formatting logic inside `.templ` files. Extract all non-trivial logic into pure Go functions in a separate `.go` file within the same package (e.g., `internal/ui/layout/helper.go`). This allows logic to be unit-tested independently without the overhead of component rendering or generated code coverage noise.
 
 ### B. Code Style & Linting
 - **Formatting:** Always ensure files are formatted using `gofumpt` standards (no extra empty lines, consistent indentation).

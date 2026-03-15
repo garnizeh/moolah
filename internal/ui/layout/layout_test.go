@@ -112,4 +112,71 @@ func TestBaseLayout(t *testing.T) {
 		doc := renderToDoc(t, base(props))
 		assert.Equal(t, 1, doc.Find("button[title='Toggle theme']").Length(), "Theme toggle button should be present")
 	})
+
+	t.Run("renders user initials correctly", func(t *testing.T) {
+		t.Parallel()
+		customProps := props
+		customProps.User = &domain.User{Name: "Garnizé", Email: "g@example.com"}
+		doc := renderToDoc(t, base(customProps))
+
+		// Check topbar initial
+		topbarInitial := doc.Find("header .rounded-full").First().Text()
+		assert.Equal(t, "G", strings.TrimSpace(topbarInitial))
+
+		// Check sidebar initial
+		sidebarInitial := doc.Find("aside .rounded-full").First().Text()
+		assert.Equal(t, "G", strings.TrimSpace(sidebarInitial))
+	})
+
+	t.Run("handles nil user and tenant gracefully", func(t *testing.T) {
+		t.Parallel()
+		nilProps := BaseProps{
+			Title:   "Public Page",
+			Content: props.Content,
+		}
+		doc := renderToDoc(t, base(nilProps))
+
+		// Should not find user-specific elements
+		assert.Zero(t, doc.Find("header .rounded-full").Length())
+		assert.Zero(t, doc.Find("aside .p-4.border-t").Length())
+	})
+
+	t.Run("handles empty user name gracefully", func(t *testing.T) {
+		t.Parallel()
+		emptyNameProps := props
+		emptyNameProps.User = &domain.User{Name: "", Email: "empty@example.com"}
+		doc := renderToDoc(t, base(emptyNameProps))
+
+		// Should not render avatar if name is empty
+		assert.Zero(t, doc.Find("header .rounded-full").Length())
+		assert.Zero(t, doc.Find("aside .p-4.border-t").Length())
+	})
+
+	t.Run("renders logout link", func(t *testing.T) {
+		t.Parallel()
+		doc := renderToDoc(t, base(props))
+		logoutLink := doc.Find("a[href='/auth/logout']").First()
+		assert.Positive(t, logoutLink.Length())
+	})
+
+	t.Run("renders all sidebar links including icons", func(t *testing.T) {
+		t.Parallel()
+		adminProps := props
+		adminProps.User = &domain.User{Name: "Admin User", Role: "sysadmin", Email: "admin@example.com"}
+		doc := renderToDoc(t, base(adminProps))
+
+		links := []string{
+			"/dashboard", "/accounts", "/transactions",
+			"/categories", "/master-purchases",
+			"/investments/portfolio", "/investments/positions", "/investments/income",
+			"/admin/tenants", "/admin/users", "/admin/audit-logs",
+		}
+
+		for _, href := range links {
+			link := doc.Find(fmt.Sprintf("a[href='%s']", href))
+			assert.Positive(t, link.Length(), "Link %s should be present", href)
+			// Icons are rendered inside the link, checking for presence of svg
+			assert.Positive(t, link.Find("svg").Length(), "Icon for link %s should be present", href)
+		}
+	})
 }
