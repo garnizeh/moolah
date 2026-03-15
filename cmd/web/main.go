@@ -69,6 +69,7 @@ func run(ctx context.Context, cfg *config.Config, _ *slog.Logger, showConfig boo
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	defer signal.Stop(quit)
 
 	serverErr := make(chan error, 1)
 	go func() {
@@ -87,7 +88,8 @@ func run(ctx context.Context, cfg *config.Config, _ *slog.Logger, showConfig boo
 		slog.InfoContext(ctx, "web server shutting down")
 	}
 
-	shutdownCtx, cancel := context.WithTimeout(ctx, cfg.ShutdownTimeout)
+	shutdownBase := context.WithoutCancel(ctx)
+	shutdownCtx, cancel := context.WithTimeout(shutdownBase, cfg.ShutdownTimeout)
 	defer cancel()
 
 	if err := srv.Shutdown(shutdownCtx); err != nil {
