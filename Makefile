@@ -125,7 +125,7 @@ test-coverage: test-all test-integration
 	@echo "✅ Tests passed with sufficient coverage."
 
 ## smoke-test: Run Phase 1 end-to-end smoke test (docker required)
-smoke-test:
+smoke-test: deps
 	@echo "Running Phase 1 smoke test..."
 	$(GO) test -v -race -count=1 -tags=integration -timeout=300s \
 		-run TestSmoke_Phase1HappyPath \
