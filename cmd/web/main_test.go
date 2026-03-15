@@ -50,7 +50,7 @@ func Test_WebRun(t *testing.T) {
 	baseURL := "http://localhost:" + cfg.WebPort
 	webWaitForPort(t, cfg.WebPort, 5*time.Second)
 
-	t.Run("healthz returns 200", func(t *testing.T) {
+	t.Run("healthz returns 200", func(t *testing.T) { //nolint:paralleltest
 		req, err := http.NewRequestWithContext(ctx, http.MethodGet, baseURL+"/healthz", nil)
 		require.NoError(t, err)
 
@@ -63,7 +63,7 @@ func Test_WebRun(t *testing.T) {
 		assert.Equal(t, "ok", string(body))
 	})
 
-	t.Run("htmx.min.js is served", func(t *testing.T) {
+	t.Run("htmx.min.js is served", func(t *testing.T) { //nolint:paralleltest
 		req, err := http.NewRequestWithContext(ctx, http.MethodGet, baseURL+"/static/js/htmx.min.js", nil)
 		require.NoError(t, err)
 
@@ -74,7 +74,7 @@ func Test_WebRun(t *testing.T) {
 		assert.Contains(t, resp.Header.Get("Content-Type"), "javascript")
 	})
 
-	t.Run("alpine.min.js is served", func(t *testing.T) {
+	t.Run("alpine.min.js is served", func(t *testing.T) { //nolint:paralleltest
 		req, err := http.NewRequestWithContext(ctx, http.MethodGet, baseURL+"/static/js/alpine.min.js", nil)
 		require.NoError(t, err)
 
@@ -85,7 +85,7 @@ func Test_WebRun(t *testing.T) {
 		assert.Contains(t, resp.Header.Get("Content-Type"), "javascript")
 	})
 
-	t.Run("unknown route returns 404", func(t *testing.T) {
+	t.Run("unknown route returns 404", func(t *testing.T) { //nolint:paralleltest
 		req, err := http.NewRequestWithContext(ctx, http.MethodGet, baseURL+"/does-not-exist", nil)
 		require.NoError(t, err)
 

@@ -169,6 +169,7 @@ func run(ctx context.Context, cfg *config.Config, log *slog.Logger, showConfig b
 	go func() {
 		sigint := make(chan os.Signal, 1)
 		signal.Notify(sigint, os.Interrupt, syscall.SIGTERM)
+		defer signal.Stop(sigint)
 		<-sigint
 
 		cancel()
