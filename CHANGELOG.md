@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.16.0](https://github.com/garnizeh/moolah/compare/v1.15.0...v1.16.0) (2026-03-15)
+
+
+### Features
+
+* Toolchain setup ([2226bf9](https://github.com/garnizeh/moolah/commit/2226bf920fca581f02980979b454f406b66663ef))
+
 ## [1.15.0](https://github.com/garnizeh/moolah/compare/v1.14.0...v1.15.0) (2026-03-15)
 
 
