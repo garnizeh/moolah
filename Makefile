@@ -109,7 +109,9 @@ security-check:
 ## test-coverage: Run unit tests and enforce coverage (80% threshold)
 test-coverage: test-all test-integration
 	@echo "📊 Aggregating coverage reports..."
-	@COVERAGE=$$(go tool cover -func=unit.out -func=ui.out -func=integration.out | grep total | awk '{print $$3}' | tr -d '%'); \
+	@go install github.com/wadey/gocovmerge@latest
+	@gocovmerge unit.out ui.out integration.out > combined.out
+	@COVERAGE=$$(go tool cover -func=combined.out | grep total | awk '{print $$3}' | tr -d '%'); \
 	echo "Total combined coverage: $${COVERAGE}%"; \
 	awk "BEGIN { if ($${COVERAGE} < 80) exit 1 }"; \
 	if [ $$? -ne 0 ]; then \
@@ -153,10 +155,10 @@ run-web:
 run-api:
 	$(GO) run $(CMD_DIR)
 
-## test: Run API and business logic unit tests (excludes UI)
+## test: Run API and business logic unit tests (excludes UI and integration-tagged files)
 test:
 	@echo "🧪 Running API unit tests..."
-	@$(GO) test -v -race -tags=integration -count=1 -timeout=300s -coverprofile=unit.out -covermode=atomic $$(go list ./... | grep -v /internal/ui | grep -v /cmd/api | grep -v /internal/platform/db/sqlc | grep -v /testutil/mocks | grep -v /api)
+	@$(GO) test -v -race -count=1 -timeout=300s -coverprofile=unit.out -covermode=atomic $$(go list ./... | grep -v /internal/ui | grep -v /cmd/api | grep -v /internal/platform/db/sqlc | grep -v /testutil/mocks | grep -v /api)
 
 ## test-ui: Run UI/Templ component tests
 test-ui: templ
@@ -176,18 +178,6 @@ test-integration:
 		-coverprofile=integration.out \
 		-covermode=atomic \
 		./internal/platform/repository/...
-
-## test-coverage: Run unit tests and enforce coverage (80% threshold)
-test-coverage: test-all test-integration
-	@echo "📊 Aggregating coverage reports..."
-	@COVERAGE=$$(go tool cover -func=unit.out -func=ui.out -func=integration.out | grep total | awk '{print $$3}' | tr -d '%'); \
-	echo "Total combined coverage: $${COVERAGE}%"; \
-	awk "BEGIN { if ($${COVERAGE} < 80) exit 1 }"; \
-	if [ $$? -ne 0 ]; then \
-		echo "❌ ERROR: Combined Coverage $${COVERAGE}% is below the 80% threshold"; \
-		exit 1; \
-	fi
-	@echo "✅ Tests passed with sufficient coverage."
 
 ## lint: Run golangci-lint
 lint:

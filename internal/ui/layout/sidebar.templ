@@ -90,19 +90,19 @@ templ sidebar(props BaseProps) {
 			</div>
 
 			<!-- Footer footer info -->
-            if props.User != nil && props.Tenant != nil && len(props.User.Name) > 0 {
-			<div class="p-4 border-t border-neutral-100 dark:border-neutral-800">
-				<div class="flex items-center gap-3 px-3 py-2 bg-neutral-100 dark:bg-neutral-800 rounded-lg">
-					<div class="w-8 h-8 rounded-full bg-brand-500 flex items-center justify-center text-white font-bold">
-						{ string(props.User.Name[0]) }
-					</div>
-					<div class="flex-1 min-w-0">
-						<p class="text-xs font-medium text-neutral-900 dark:text-neutral-100 truncate">{ props.User.Name }</p>
-						<small class="text-[10px] text-neutral-500 truncate block">{ props.Tenant.Name }</small>
+			if props.User != nil && props.Tenant != nil && len([]rune(props.User.Name)) > 0 {
+				<div class="p-4 border-t border-neutral-100 dark:border-neutral-800">
+					<div class="flex items-center gap-3 px-3 py-2 bg-neutral-100 dark:bg-neutral-800 rounded-lg">
+						<div class="w-8 h-8 rounded-full bg-brand-500 flex items-center justify-center text-white font-bold">
+							{ string([]rune(props.User.Name)[0]) }
+						</div>
+						<div class="flex-1 min-w-0">
+							<p class="text-xs font-medium text-neutral-900 dark:text-neutral-100 truncate">{ props.User.Name }</p>
+							<small class="text-[10px] text-neutral-500 truncate block">{ props.Tenant.Name }</small>
+						</div>
 					</div>
 				</div>
-			</div>
-            }
+			}
 		</div>
 	</aside>
 }
