@@ -31,12 +31,7 @@ jobs:
           args: --timeout=5m
 
       - name: Check sqlc generation is up to date
-        run: |
-          go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
-          make sqlc-check
-
-      - name: Install templ CLI
-        run: go install github.com/a-h/templ/cmd/templ@${{ env.TEMPL_VERSION }}
+        run: make sqlc-check
 
       - name: Install Tailwind CSS CLI
         run: make install-tailwind
@@ -93,9 +88,6 @@ jobs:
         with:
           go-version-file: 'go.mod'
           cache: true
-
-      - name: Install templ CLI
-        run: go install github.com/a-h/templ/cmd/templ@${{ env.TEMPL_VERSION }}
 
       - name: Run UI tests
         run: make test-ui
@@ -170,9 +162,6 @@ jobs:
         with:
           go-version-file: 'go.mod'
           cache: true
-
-      - name: Install templ CLI
-        run: go install github.com/a-h/templ/cmd/templ@${{ env.TEMPL_VERSION }}
 
       - name: Install Tailwind CSS CLI
         run: make install-tailwind

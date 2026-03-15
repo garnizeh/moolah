@@ -87,6 +87,7 @@ lint-check:
 sqlc-check:
 	@echo "⚙️ Checking sqlc generation..."
 	@if [ -n "$$(ls internal/platform/db/queries/*.sql 2>/dev/null)" ]; then \
+		@go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest; \
 		sqlc generate; \
 		if [ -n "$$(git diff --name-only internal/platform/db/sqlc/)" ]; then \
 			echo "❌ Error: sqlc generated code is out of date. Commit the changes."; \
@@ -127,6 +128,7 @@ smoke-test:
 ## templ: Run templ code generation
 templ:
 	@echo "==> Running templ generate..."
+	@go install github.com/a-h/templ/cmd/templ@latest
 	templ generate ./...
 
 ## templ-check: Verify if templ generation is up to date
