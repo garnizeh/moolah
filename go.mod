@@ -7,6 +7,7 @@ require (
 	github.com/PuerkitoBio/goquery v1.12.0
 	github.com/a-h/templ v0.3.1001
 	github.com/go-playground/validator/v10 v10.30.1
+	github.com/gorilla/websocket v1.5.3
 	github.com/jackc/pgx/v5 v5.8.0
 	github.com/oklog/ulid/v2 v2.1.1
 	github.com/pressly/goose/v3 v3.27.0

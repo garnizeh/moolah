@@ -15,6 +15,7 @@ import (
 	"github.com/garnizeh/moolah/internal/platform/db"
 	"github.com/garnizeh/moolah/internal/platform/mailer"
 	"github.com/garnizeh/moolah/internal/platform/repository"
+	"github.com/garnizeh/moolah/internal/platform/ws"
 	"github.com/garnizeh/moolah/internal/service"
 	uimiddleware "github.com/garnizeh/moolah/internal/ui/middleware"
 	"github.com/garnizeh/moolah/internal/ui/pages/auth"
@@ -95,7 +96,11 @@ func run(ctx context.Context, cfg *config.Config, _ *slog.Logger, showConfig boo
 	// Wire Handlers
 	authHandler := auth.NewAuthHandler(authSvc, cfg.IsDevelopment())
 
-	mux := buildMux(cfg, authHandler, tokenParser)
+	// Initialize WebSocket Hub
+	hub := ws.NewHub(10) // Max 10 connections per tenant
+	go hub.Run(ctx)
+
+	mux := buildMux(cfg, authHandler, tokenParser, hub)
 
 	srv := &http.Server{
 		Addr:         ":" + cfg.WebPort,
@@ -141,7 +146,7 @@ func run(ctx context.Context, cfg *config.Config, _ *slog.Logger, showConfig boo
 // buildMux constructs and returns the HTTP mux for the web UI server.
 // Routes are registered in this function; subsequent tasks (4.3–4.9) will
 // add page handlers here.
-func buildMux(_ *config.Config, authHandler *auth.AuthHandler, tokenParser func(string) (*paseto.Claims, error)) *http.ServeMux {
+func buildMux(_ *config.Config, authHandler *auth.AuthHandler, tokenParser func(string) (*paseto.Claims, error), hub *ws.Hub) *http.ServeMux {
 	mux := http.NewServeMux()
 
 	// Static assets — served directly from the embedded FS.
@@ -169,6 +174,9 @@ func buildMux(_ *config.Config, authHandler *auth.AuthHandler, tokenParser func(
 	})))
 
 	mux.Handle("POST /web/auth/logout", sessionAuth(http.HandlerFunc(authHandler.Logout)))
+
+	// WebSocket endpoint
+	mux.Handle("GET /ws", sessionAuth(ws.UpgradeHandler(hub)))
 
 	// Root redirect
 	mux.Handle("GET /", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

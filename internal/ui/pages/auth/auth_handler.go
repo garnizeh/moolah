@@ -11,6 +11,8 @@ import (
 	"github.com/garnizeh/moolah/internal/ui/middleware"
 )
 
+const maxFormBodyBytes int64 = 1 << 20 // 1MB
+
 type AuthHandler struct {
 	authService domain.AuthService
 	isDev       bool
@@ -36,14 +38,7 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 // RequestOTP handles the form submission to request a new OTP.
 func (h *AuthHandler) RequestOTP(w http.ResponseWriter, r *http.Request) {
-	r.Body = http.MaxBytesReader(w, r.Body, 1<<20) // 1MB limit for form submissions
-	if err := r.ParseForm(); err != nil {
-		var maxBytesErr *http.MaxBytesError
-		if errors.As(err, &maxBytesErr) {
-			http.Error(w, "request body too large", http.StatusRequestEntityTooLarge)
-			return
-		}
-		http.Error(w, "invalid form payload", http.StatusBadRequest)
+	if !parseFormWithLimit(w, r, maxFormBodyBytes) {
 		return
 	}
 
@@ -69,14 +64,7 @@ func (h *AuthHandler) RequestOTP(w http.ResponseWriter, r *http.Request) {
 
 // VerifyOTP handles the form submission to verify the OTP and sign in.
 func (h *AuthHandler) VerifyOTP(w http.ResponseWriter, r *http.Request) {
-	r.Body = http.MaxBytesReader(w, r.Body, 1<<20) // 1MB limit for form submissions
-	if err := r.ParseForm(); err != nil {
-		var maxBytesErr *http.MaxBytesError
-		if errors.As(err, &maxBytesErr) {
-			http.Error(w, "request body too large", http.StatusRequestEntityTooLarge)
-			return
-		}
-		http.Error(w, "invalid form payload", http.StatusBadRequest)
+	if !parseFormWithLimit(w, r, maxFormBodyBytes) {
 		return
 	}
 
@@ -143,4 +131,18 @@ func maskEmail(email string) string {
 		return user + "*****@" + domain
 	}
 	return user[:2] + "*****@" + domain
+}
+
+func parseFormWithLimit(w http.ResponseWriter, r *http.Request, limit int64) bool {
+	r.Body = http.MaxBytesReader(w, r.Body, limit)
+	if err := r.ParseForm(); err != nil {
+		var maxBytesErr *http.MaxBytesError
+		if errors.As(err, &maxBytesErr) {
+			http.Error(w, "request body too large", http.StatusRequestEntityTooLarge)
+		} else {
+			http.Error(w, "invalid form payload", http.StatusBadRequest)
+		}
+		return false
+	}
+	return true
 }
