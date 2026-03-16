@@ -14,11 +14,13 @@ import (
 	"github.com/garnizeh/moolah/internal/config"
 	"github.com/garnizeh/moolah/internal/platform/db"
 	"github.com/garnizeh/moolah/internal/platform/mailer"
+	"github.com/garnizeh/moolah/internal/platform/middleware"
 	"github.com/garnizeh/moolah/internal/platform/repository"
 	"github.com/garnizeh/moolah/internal/platform/ws"
 	"github.com/garnizeh/moolah/internal/service"
 	uimiddleware "github.com/garnizeh/moolah/internal/ui/middleware"
 	"github.com/garnizeh/moolah/internal/ui/pages/auth"
+	"github.com/garnizeh/moolah/internal/ui/pages/errors"
 	"github.com/garnizeh/moolah/pkg/logger"
 	"github.com/garnizeh/moolah/pkg/paseto"
 	"github.com/garnizeh/moolah/web"
@@ -146,7 +148,7 @@ func run(ctx context.Context, cfg *config.Config, _ *slog.Logger, showConfig boo
 // buildMux constructs and returns the HTTP mux for the web UI server.
 // Routes are registered in this function; subsequent tasks (4.3–4.9) will
 // add page handlers here.
-func buildMux(_ *config.Config, authHandler *auth.AuthHandler, tokenParser func(string) (*paseto.Claims, error), hub *ws.Hub) *http.ServeMux {
+func buildMux(_ *config.Config, authHandler *auth.AuthHandler, tokenParser func(string) (*paseto.Claims, error), hub *ws.Hub) http.Handler {
 	mux := http.NewServeMux()
 
 	// Static assets — served directly from the embedded FS.
@@ -184,10 +186,10 @@ func buildMux(_ *config.Config, authHandler *auth.AuthHandler, tokenParser func(
 			http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
 			return
 		}
-		http.NotFound(w, r)
+		errors.RenderError(w, r, http.StatusNotFound, errors.BasePropsFromRequest(r))
 	}))
 
-	return mux
+	return middleware.Recovery(mux)
 }
 
 func handleHealthz(w http.ResponseWriter, _ *http.Request) {

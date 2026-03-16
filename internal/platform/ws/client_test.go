@@ -18,8 +18,7 @@ func TestClient_Lifecycle(t *testing.T) {
 	t.Parallel()
 
 	hub := NewHub(10)
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	ctx := t.Context()
 	go hub.Run(ctx)
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -32,12 +31,15 @@ func TestClient_Lifecycle(t *testing.T) {
 		ctx := context.WithValue(r.Context(), middleware.TenantIDKey, tenantID)
 		UpgradeHandler(hub)(w, r.WithContext(ctx))
 	}))
-	defer server.Close()
+	t.Cleanup(func() {
+		server.Close()
+	})
 
 	wsURL := "ws" + strings.TrimPrefix(server.URL, "http")
 	dialer := websocket.Dialer{}
 
 	t.Run("successful connection and message receipt", func(t *testing.T) {
+		t.Parallel()
 		conn, resp, err := dialer.Dial(wsURL+"?tenant=tenant-1", nil)
 		require.NoError(t, err)
 		defer func() {
@@ -59,15 +61,19 @@ func TestClient_Lifecycle(t *testing.T) {
 	})
 
 	t.Run("unauthorized upgrade", func(t *testing.T) {
+		t.Parallel()
 		_, resp, err := dialer.Dial(wsURL, nil) // No tenant query param
 		require.Error(t, err)
-		assert.Equal(t, http.StatusUnauthorized, resp.StatusCode)
-		if resp != nil && resp.Body != nil {
-			require.NoError(t, resp.Body.Close())
+		if resp != nil {
+			assert.Equal(t, http.StatusUnauthorized, resp.StatusCode)
+			if resp.Body != nil {
+				require.NoError(t, resp.Body.Close())
+			}
 		}
 	})
 
 	t.Run("ping pong heartbeat", func(t *testing.T) {
+		t.Parallel()
 		conn, resp, err := dialer.Dial(wsURL+"?tenant=tenant-ping", nil)
 		require.NoError(t, err)
 		defer func() {
@@ -85,8 +91,7 @@ func TestClient_ReadPumpExit(t *testing.T) {
 	t.Parallel()
 
 	hub := NewHub(10)
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	ctx := t.Context()
 	go hub.Run(ctx)
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

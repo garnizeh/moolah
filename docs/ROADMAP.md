@@ -131,8 +131,8 @@
 | 4.5 | Component library — buttons, inputs, selects, modals, toasts, tables, cards, badges, skeleton loaders | ✅ `done` | 2026-03-15 | Templ components; Alpine.js for interactive state |
 | 4.6 | Authentication UI — OTP request page + OTP verify page | ✅ `done` | 2026-03-15 | HTMX form submission; inline validation errors; countdown timer |
 | 4.7 | WebSocket hub — server-side broadcast infrastructure (`internal/platform/ws/`) | ✅ `done` | 2026-03-15 | Per-tenant rooms; `gorilla/websocket` or stdlib; reconnect logic in Alpine |
-| 4.8 | Error pages — 404, 403, 500 with friendly UI | 🔵 `backlog` | 2026-03-15 | |
-| 4.9 | Smoke / E2E test harness for UI — `httptest` + response body assertions (no Playwright for MVP) | 🔵 `backlog` | 2026-03-15 | Validates rendered HTML structure |
+| 4.8 | Error pages — 404, 403, 500 with friendly UI | ✅ `done` | 2026-03-15 | HTMX-aware; recovery middleware integrated |
+| 4.9 | Smoke / E2E test harness for UI — `httptest` + response body assertions (no Playwright for MVP) | 🟡 `in-progress` | 2026-03-15 | Validates rendered HTML structure |
 
 ---
 
