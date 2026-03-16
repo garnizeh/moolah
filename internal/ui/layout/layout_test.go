@@ -58,7 +58,7 @@ func TestBaseLayout(t *testing.T) {
 
 	t.Run("renders basic structure", func(t *testing.T) {
 		t.Parallel()
-		doc := renderToDoc(t, base(props))
+		doc := renderToDoc(t, Base(props))
 
 		// Check title
 		assert.Equal(t, "Test Dashboard — Moolah", doc.Find("title").Text())
@@ -77,19 +77,19 @@ func TestBaseLayout(t *testing.T) {
 	t.Run("renders admin links only for sysadmin", func(t *testing.T) {
 		t.Parallel()
 		// Non-admin props
-		docUser := renderToDoc(t, base(props))
+		docUser := renderToDoc(t, Base(props))
 		assert.Zero(t, docUser.Find("a[href='/admin/tenants']").Length())
 
 		// Admin props
 		adminProps := props
 		adminProps.User = &domain.User{Name: "Admin User", Role: "sysadmin", Email: "admin@example.com"}
-		docAdmin := renderToDoc(t, base(adminProps))
+		docAdmin := renderToDoc(t, Base(adminProps))
 		assert.Positive(t, docAdmin.Find("a[href='/admin/tenants']").Length())
 	})
 
 	t.Run("includes required scripts", func(t *testing.T) {
 		t.Parallel()
-		doc := renderToDoc(t, base(props))
+		doc := renderToDoc(t, Base(props))
 
 		scripts := doc.Find("script")
 		var alpine, htmx bool
@@ -109,7 +109,7 @@ func TestBaseLayout(t *testing.T) {
 
 	t.Run("includes theme toggle", func(t *testing.T) {
 		t.Parallel()
-		doc := renderToDoc(t, base(props))
+		doc := renderToDoc(t, Base(props))
 		assert.Equal(t, 1, doc.Find("button[title='Toggle theme']").Length(), "Theme toggle button should be present")
 	})
 
@@ -117,7 +117,7 @@ func TestBaseLayout(t *testing.T) {
 		t.Parallel()
 		customProps := props
 		customProps.User = &domain.User{Name: "Garnizé", Email: "g@example.com"}
-		doc := renderToDoc(t, base(customProps))
+		doc := renderToDoc(t, Base(customProps))
 
 		// Check topbar initial
 		topbarInitial := doc.Find("header .rounded-full").First().Text()
@@ -134,7 +134,7 @@ func TestBaseLayout(t *testing.T) {
 			Title:   "Public Page",
 			Content: props.Content,
 		}
-		doc := renderToDoc(t, base(nilProps))
+		doc := renderToDoc(t, Base(nilProps))
 
 		// Should not find user-specific elements
 		assert.Zero(t, doc.Find("header .rounded-full").Length())
@@ -145,7 +145,7 @@ func TestBaseLayout(t *testing.T) {
 		t.Parallel()
 		emptyNameProps := props
 		emptyNameProps.User = &domain.User{Name: "", Email: "empty@example.com"}
-		doc := renderToDoc(t, base(emptyNameProps))
+		doc := renderToDoc(t, Base(emptyNameProps))
 
 		// Should not render avatar if name is empty
 		assert.Zero(t, doc.Find("header .rounded-full").Length())
@@ -154,7 +154,7 @@ func TestBaseLayout(t *testing.T) {
 
 	t.Run("renders logout link", func(t *testing.T) {
 		t.Parallel()
-		doc := renderToDoc(t, base(props))
+		doc := renderToDoc(t, Base(props))
 		logoutForm := doc.Find("form[action='/auth/logout']").First()
 		assert.Positive(t, logoutForm.Length())
 		assert.Equal(t, "POST", strings.ToUpper(logoutForm.AttrOr("method", "")))
@@ -164,7 +164,7 @@ func TestBaseLayout(t *testing.T) {
 		t.Parallel()
 		adminProps := props
 		adminProps.User = &domain.User{Name: "Admin User", Role: "sysadmin", Email: "admin@example.com"}
-		doc := renderToDoc(t, base(adminProps))
+		doc := renderToDoc(t, Base(adminProps))
 
 		links := []string{
 			"/dashboard", "/accounts", "/transactions",

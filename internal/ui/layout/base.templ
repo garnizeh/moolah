@@ -12,7 +12,7 @@ type BaseProps struct {
 	Content     templ.Component
 }
 
-templ base(props BaseProps) {
+templ Base(props BaseProps) {
 	<!DOCTYPE html>
 	<html lang="en" x-data x-bind:class="{ dark: $store.theme.dark }">
 		<head>

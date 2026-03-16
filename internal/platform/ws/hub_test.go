@@ -18,8 +18,7 @@ func TestHub_Broadcast(t *testing.T) {
 	t.Parallel()
 
 	hub := NewHub(10)
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	ctx := t.Context()
 	go hub.Run(ctx)
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -67,8 +66,7 @@ func TestHub_TenantIsolation(t *testing.T) {
 	t.Parallel()
 
 	hub := NewHub(10)
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	ctx := t.Context()
 	go hub.Run(ctx)
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -120,8 +118,7 @@ func TestHub_MaxConnections(t *testing.T) {
 	t.Parallel()
 
 	hub := NewHub(1)
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	ctx := t.Context()
 	go hub.Run(ctx)
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -165,7 +162,7 @@ func TestHub_PublishFull(t *testing.T) {
 	hub := NewHub(1)
 	// Do NOT start go hub.Run(ctx)
 
-	for i := 0; i < 256; i++ {
+	for range 256 {
 		err := hub.Publish(Event{TenantID: "t", Payload: "p"})
 		require.NoError(t, err)
 	}
