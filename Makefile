@@ -1,10 +1,11 @@
-# Moolah Makefile
-# Consolidates CI steps for local execution
-
-.PHONY: all help deps lint security test build check-ci format clean sqlc
-
+# Tool versions
+GOFUMPT_VERSION=v0.7.0
+FIELDALIGN_VERSION=v0.30.0
+GOSEC_VERSION=v2.22.0
+SQLC_VERSION=v1.28.0
 
 all: help
+
 
 help:
 	@echo "Moolah Build System"
@@ -22,10 +23,11 @@ help:
 
 deps:
 	@echo "Installing dependencies..."
-	go install mvdan.cc/gofumpt@latest
-	go install golang.org/x/tools/go/analysis/passes/fieldalignment/cmd/fieldalignment@latest
-	go install github.com/securego/gosec/v2/cmd/gosec@latest
-	go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
+	go install mvdan.cc/gofumpt@$(GOFUMPT_VERSION)
+	go install golang.org/x/tools/go/analysis/passes/fieldalignment/cmd/fieldalignment@$(FIELDALIGN_VERSION)
+	go install github.com/securego/gosec/v2/cmd/gosec@$(GOSEC_VERSION)
+	go install github.com/sqlc-dev/sqlc/cmd/sqlc@$(SQLC_VERSION)
+
 
 lint:
 	@echo "Running linting checks..."
@@ -49,7 +51,8 @@ sqlc:
 	@echo "Generating SQL code..."
 	sqlc generate
 
-check-ci: format lint security test build
+check-ci: deps format lint security test build
+
 	@echo "CI check path passed successfully!"
 
 format:
