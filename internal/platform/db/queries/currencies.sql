@@ -1,9 +1,10 @@
 -- name: CreateCurrency :one
 INSERT INTO currencies (
-    id, code, symbol, fallback_decimals, config
+    id, code, symbol, config, fallback_decimals
 ) VALUES (
     $1, $2, $3, $4, $5
 ) RETURNING *;
+
 
 -- name: GetCurrency :one
 SELECT * FROM currencies
@@ -18,8 +19,9 @@ UPDATE currencies
 SET 
     code = $2,
     symbol = $3,
-    fallback_decimals = $4,
-    config = $5,
+    config = $4,
+    fallback_decimals = $5,
     updated_at = CURRENT_TIMESTAMP
 WHERE id = $1
 RETURNING *;
+

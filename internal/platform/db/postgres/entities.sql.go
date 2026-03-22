@@ -14,7 +14,7 @@ INSERT INTO entities (
     id, name, role, metadata
 ) VALUES (
     $1, $2, $3, $4
-) RETURNING id, name, role, metadata, created_at, updated_at, deleted_at
+) RETURNING created_at, updated_at, deleted_at, id, name, role, metadata
 `
 
 type CreateEntityParams struct {
@@ -33,13 +33,13 @@ func (q *Queries) CreateEntity(ctx context.Context, arg CreateEntityParams) (Ent
 	)
 	var i Entity
 	err := row.Scan(
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
 		&i.ID,
 		&i.Name,
 		&i.Role,
 		&i.Metadata,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-		&i.DeletedAt,
 	)
 	return i, err
 }
@@ -56,7 +56,7 @@ func (q *Queries) DeleteEntity(ctx context.Context, id string) error {
 }
 
 const getEntity = `-- name: GetEntity :one
-SELECT id, name, role, metadata, created_at, updated_at, deleted_at FROM entities
+SELECT created_at, updated_at, deleted_at, id, name, role, metadata FROM entities
 WHERE id = $1 AND deleted_at IS NULL LIMIT 1
 `
 
@@ -64,19 +64,19 @@ func (q *Queries) GetEntity(ctx context.Context, id string) (Entity, error) {
 	row := q.db.QueryRow(ctx, getEntity, id)
 	var i Entity
 	err := row.Scan(
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
 		&i.ID,
 		&i.Name,
 		&i.Role,
 		&i.Metadata,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-		&i.DeletedAt,
 	)
 	return i, err
 }
 
 const listEntities = `-- name: ListEntities :many
-SELECT id, name, role, metadata, created_at, updated_at, deleted_at FROM entities
+SELECT created_at, updated_at, deleted_at, id, name, role, metadata FROM entities
 WHERE deleted_at IS NULL
 ORDER BY name
 `
@@ -91,13 +91,13 @@ func (q *Queries) ListEntities(ctx context.Context) ([]Entity, error) {
 	for rows.Next() {
 		var i Entity
 		if err := rows.Scan(
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
 			&i.ID,
 			&i.Name,
 			&i.Role,
 			&i.Metadata,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-			&i.DeletedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -117,7 +117,7 @@ SET
     metadata = $4,
     updated_at = CURRENT_TIMESTAMP
 WHERE id = $1 AND deleted_at IS NULL
-RETURNING id, name, role, metadata, created_at, updated_at, deleted_at
+RETURNING created_at, updated_at, deleted_at, id, name, role, metadata
 `
 
 type UpdateEntityParams struct {
@@ -136,13 +136,13 @@ func (q *Queries) UpdateEntity(ctx context.Context, arg UpdateEntityParams) (Ent
 	)
 	var i Entity
 	err := row.Scan(
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
 		&i.ID,
 		&i.Name,
 		&i.Role,
 		&i.Metadata,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-		&i.DeletedAt,
 	)
 	return i, err
 }

@@ -11,24 +11,26 @@ help:
 	@echo "Usage: make [target]"
 	@echo ""
 	@echo "Targets:"
-	@echo "  deps        Install development tools (golangci-lint, sqlc, gofumpt)"
-	@echo "  lint        Run linting checks via golangci-lint"
+	@echo "  deps        Install CI tools (gofumpt, fieldalignment, gosec, sqlc)"
+	@echo "  lint        Run linting checks (gofumpt, fieldalignment)"
 	@echo "  security    Run security scans (gosec)"
 	@echo "  test        Run unit tests with race detection and coverage"
 	@echo "  build       Build the API binary"
 	@echo "  sqlc        Generate SQL code using sqlc"
-	@echo "  check-ci    Run all CI steps (format, lint, security, test, build)"
+	@echo "  check-ci    Run all CI steps in order (format, lint, security, test, build)"
 	@echo "  clean       Remove build artifacts"
 
 deps:
 	@echo "Installing dependencies..."
-	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
-	go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
 	go install mvdan.cc/gofumpt@latest
+	go install golang.org/x/tools/go/analysis/passes/fieldalignment/cmd/fieldalignment@latest
+	go install github.com/securego/gosec/v2/cmd/gosec@latest
+	go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
 
 lint:
 	@echo "Running linting checks..."
-	golangci-lint run
+	gofumpt -d . | tee /dev/stderr | (! grep -q .)
+	fieldalignment ./...
 
 security:
 	@echo "Running security scans..."

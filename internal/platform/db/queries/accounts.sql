@@ -1,9 +1,10 @@
 -- name: CreateAccount :one
 INSERT INTO accounts (
-    id, entity_id, currency_id, name, type, balance_cents, metadata
+    id, entity_id, currency_id, name, type, metadata, balance_cents
 ) VALUES (
     $1, $2, $3, $4, $5, $6, $7
 ) RETURNING *;
+
 
 -- name: GetAccount :one
 SELECT * FROM accounts

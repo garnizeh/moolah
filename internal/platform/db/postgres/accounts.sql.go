@@ -11,10 +11,10 @@ import (
 
 const createAccount = `-- name: CreateAccount :one
 INSERT INTO accounts (
-    id, entity_id, currency_id, name, type, balance_cents, metadata
+    id, entity_id, currency_id, name, type, metadata, balance_cents
 ) VALUES (
     $1, $2, $3, $4, $5, $6, $7
-) RETURNING id, entity_id, currency_id, name, type, balance_cents, metadata, created_at, updated_at, deleted_at
+) RETURNING created_at, updated_at, deleted_at, id, entity_id, currency_id, name, type, metadata, balance_cents
 `
 
 type CreateAccountParams struct {
@@ -23,8 +23,8 @@ type CreateAccountParams struct {
 	CurrencyID   string `json:"currency_id"`
 	Name         string `json:"name"`
 	Type         string `json:"type"`
-	BalanceCents int64  `json:"balance_cents"`
 	Metadata     []byte `json:"metadata"`
+	BalanceCents int64  `json:"balance_cents"`
 }
 
 func (q *Queries) CreateAccount(ctx context.Context, arg CreateAccountParams) (Account, error) {
@@ -34,21 +34,21 @@ func (q *Queries) CreateAccount(ctx context.Context, arg CreateAccountParams) (A
 		arg.CurrencyID,
 		arg.Name,
 		arg.Type,
-		arg.BalanceCents,
 		arg.Metadata,
+		arg.BalanceCents,
 	)
 	var i Account
 	err := row.Scan(
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
 		&i.ID,
 		&i.EntityID,
 		&i.CurrencyID,
 		&i.Name,
 		&i.Type,
-		&i.BalanceCents,
 		&i.Metadata,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-		&i.DeletedAt,
+		&i.BalanceCents,
 	)
 	return i, err
 }
@@ -65,7 +65,7 @@ func (q *Queries) DeleteAccount(ctx context.Context, id string) error {
 }
 
 const getAccount = `-- name: GetAccount :one
-SELECT id, entity_id, currency_id, name, type, balance_cents, metadata, created_at, updated_at, deleted_at FROM accounts
+SELECT created_at, updated_at, deleted_at, id, entity_id, currency_id, name, type, metadata, balance_cents FROM accounts
 WHERE id = $1 AND deleted_at IS NULL LIMIT 1
 `
 
@@ -73,22 +73,22 @@ func (q *Queries) GetAccount(ctx context.Context, id string) (Account, error) {
 	row := q.db.QueryRow(ctx, getAccount, id)
 	var i Account
 	err := row.Scan(
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
 		&i.ID,
 		&i.EntityID,
 		&i.CurrencyID,
 		&i.Name,
 		&i.Type,
-		&i.BalanceCents,
 		&i.Metadata,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-		&i.DeletedAt,
+		&i.BalanceCents,
 	)
 	return i, err
 }
 
 const listAccountsByEntity = `-- name: ListAccountsByEntity :many
-SELECT id, entity_id, currency_id, name, type, balance_cents, metadata, created_at, updated_at, deleted_at FROM accounts
+SELECT created_at, updated_at, deleted_at, id, entity_id, currency_id, name, type, metadata, balance_cents FROM accounts
 WHERE entity_id = $1 AND deleted_at IS NULL
 ORDER BY name
 `
@@ -103,16 +103,16 @@ func (q *Queries) ListAccountsByEntity(ctx context.Context, entityID string) ([]
 	for rows.Next() {
 		var i Account
 		if err := rows.Scan(
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
 			&i.ID,
 			&i.EntityID,
 			&i.CurrencyID,
 			&i.Name,
 			&i.Type,
-			&i.BalanceCents,
 			&i.Metadata,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-			&i.DeletedAt,
+			&i.BalanceCents,
 		); err != nil {
 			return nil, err
 		}
@@ -130,7 +130,7 @@ SET
     balance_cents = $2,
     updated_at = CURRENT_TIMESTAMP
 WHERE id = $1 AND deleted_at IS NULL
-RETURNING id, entity_id, currency_id, name, type, balance_cents, metadata, created_at, updated_at, deleted_at
+RETURNING created_at, updated_at, deleted_at, id, entity_id, currency_id, name, type, metadata, balance_cents
 `
 
 type UpdateAccountBalanceParams struct {
@@ -142,16 +142,16 @@ func (q *Queries) UpdateAccountBalance(ctx context.Context, arg UpdateAccountBal
 	row := q.db.QueryRow(ctx, updateAccountBalance, arg.ID, arg.BalanceCents)
 	var i Account
 	err := row.Scan(
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
 		&i.ID,
 		&i.EntityID,
 		&i.CurrencyID,
 		&i.Name,
 		&i.Type,
-		&i.BalanceCents,
 		&i.Metadata,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-		&i.DeletedAt,
+		&i.BalanceCents,
 	)
 	return i, err
 }

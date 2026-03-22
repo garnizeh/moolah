@@ -11,18 +11,18 @@ import (
 
 const createCurrency = `-- name: CreateCurrency :one
 INSERT INTO currencies (
-    id, code, symbol, fallback_decimals, config
+    id, code, symbol, config, fallback_decimals
 ) VALUES (
     $1, $2, $3, $4, $5
-) RETURNING id, code, symbol, fallback_decimals, config, created_at, updated_at
+) RETURNING created_at, updated_at, id, code, symbol, config, fallback_decimals
 `
 
 type CreateCurrencyParams struct {
 	ID               string `json:"id"`
 	Code             string `json:"code"`
 	Symbol           string `json:"symbol"`
-	FallbackDecimals int32  `json:"fallback_decimals"`
 	Config           []byte `json:"config"`
+	FallbackDecimals int32  `json:"fallback_decimals"`
 }
 
 func (q *Queries) CreateCurrency(ctx context.Context, arg CreateCurrencyParams) (Currency, error) {
@@ -30,24 +30,24 @@ func (q *Queries) CreateCurrency(ctx context.Context, arg CreateCurrencyParams) 
 		arg.ID,
 		arg.Code,
 		arg.Symbol,
-		arg.FallbackDecimals,
 		arg.Config,
+		arg.FallbackDecimals,
 	)
 	var i Currency
 	err := row.Scan(
+		&i.CreatedAt,
+		&i.UpdatedAt,
 		&i.ID,
 		&i.Code,
 		&i.Symbol,
-		&i.FallbackDecimals,
 		&i.Config,
-		&i.CreatedAt,
-		&i.UpdatedAt,
+		&i.FallbackDecimals,
 	)
 	return i, err
 }
 
 const getCurrency = `-- name: GetCurrency :one
-SELECT id, code, symbol, fallback_decimals, config, created_at, updated_at FROM currencies
+SELECT created_at, updated_at, id, code, symbol, config, fallback_decimals FROM currencies
 WHERE id = $1 LIMIT 1
 `
 
@@ -55,19 +55,19 @@ func (q *Queries) GetCurrency(ctx context.Context, id string) (Currency, error) 
 	row := q.db.QueryRow(ctx, getCurrency, id)
 	var i Currency
 	err := row.Scan(
+		&i.CreatedAt,
+		&i.UpdatedAt,
 		&i.ID,
 		&i.Code,
 		&i.Symbol,
-		&i.FallbackDecimals,
 		&i.Config,
-		&i.CreatedAt,
-		&i.UpdatedAt,
+		&i.FallbackDecimals,
 	)
 	return i, err
 }
 
 const listCurrencies = `-- name: ListCurrencies :many
-SELECT id, code, symbol, fallback_decimals, config, created_at, updated_at FROM currencies
+SELECT created_at, updated_at, id, code, symbol, config, fallback_decimals FROM currencies
 ORDER BY code
 `
 
@@ -81,13 +81,13 @@ func (q *Queries) ListCurrencies(ctx context.Context) ([]Currency, error) {
 	for rows.Next() {
 		var i Currency
 		if err := rows.Scan(
+			&i.CreatedAt,
+			&i.UpdatedAt,
 			&i.ID,
 			&i.Code,
 			&i.Symbol,
-			&i.FallbackDecimals,
 			&i.Config,
-			&i.CreatedAt,
-			&i.UpdatedAt,
+			&i.FallbackDecimals,
 		); err != nil {
 			return nil, err
 		}
@@ -104,19 +104,19 @@ UPDATE currencies
 SET 
     code = $2,
     symbol = $3,
-    fallback_decimals = $4,
-    config = $5,
+    config = $4,
+    fallback_decimals = $5,
     updated_at = CURRENT_TIMESTAMP
 WHERE id = $1
-RETURNING id, code, symbol, fallback_decimals, config, created_at, updated_at
+RETURNING created_at, updated_at, id, code, symbol, config, fallback_decimals
 `
 
 type UpdateCurrencyParams struct {
 	ID               string `json:"id"`
 	Code             string `json:"code"`
 	Symbol           string `json:"symbol"`
-	FallbackDecimals int32  `json:"fallback_decimals"`
 	Config           []byte `json:"config"`
+	FallbackDecimals int32  `json:"fallback_decimals"`
 }
 
 func (q *Queries) UpdateCurrency(ctx context.Context, arg UpdateCurrencyParams) (Currency, error) {
@@ -124,18 +124,18 @@ func (q *Queries) UpdateCurrency(ctx context.Context, arg UpdateCurrencyParams) 
 		arg.ID,
 		arg.Code,
 		arg.Symbol,
-		arg.FallbackDecimals,
 		arg.Config,
+		arg.FallbackDecimals,
 	)
 	var i Currency
 	err := row.Scan(
+		&i.CreatedAt,
+		&i.UpdatedAt,
 		&i.ID,
 		&i.Code,
 		&i.Symbol,
-		&i.FallbackDecimals,
 		&i.Config,
-		&i.CreatedAt,
-		&i.UpdatedAt,
+		&i.FallbackDecimals,
 	)
 	return i, err
 }
