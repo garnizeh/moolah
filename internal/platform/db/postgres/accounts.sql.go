@@ -23,8 +23,8 @@ type CreateAccountParams struct {
 	CurrencyID   string `json:"currency_id"`
 	Name         string `json:"name"`
 	Type         string `json:"type"`
-	Metadata     []byte `json:"metadata"`
 	BalanceCents int64  `json:"balance_cents"`
+	Metadata     []byte `json:"metadata"`
 }
 
 func (q *Queries) CreateAccount(ctx context.Context, arg CreateAccountParams) (Account, error) {
@@ -56,7 +56,7 @@ func (q *Queries) CreateAccount(ctx context.Context, arg CreateAccountParams) (A
 const deleteAccount = `-- name: DeleteAccount :exec
 UPDATE accounts
 SET deleted_at = CURRENT_TIMESTAMP
-WHERE id = $1
+WHERE id = $1 AND deleted_at IS NULL
 `
 
 func (q *Queries) DeleteAccount(ctx context.Context, id string) error {

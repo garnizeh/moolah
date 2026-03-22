@@ -21,8 +21,8 @@ type CreateCurrencyParams struct {
 	ID               string `json:"id"`
 	Code             string `json:"code"`
 	Symbol           string `json:"symbol"`
-	Config           []byte `json:"config"`
 	FallbackDecimals int32  `json:"fallback_decimals"`
+	Config           []byte `json:"config"`
 }
 
 func (q *Queries) CreateCurrency(ctx context.Context, arg CreateCurrencyParams) (Currency, error) {
@@ -115,8 +115,8 @@ type UpdateCurrencyParams struct {
 	ID               string `json:"id"`
 	Code             string `json:"code"`
 	Symbol           string `json:"symbol"`
-	Config           []byte `json:"config"`
 	FallbackDecimals int32  `json:"fallback_decimals"`
+	Config           []byte `json:"config"`
 }
 
 func (q *Queries) UpdateCurrency(ctx context.Context, arg UpdateCurrencyParams) (Currency, error) {

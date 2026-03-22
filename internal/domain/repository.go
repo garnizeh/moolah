@@ -24,6 +24,7 @@ type AccountRepository interface {
 	CreateAccount(ctx context.Context, a *Account) error
 	GetAccountByID(ctx context.Context, id string) (*Account, error)
 	ListAccountsByEntity(ctx context.Context, entityID string) ([]*Account, error)
-	UpdateAccountBalance(ctx context.Context, id string, balanceCents int64) error
+	UpdateAccountBalance(ctx context.Context, id string, balanceCents int64) (*Account, error)
+
 	DeleteAccount(ctx context.Context, id string) error
 }

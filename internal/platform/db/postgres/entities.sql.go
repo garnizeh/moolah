@@ -47,7 +47,7 @@ func (q *Queries) CreateEntity(ctx context.Context, arg CreateEntityParams) (Ent
 const deleteEntity = `-- name: DeleteEntity :exec
 UPDATE entities
 SET deleted_at = CURRENT_TIMESTAMP
-WHERE id = $1
+WHERE id = $1 AND deleted_at IS NULL
 `
 
 func (q *Queries) DeleteEntity(ctx context.Context, id string) error {

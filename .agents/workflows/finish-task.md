@@ -7,7 +7,6 @@ This workflow automates the finalization of a task, ensuring branches are create
 ### Workflow Steps
 
 1. **Verification**:
-   // turbo
    - Run `make check-ci` to ensure the project meets all standards.
    - If errors occur, resolve them and re-run `make check-ci`.
    - **Crucial**: Do NOT proceed until `make check-ci` passes with no errors.
@@ -32,4 +31,3 @@ This workflow automates the finalization of a task, ensuring branches are create
    - Note: Do NOT push unless explicitly asked by the USER.
 
 7. **Summary**: Provide the USER with a summary of the files updated and the branch name.
-

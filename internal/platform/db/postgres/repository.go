@@ -165,13 +165,16 @@ func (r *Repository) ListAccountsByEntity(ctx context.Context, entityID string) 
 	return res, nil
 }
 
-func (r *Repository) UpdateAccountBalance(ctx context.Context, id string, balanceCents int64) error {
+func (r *Repository) UpdateAccountBalance(ctx context.Context, id string, balanceCents int64) (*domain.Account, error) {
 	arg := UpdateAccountBalanceParams{
 		ID:           id,
 		BalanceCents: balanceCents,
 	}
-	_, err := r.q.UpdateAccountBalance(ctx, arg)
-	return err
+	row, err := r.q.UpdateAccountBalance(ctx, arg)
+	if err != nil {
+		return nil, err
+	}
+	return toDomainAccount(row), nil
 }
 
 func (r *Repository) DeleteAccount(ctx context.Context, id string) error {

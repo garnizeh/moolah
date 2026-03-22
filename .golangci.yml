@@ -1,0 +1,37 @@
+version: 2
+
+run:
+  timeout: 5m
+
+linters:
+
+  disable-all: true
+  enable:
+    - govet
+    - gosec
+    - errcheck
+    - staticcheck
+    - unused
+
+linters-settings:
+  govet:
+    enable:
+      - fieldalignment
+  gosec:
+    # Scan all files including tests
+    tests: true
+
+issues:
+  exclude-rules:
+    # Exclude fieldalignment checks for generated SQL files
+    - path: .*\.sql\.go
+      linters:
+        - govet
+      text: "fieldalignment:"
+    # Exclude fieldalignment checks for generated models
+    - path: internal/platform/db/postgres/models\.go
+      linters:
+        - govet
+      text: "fieldalignment:"
+    # Exclude integer overflow checks for specific safe conversions if needed,
+    # but we already removed them in favor of safe conversion.
