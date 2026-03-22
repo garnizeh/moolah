@@ -9,34 +9,34 @@ import (
 )
 
 type Account struct {
+	CreatedAt    pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt    pgtype.Timestamptz `json:"updated_at"`
+	DeletedAt    pgtype.Timestamptz `json:"deleted_at"`
+	Metadata     []byte             `json:"metadata"`
 	ID           string             `json:"id"`
 	EntityID     string             `json:"entity_id"`
 	CurrencyID   string             `json:"currency_id"`
 	Name         string             `json:"name"`
 	Type         string             `json:"type"`
 	BalanceCents int64              `json:"balance_cents"`
-	Metadata     []byte             `json:"metadata"`
-	CreatedAt    pgtype.Timestamptz `json:"created_at"`
-	UpdatedAt    pgtype.Timestamptz `json:"updated_at"`
-	DeletedAt    pgtype.Timestamptz `json:"deleted_at"`
 }
 
 type Currency struct {
+	CreatedAt        pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt        pgtype.Timestamptz `json:"updated_at"`
+	Config           []byte             `json:"config"`
 	ID               string             `json:"id"`
 	Code             string             `json:"code"`
 	Symbol           string             `json:"symbol"`
 	FallbackDecimals int32              `json:"fallback_decimals"`
-	Config           []byte             `json:"config"`
-	CreatedAt        pgtype.Timestamptz `json:"created_at"`
-	UpdatedAt        pgtype.Timestamptz `json:"updated_at"`
 }
 
 type Entity struct {
-	ID        string             `json:"id"`
-	Name      string             `json:"name"`
-	Role      string             `json:"role"`
-	Metadata  []byte             `json:"metadata"`
 	CreatedAt pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt pgtype.Timestamptz `json:"updated_at"`
 	DeletedAt pgtype.Timestamptz `json:"deleted_at"`
+	Metadata  []byte             `json:"metadata"`
+	ID        string             `json:"id"`
+	Name      string             `json:"name"`
+	Role      string             `json:"role"`
 }

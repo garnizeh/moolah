@@ -18,13 +18,13 @@ INSERT INTO accounts (
 `
 
 type CreateAccountParams struct {
+	Metadata     []byte `json:"metadata"`
 	ID           string `json:"id"`
 	EntityID     string `json:"entity_id"`
 	CurrencyID   string `json:"currency_id"`
 	Name         string `json:"name"`
 	Type         string `json:"type"`
 	BalanceCents int64  `json:"balance_cents"`
-	Metadata     []byte `json:"metadata"`
 }
 
 func (q *Queries) CreateAccount(ctx context.Context, arg CreateAccountParams) (Account, error) {

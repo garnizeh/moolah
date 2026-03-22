@@ -20,9 +20,11 @@ func NewRepository(db DBTX) *Repository {
 }
 
 // Ensure Repository implements the domain interfaces.
-var _ domain.CurrencyRepository = (*Repository)(nil)
-var _ domain.EntityRepository = (*Repository)(nil)
-var _ domain.AccountRepository = (*Repository)(nil)
+var (
+	_ domain.CurrencyRepository = (*Repository)(nil)
+	_ domain.EntityRepository   = (*Repository)(nil)
+	_ domain.AccountRepository  = (*Repository)(nil)
+)
 
 // --- CurrencyRepository ---
 

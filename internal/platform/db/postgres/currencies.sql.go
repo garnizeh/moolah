@@ -18,11 +18,11 @@ INSERT INTO currencies (
 `
 
 type CreateCurrencyParams struct {
+	Config           []byte `json:"config"`
 	ID               string `json:"id"`
 	Code             string `json:"code"`
 	Symbol           string `json:"symbol"`
 	FallbackDecimals int32  `json:"fallback_decimals"`
-	Config           []byte `json:"config"`
 }
 
 func (q *Queries) CreateCurrency(ctx context.Context, arg CreateCurrencyParams) (Currency, error) {
@@ -112,11 +112,11 @@ RETURNING id, code, symbol, fallback_decimals, config, created_at, updated_at
 `
 
 type UpdateCurrencyParams struct {
+	Config           []byte `json:"config"`
 	ID               string `json:"id"`
 	Code             string `json:"code"`
 	Symbol           string `json:"symbol"`
 	FallbackDecimals int32  `json:"fallback_decimals"`
-	Config           []byte `json:"config"`
 }
 
 func (q *Queries) UpdateCurrency(ctx context.Context, arg UpdateCurrencyParams) (Currency, error) {
