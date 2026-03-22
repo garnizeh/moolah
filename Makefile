@@ -4,8 +4,12 @@ FIELDALIGN_VERSION=v0.30.0
 GOSEC_VERSION=v2.22.0
 SQLC_VERSION=v1.28.0
 
-all: help
+SHELL := /bin/bash
+.SHELLFLAGS := -eu -o pipefail -c
 
+.PHONY: all help deps lint security test build sqlc check-ci format clean
+
+all: help
 
 help:
 	@echo "Moolah Build System"
