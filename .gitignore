@@ -25,6 +25,3 @@ coverage.txt
 # Environment
 .env
 .env.local
-
-# Tools
-.sqlc.json

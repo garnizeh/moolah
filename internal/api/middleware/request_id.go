@@ -15,6 +15,16 @@ type contextKey string
 
 const requestIDKey contextKey = "request_id"
 
+type statusResponseWriter struct {
+	http.ResponseWriter
+	status int
+}
+
+func (w *statusResponseWriter) WriteHeader(status int) {
+	w.status = status
+	w.ResponseWriter.WriteHeader(status)
+}
+
 // RequestID is a middleware that generates a unique request ID for each request.
 func RequestID(next http.Handler) http.Handler {
 	var (
@@ -23,10 +33,10 @@ func RequestID(next http.Handler) http.Handler {
 	)
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		t := time.Now()
+		start := time.Now()
 
 		entropyMu.Lock()
-		id := ulid.MustNew(ulid.Timestamp(t), entropy).String()
+		id := ulid.MustNew(ulid.Timestamp(start), entropy).String()
 		entropyMu.Unlock()
 
 		ctx := context.WithValue(r.Context(), requestIDKey, id)
@@ -37,12 +47,17 @@ func RequestID(next http.Handler) http.Handler {
 		// Create a logger with the request ID
 		logger := slog.Default().With(slog.String("request_id", id))
 
-		next.ServeHTTP(w, r.WithContext(ctx))
+		// Wrap response writer to capture status
+		sw := &statusResponseWriter{ResponseWriter: w, status: http.StatusOK}
+
+		next.ServeHTTP(sw, r.WithContext(ctx))
 
 		logger.Info("request completed",
 			slog.String("method", r.Method),
 			slog.String("path", r.URL.Path),
 			slog.String("remote_addr", r.RemoteAddr),
+			slog.Int("status", sw.status),
+			slog.Duration("duration", time.Since(start)),
 		)
 	})
 }
