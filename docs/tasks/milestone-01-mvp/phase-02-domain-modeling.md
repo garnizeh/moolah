@@ -1,7 +1,7 @@
 # Task 1.2.0 — Domain Modeling & Core Registry
 
 > **Roadmap Ref:** Phase 2 — Domain Modeling & Core Registry
-> **Status:** 🔵 `backlog`
+> **Status:** ✅ `done`
 > **Last Updated:** 2026-03-22
 > **Assignee:** —
 > **Estimated Effort:** M
@@ -27,10 +27,10 @@ Moolah requires strict multi-entity and multi-currency support. We need to store
 
 ### In scope
 
-- [ ] `currencies` table (code, symbol, decimals).
-- [ ] `entities` table (name, role, metadata JSONB).
-- [ ] `accounts` table (entity_id, currency_id, balance_cents).
-- [ ] CRUD services for these registries correctly handling ULID IDs.
+- [x] `currencies` table (code, symbol, decimals).
+- [x] `entities` table (name, role, metadata JSONB).
+- [x] `accounts` table (entity_id, currency_id, balance_cents).
+- [x] CRUD services for these registries correctly handling ULID IDs.
 
 ---
 
@@ -48,6 +48,7 @@ Moolah requires strict multi-entity and multi-currency support. We need to store
 
 ## 5. Acceptance Criteria
 
-- [ ] Repository interface is defined in `internal/domain/`.
-- [ ] Every SQL query includes `WHERE tenant_id` (if applicable) and JSONB tags.
-- [ ] Cents precision is strictly enforced in the database.
+- [x] Repository interface is defined in `internal/domain/`.
+- [x] Every SQL query includes `WHERE tenant_id` (if applicable) and JSONB tags.
+- [x] Cents precision is strictly enforced in the database.
+
