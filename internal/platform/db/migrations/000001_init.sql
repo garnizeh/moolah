@@ -17,8 +17,11 @@ CREATE TABLE entities (
     role TEXT NOT NULL,
     metadata JSONB NOT NULL DEFAULT '{}',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP WITH TIME ZONE NULL
 );
+
+CREATE INDEX idx_entities_deleted ON entities (deleted_at);
 
 -- +goose Down
 DROP TABLE entities;

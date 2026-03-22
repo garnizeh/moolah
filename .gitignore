@@ -15,7 +15,7 @@ moolah-cli
 Thumbs.db
 
 # Dependencies
-# vendor/  <-- keeping vendor since we are using go mod vendor for now
+vendor/
 
 # Testing / Coverage
 *.out
@@ -28,6 +28,3 @@ coverage.txt
 
 # Tools
 .sqlc.json
-
-# Vendor
-vendor/

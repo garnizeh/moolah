@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"os"
 
 	"github.com/garnizeh/moolah/internal/api/middleware"
 	"github.com/garnizeh/moolah/internal/platform/log"
@@ -11,7 +12,7 @@ import (
 
 func main() {
 	// Initialize logging
-	log.Init()
+	log.InitWithWriter(os.Stdout)
 
 	mux := http.NewServeMux()
 

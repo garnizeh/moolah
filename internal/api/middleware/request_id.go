@@ -2,9 +2,10 @@ package middleware
 
 import (
 	"context"
+	"crypto/rand"
 	"log/slog"
-	"math/rand"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/oklog/ulid/v2"
@@ -12,24 +13,32 @@ import (
 
 type contextKey string
 
-const RequestIDKey contextKey = "request_id"
+const requestIDKey contextKey = "request_id"
 
+// RequestID is a middleware that generates a unique request ID for each request.
 func RequestID(next http.Handler) http.Handler {
+	var (
+		entropy   = ulid.Monotonic(rand.Reader, 0)
+		entropyMu sync.Mutex
+	)
+
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		t := time.Now()
-		entropy := ulid.Monotonic(rand.New(rand.NewSource(t.UnixNano())), 0)
-		id := ulid.MustNew(ulid.Timestamp(t), entropy).String()
 
-		ctx := context.WithValue(r.Context(), RequestIDKey, id)
-		
+		entropyMu.Lock()
+		id := ulid.MustNew(ulid.Timestamp(t), entropy).String()
+		entropyMu.Unlock()
+
+		ctx := context.WithValue(r.Context(), requestIDKey, id)
+
 		// Set header for HTMX/Clients to see the request ID
 		w.Header().Set("X-Request-ID", id)
 
 		// Create a logger with the request ID
 		logger := slog.Default().With(slog.String("request_id", id))
-		
+
 		next.ServeHTTP(w, r.WithContext(ctx))
-		
+
 		logger.Info("request completed",
 			slog.String("method", r.Method),
 			slog.String("path", r.URL.Path),
@@ -38,8 +47,9 @@ func RequestID(next http.Handler) http.Handler {
 	})
 }
 
+// FromContext retrieves the request ID from the context.
 func FromContext(ctx context.Context) string {
-	if id, ok := ctx.Value(RequestIDKey).(string); ok {
+	if id, ok := ctx.Value(requestIDKey).(string); ok {
 		return id
 	}
 	return "unknown"
