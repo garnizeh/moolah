@@ -1,0 +1,33 @@
+# Binaries
+bin/
+out/
+moolah
+moolah-cli
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Dependencies
+# vendor/  <-- keeping vendor since we are using go mod vendor for now
+
+# Testing / Coverage
+*.out
+*.test
+coverage.txt
+
+# Environment
+.env
+.env.local
+
+# Tools
+.sqlc.json
+
+# Vendor
+vendor/
