@@ -4,11 +4,11 @@ This roadmap outlines the tasks required to transition from manual spreadsheets 
 
 ## Phase 1: Technical Foundation & Standards
 The goal is to establish the engineering high-ground before building features.
-- [ ] **Project Scaffolding**: Setup Go modules, `docker-compose` for local PostgreSQL, and basic folder structure.
-- [ ] **Observability**: Implement `log/slog` structured logging and Request ID (ULID) middleware.
-- [ ] **OpenTelemetry**: Basic trace instrumentation for HTTP handlers.
-- [ ] **Database Plumbing**: Setup `pressly/goose` for migrations and `sqlc` for type-safe query generation.
-- [ ] **Shared Types**: Internal representation of monetary values (integers in cents).
+- [x] **Project Scaffolding**: Setup Go modules, `docker-compose` for local PostgreSQL, and basic folder structure.
+- [x] **Observability**: Implement `log/slog` structured logging and Request ID (ULID) middleware.
+- [x] **OpenTelemetry**: Basic trace instrumentation for HTTP handlers.
+- [x] **Database Plumbing**: Setup `pressly/goose` for migrations and `sqlc` for type-safe query generation.
+- [x] **Shared Types**: Internal representation of monetary values (integers in cents).
 
 ## Phase 2: Domain Modeling & Core Registry
 Establishing the entities that govern the system's extensibility.

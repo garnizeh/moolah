@@ -1,7 +1,7 @@
 # Task 1.1.0 — Technical Foundation & Engineering Standards
 
 > **Roadmap Ref:** Phase 1 — Technical Foundation & Standards
-> **Status:** 🔵 `backlog`
+> **Status:** ✅ `done`
 > **Last Updated:** 2026-03-22
 > **Assignee:** —
 > **Estimated Effort:** M
@@ -27,11 +27,11 @@ Before building financial features, we need a robust, traceable, and type-safe f
 
 ### In scope
 
-- [ ] Go repository initialization and layout.
-- [ ] Docker-compose for PostgreSQL 17 and Redis 7.
-- [ ] Structured logging (`slog`) and ULID-based Request ID middleware.
-- [ ] OpenTelemetry (OTel) basic trace propagation.
-- [ ] SQL migration setup (`goose`) and `sqlc` configuration.
+- [x] Go repository initialization and layout.
+- [x] Docker-compose for PostgreSQL 17 and Redis 7.
+- [x] Structured logging (`slog`) and ULID-based Request ID middleware.
+- [x] OpenTelemetry (OTel) basic trace propagation.
+- [x] SQL migration setup (`goose`) and `sqlc` configuration.
 
 ### Out of scope
 
