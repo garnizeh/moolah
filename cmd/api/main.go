@@ -94,7 +94,9 @@ func run(ctx context.Context) error {
 		defer cancel()
 
 		if err := server.Shutdown(shutdownCtx); err != nil {
-			server.Close()
+			if closeErr := server.Close(); closeErr != nil {
+				return fmt.Errorf("could not stop server gracefully: %w (close error: %v)", err, closeErr)
+			}
 			return fmt.Errorf("could not stop server gracefully: %w", err)
 		}
 	}
