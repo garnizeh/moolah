@@ -18,10 +18,10 @@ INSERT INTO currencies (
 `
 
 type CreateCurrencyParams struct {
-	Config           []byte `json:"config"`
 	ID               string `json:"id"`
 	Code             string `json:"code"`
 	Symbol           string `json:"symbol"`
+	Config           []byte `json:"config"`
 	FallbackDecimals int32  `json:"fallback_decimals"`
 }
 
@@ -112,10 +112,10 @@ RETURNING id, code, symbol, fallback_decimals, config, created_at, updated_at
 `
 
 type UpdateCurrencyParams struct {
-	Config           []byte `json:"config"`
 	ID               string `json:"id"`
 	Code             string `json:"code"`
 	Symbol           string `json:"symbol"`
+	Config           []byte `json:"config"`
 	FallbackDecimals int32  `json:"fallback_decimals"`
 }
 

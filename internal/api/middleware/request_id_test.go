@@ -47,7 +47,7 @@ func TestRequestID_Uniqueness(t *testing.T) {
 	middlewareHandler := RequestID(nextHandler)
 
 	ids := make(map[string]bool)
-	for i := 0; i < 100; i++ {
+	for range 100 {
 		req := httptest.NewRequest("GET", "/", nil)
 		rec := httptest.NewRecorder()
 		middlewareHandler.ServeHTTP(rec, req)

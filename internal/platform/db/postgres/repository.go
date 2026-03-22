@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 
 	"github.com/garnizeh/moolah/internal/domain"
+	"github.com/garnizeh/moolah/internal/platform/conv"
 )
 
 // Repository implements domain repository interfaces using sqlc.
@@ -29,14 +30,18 @@ var (
 // --- CurrencyRepository ---
 
 func (r *Repository) CreateCurrency(ctx context.Context, c *domain.Currency) error {
+	decimals, err := conv.ToInt32(c.FallbackDecimals)
+	if err != nil {
+		return err
+	}
 	arg := CreateCurrencyParams{
 		ID:               c.ID,
 		Code:             c.Code,
 		Symbol:           c.Symbol,
-		FallbackDecimals: int32(c.FallbackDecimals),
+		FallbackDecimals: decimals,
 		Config:           c.Config,
 	}
-	_, err := r.q.CreateCurrency(ctx, arg)
+	_, err = r.q.CreateCurrency(ctx, arg)
 	return err
 }
 
@@ -61,14 +66,18 @@ func (r *Repository) ListCurrencies(ctx context.Context) ([]*domain.Currency, er
 }
 
 func (r *Repository) UpdateCurrency(ctx context.Context, c *domain.Currency) error {
+	decimals, err := conv.ToInt32(c.FallbackDecimals)
+	if err != nil {
+		return err
+	}
 	arg := UpdateCurrencyParams{
 		ID:               c.ID,
 		Code:             c.Code,
 		Symbol:           c.Symbol,
-		FallbackDecimals: int32(c.FallbackDecimals),
+		FallbackDecimals: decimals,
 		Config:           c.Config,
 	}
-	_, err := r.q.UpdateCurrency(ctx, arg)
+	_, err = r.q.UpdateCurrency(ctx, arg)
 	return err
 }
 
