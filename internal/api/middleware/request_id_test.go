@@ -28,11 +28,11 @@ func TestRequestID(t *testing.T) {
 
 	// Assertions
 	assert.Equal(t, http.StatusOK, rec.Code)
-	
+
 	// Check header
 	respID := rec.Header().Get("X-Request-ID")
 	assert.NotEmpty(t, respID, "X-Request-ID header should not be empty")
-	
+
 	// Check context capture
 	assert.Equal(t, respID, capturedID, "ID in context should match ID in header")
 }
@@ -51,7 +51,7 @@ func TestRequestID_Uniqueness(t *testing.T) {
 		req := httptest.NewRequest("GET", "/", nil)
 		rec := httptest.NewRecorder()
 		middlewareHandler.ServeHTTP(rec, req)
-		
+
 		id := rec.Header().Get("X-Request-ID")
 		assert.False(t, ids[id], "Duplicate Request ID detected: %s", id)
 		ids[id] = true

@@ -3,15 +3,17 @@ package log
 import (
 	"bytes"
 	"log/slog"
-	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestInitWithWriter_Development(t *testing.T) {
-	os.Setenv("APP_ENV", "development")
-	defer os.Unsetenv("APP_ENV")
+	t.Setenv("APP_ENV", "development")
+
+	// Save original logger and restore after test
+	old := slog.Default()
+	t.Cleanup(func() { slog.SetDefault(old) })
 
 	var buf bytes.Buffer
 	InitWithWriter(&buf)
@@ -26,8 +28,11 @@ func TestInitWithWriter_Development(t *testing.T) {
 }
 
 func TestInitWithWriter_Production(t *testing.T) {
-	os.Setenv("APP_ENV", "production")
-	defer os.Unsetenv("APP_ENV")
+	t.Setenv("APP_ENV", "production")
+
+	// Save original logger and restore after test
+	old := slog.Default()
+	t.Cleanup(func() { slog.SetDefault(old) })
 
 	var buf bytes.Buffer
 	InitWithWriter(&buf)
@@ -40,4 +45,3 @@ func TestInitWithWriter_Production(t *testing.T) {
 	assert.Contains(t, output, "\"msg\":\"prod message\"")
 	assert.Contains(t, output, "\"key\":\"value\"")
 }
-
