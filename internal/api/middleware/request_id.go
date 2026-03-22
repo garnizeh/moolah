@@ -3,6 +3,7 @@ package middleware
 import (
 	"context"
 	"crypto/rand"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"sync"
@@ -36,16 +37,25 @@ func RequestID(next http.Handler) http.Handler {
 		start := time.Now()
 
 		entropyMu.Lock()
-		id := ulid.MustNew(ulid.Timestamp(start), entropy).String()
+		id, err := ulid.New(ulid.Timestamp(start), entropy)
 		entropyMu.Unlock()
 
-		ctx := context.WithValue(r.Context(), requestIDKey, id)
+		var requestID string
+		if err != nil {
+			slog.Error("failed to generate ULID", slog.Any("error", err))
+			// Fallback to a timestamp-based ID to ensure continuity
+			requestID = fmt.Sprintf("req-%d", start.UnixNano())
+		} else {
+			requestID = id.String()
+		}
+
+		ctx := context.WithValue(r.Context(), requestIDKey, requestID)
 
 		// Set header for HTMX/Clients to see the request ID
-		w.Header().Set("X-Request-ID", id)
+		w.Header().Set("X-Request-ID", requestID)
 
 		// Create a logger with the request ID
-		logger := slog.Default().With(slog.String("request_id", id))
+		logger := slog.Default().With(slog.String("request_id", requestID))
 
 		// Wrap response writer to capture status
 		sw := &statusResponseWriter{ResponseWriter: w, status: http.StatusOK}
