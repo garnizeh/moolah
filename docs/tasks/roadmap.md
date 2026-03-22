@@ -12,9 +12,10 @@ The goal is to establish the engineering high-ground before building features.
 
 ## Phase 2: Domain Modeling & Core Registry
 Establishing the entities that govern the system's extensibility.
-- [ ] **Currency Engine**: Implement CURRENCY table and logic for handling multiple decimal precisions (BRL=2, BTC=8, etc.).
-- [ ] **Entity Registry**: Implement ENTITY table for family members and cost centers with JSONB support.
-- [ ] **Account Management**: CRUD for Accounts/Wallets/Credit Cards linked to entities.
+- [x] **Currency Engine**: Implement CURRENCY table and logic for handling multiple decimal precisions (BRL=2, BTC=8, etc.).
+- [x] **Entity Registry**: Implement ENTITY table for family members and cost centers with JSONB support.
+- [x] **Account Management**: CRUD for Accounts/Wallets/Credit Cards linked to entities.
+
 
 ## Phase 3: The Ledger Engine (Transactions)
 The source of truth for all cash flows.
