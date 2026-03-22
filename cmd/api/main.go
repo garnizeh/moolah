@@ -4,10 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 	"time"
 
@@ -16,6 +18,13 @@ import (
 )
 
 func main() {
+	if err := run(context.Background()); err != nil {
+		slog.Error("application failed", slog.Any("error", err))
+		os.Exit(1)
+	}
+}
+
+func run(ctx context.Context) error {
 	// Initialize logging
 	log.InitWithWriter(os.Stdout)
 
@@ -46,6 +55,12 @@ func main() {
 		port = "8080"
 	}
 
+	// Sanitize port for logging to prevent log injection (Gosec G706)
+	cleanPort := "0"
+	if p, err := strconv.Atoi(port); err == nil {
+		cleanPort = strconv.Itoa(p)
+	}
+
 	server := &http.Server{
 		Addr:         ":" + port,
 		Handler:      handler,
@@ -58,26 +73,32 @@ func main() {
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
 
+	serverErrors := make(chan error, 1)
+
 	go func() {
-		slog.Info("starting server", slog.String("port", port))
+		slog.Info("starting server", slog.String("port", cleanPort))
 		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			slog.Error("server failed", slog.Any("error", err))
-			os.Exit(1)
+			serverErrors <- err
 		}
 	}()
 
-	// Wait for signal
-	<-stop
+	// Wait for signal or error
+	select {
+	case err := <-serverErrors:
+		return fmt.Errorf("server error: %w", err)
+	case sig := <-stop:
+		slog.Info("shutting down server...", slog.Any("signal", sig))
 
-	slog.Info("shutting down server...")
+		// Create context with timeout for shutdown
+		shutdownCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
+		defer cancel()
 
-	// Create context with timeout for shutdown
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
-	if err := server.Shutdown(ctx); err != nil {
-		slog.Error("server forced to shutdown", slog.Any("error", err))
-	} else {
-		slog.Info("server exited gracefully")
+		if err := server.Shutdown(shutdownCtx); err != nil {
+			server.Close()
+			return fmt.Errorf("could not stop server gracefully: %w", err)
+		}
 	}
+
+	slog.Info("server exited gracefully")
+	return nil
 }
